@@ -1,0 +1,69 @@
+/*
+ * Design tokens. The single place for colours, type, spacing and radii.
+ * Art direction and UX: change values here, not in components.
+ * Dark mode is the default look; light mode follows the OS setting.
+ */
+:root {
+  /* Colour: brand */
+  --c-bg: #0f1714;
+  --c-surface: #17221d;
+  --c-surface-2: #1f2d27;
+  --c-border: #2c3d35;
+  --c-text: #e9f1ec;
+  --c-text-muted: #9bb0a5;
+
+  /* Colour: meaning (keep these semantic, the game teaches with them) */
+  --c-money: #f2c14e;
+  --c-sustainability: #4cc38a;
+  --c-responsibility: #5aa9e6;
+  --c-danger: #ef5d5d;
+  --c-warning: #f29d4e;
+  --c-good: #4cc38a;
+  --c-trap: #ef5d5d;
+  --c-tradeoff: #c6a0f6;
+
+  /* Type */
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-num: ui-monospace, 'SF Mono', Menlo, monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.75rem;
+  --fs-hero: 2.5rem;
+
+  /* Space and shape */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --tap: 44px; /* minimum touch target */
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 220ms;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --c-bg: #f5f8f6;
+    --c-surface: #ffffff;
+    --c-surface-2: #edf2ef;
+    --c-border: #d5e0da;
+    --c-text: #13201a;
+    --c-text-muted: #55685e;
+    --c-money: #b07d00;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+  }
+}

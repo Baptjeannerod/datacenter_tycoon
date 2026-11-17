@@ -1,0 +1,44 @@
+{
+  "name": "datacenter-tycoon",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Mobile-first browser game about running a datacenter without wrecking the planet. Built in one day for the SMIC Day at CentraleSupélec.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate:content": "tsx scripts/validate-content.ts",
+    "sim": "tsx scripts/sim.ts",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run validate:content && npm run docs:catalog -- --check && npm run sim -- --runs 200",
+    "docs:catalog": "tsx scripts/catalog.ts"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "ajv": "^8.20.0",
+    "eslint": "^10.15.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.73.0",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

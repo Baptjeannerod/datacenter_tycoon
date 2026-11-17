@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+.vercel/
+*.tsbuildinfo
+# never commit the SMIC brief (contains students' names)
+*.pdf
+.impeccable/
