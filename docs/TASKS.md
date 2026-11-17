@@ -39,17 +39,17 @@
 - **Done when:** the screen fits a phone, explains the trade-off in under 10 seconds of reading, and has Replay + Share + Rate buttons.
 
 ### DEV-5 · P0 · Analytics endpoint and client
-- **Role:** dev · **Owner:** claude-agent (DEV-5/6/7) · **Status:** doing
+- **Role:** dev · **Owner:** claude-agent (DEV-5/6/7) · **Status:** review
 - **Goal:** `api/` serverless function on Vercel: `POST /api/event` and `GET /api/stats`. Anonymous `sessionId` in localStorage. Events: `visit`, `run_start`, `decision`, `quiz_answer`, `run_end`, `rating`. Choose storage through the Vercel Marketplace (Redis or Postgres); document the choice in `api/README.md` and `docs/ARCHITECTURE.md`.
 - **Done when:** events from a deployed preview land in storage; the client never blocks or crashes the game if the API is down.
 
 ### DEV-6 · P0 · 1-10 rating after a run
-- **Role:** dev · **Owner:** claude-agent (DEV-5/6/7) · **Status:** doing · **Depends on:** DEV-4, DEV-5
+- **Role:** dev · **Owner:** claude-agent (DEV-5/6/7) · **Status:** review · **Depends on:** DEV-4, DEV-5
 - **Goal:** One-tap 1-10 rating on the end screen, sent as a `rating` event. Never more than once per run.
 - **Done when:** ratings appear in `/api/stats`.
 
 ### DEV-7 · P0 · `/dashboard` page
-- **Role:** dev · **Owner:** claude-agent (DEV-5/6/7) · **Status:** doing · **Depends on:** DEV-5
+- **Role:** dev · **Owner:** claude-agent (DEV-5/6/7) · **Status:** review · **Depends on:** DEV-5
 - **Goal:** Second Vite entry `dashboard/index.html`. Shows unique visitors, sessions, runs, average knowledge score (quiz % correct), rating distribution and mean, most-failed questions, average Sustainability / Responsibility / legacy, most-chosen upgrades split by family (good vs trap), most-chosen client answers. Auto-refresh every 30 s.
 - **Done when:** it reads live data from `/api/stats` on the deployed site and works on a projector and a phone.
 

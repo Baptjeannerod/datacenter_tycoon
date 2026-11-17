@@ -83,3 +83,21 @@
 **Gotchas:**
 - CONTRACT CHANGE: `Location` lost `gridCarbon` / `energyPrice` (now `resources`, `fuelPrice`); `Balance` lost `capexPerMW` (now `landPlots`, `startBuildings`); `Upgrade` gained `scope`; `GameState` gained `plots` and `policies`; `Action` gained `build` and `buy.plot`; `TickReport` gained `supplyMW`, `needMW`, `unpoweredPlots`, `carbonIntensity`.
 - `shopUpgrades()` is gone: use `buildOptions`, `upgradeOptions`, `policyOptions` (each returns ok + reason).
+
+## 2026-11-17 14:40 · claude-agent (DEV-5/6/7) · DEV-5, DEV-6, DEV-7
+
+**Done:**
+- `api/`: `POST /api/event` and `GET /api/stats` (Vercel Node functions, Web `Request`/`Response`). Strict validation in `api/_lib/events.ts` (6 whitelisted types, 2 KB max, unknown fields dropped). Events become counters (`toOps`) and counters become stats (`buildStats`) in the pure `api/_lib/aggregate.ts`, 10 tests (`api/**` added to `vitest.config.ts`). Storage: Upstash Redis (`@upstash/redis`, new dependency) when `KV_REST_API_*` or `UPSTASH_REDIS_REST_*` are set, in-memory otherwise. Schema in `api/README.md`.
+- `ui/analytics.ts`: `track()` fire-and-forget (sendBeacon, else fetch keepalive), random id in localStorage. Hooked in `App.tsx` (visit), `useGame.ts` (run_start, decision, quiz_answer, run_end) and `EndScreen.tsx` (`rate` only + a "Live dashboard" link at the bottom).
+- `/dashboard/`: second Vite entry, refresh every 30 s, demo data with a loud banner if the API is down. Checked at 375 px (no horizontal scroll) and desktop.
+- `vite.config.ts`: dashboard build input + a dev-only plugin serving `/api` from `npm run dev`.
+
+**Next:**
+- **Project owner (Vercel):** connect Upstash Redis (Storage / Marketplace → Upstash Redis → Connect to datacenter-tycoon), then redeploy. Until then `/api/stats` reports `"storage": "memory"` and numbers do not persist. Steps in the PR description.
+- After testing, before the public session: wipe `dt:*` keys in the Upstash Data Browser so test runs don't count.
+- Nice to have: per-IP-free rate limiting (e.g. Upstash Ratelimit keyed by sessionId) if someone spams the endpoint.
+
+**Gotchas:**
+- New contract: analytics events (`api/_lib/events.ts`) and the `Stats` JSON (`api/_lib/aggregate.ts`). Content ids must stay `[a-z0-9_-]` (all current ids do) or their events are rejected.
+- API files import siblings with `.js` extensions (`./_lib/store.js`): required by Node ESM on Vercel, resolved to `.ts` by TypeScript/Vite. Keep it that way.
+- Ratings: one per (session, seed); re-rating overwrites. A challenge link with a non-integer seed sends events that get rejected (harmless).
