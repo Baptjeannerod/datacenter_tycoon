@@ -9,10 +9,10 @@
 
 | id | name | PUE | WUE | water stress | wind | sun | river | fuel price | k€/MW/tick | growth | market MW | enabled |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `paris-basin` | Paris Basin | 1.6 | 1 | 0.5 | 1 | 0.9 | 1 | 1 | 1224 | 0.145 | 18 | yes |
-| `nordic-fjord` | Nordic Fjord | 1.25 | 0.3 | 0.2 | 1.3 | 0.6 | 1.5 | 1.1 | 1054 | 0.124 | 14 | yes |
-| `coal-valley` | Coal Valley | 1.55 | 1 | 0.6 | 0.9 | 0.9 | 0.8 | 0.75 | 1190 | 0.156 | 18 | yes |
-| `sun-belt` | Sun Belt | 1.7 | 1.8 | 1.5 | 0.7 | 1.7 | 0.35 | 0.9 | 1428 | 0.166 | 22 | yes |
+| `paris-basin` | Paris Basin | 1.6 | 1 | 0.5 | 1 | 0.9 | 1 | 1 | 1224 | 0.145 | 29 | yes |
+| `nordic-fjord` | Nordic Fjord | 1.25 | 0.3 | 0.2 | 1.3 | 0.6 | 1.5 | 1.1 | 1054 | 0.124 | 22 | yes |
+| `coal-valley` | Coal Valley | 1.55 | 1 | 0.6 | 0.9 | 0.9 | 0.8 | 0.75 | 1190 | 0.156 | 29 | yes |
+| `sun-belt` | Sun Belt | 1.7 | 1.8 | 1.5 | 0.7 | 1.7 | 0.35 | 0.9 | 1428 | 0.166 | 35 | yes |
 
 ## Buildings
 

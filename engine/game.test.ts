@@ -37,9 +37,11 @@ describe('rng', () => {
 });
 
 describe('createGame', () => {
-  it('starts with one hall and one gas plant on 9 plots', () => {
+  it('starts with one hall and one gas plant on 16 land plots + the river spot', () => {
     const s = newGame();
-    expect(s.plots).toHaveLength(9);
+    expect(content.balance.landPlots).toBe(16);
+    expect(s.plots).toHaveLength(17);
+    expect(riverPlot(content)).toBe(16);
     expect(s.plots[0]?.building).toBe('datacenter-hall');
     expect(s.plots[1]?.building).toBe('gas-plant');
     expect(s.capacityMW).toBe(2);

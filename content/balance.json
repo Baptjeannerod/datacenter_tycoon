@@ -1,7 +1,7 @@
 {
   "maxTicks": 20,
   "hoursPerTick": 2190,
-  "landPlots": 8,
+  "landPlots": 16,
   "startBuildings": [
     {
       "plot": 0,
