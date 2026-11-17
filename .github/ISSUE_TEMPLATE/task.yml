@@ -1,0 +1,38 @@
+name: Task
+description: A unit of work from docs/TASKS.md (or a new one)
+title: "[ROLE-N] "
+labels: []
+body:
+  - type: dropdown
+    id: role
+    attributes:
+      label: Role
+      options: [dev, game-design, research, ux-ui, art, comms, coordination]
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options: ["P0 (prototype 15:00)", "P1 (cross-tests 16:30)", "P2 (pitch 17:15)"]
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should exist when this is done?
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Concrete, checkable acceptance criteria.
+    validations:
+      required: true
+  - type: input
+    id: owner
+    attributes:
+      label: Owner
+      description: Your name or agent id. Also update docs/TASKS.md.
