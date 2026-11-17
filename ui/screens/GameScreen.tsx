@@ -13,6 +13,7 @@ import { DEBT_LABEL, money, num, quarterLabel } from '../format';
 import { CampusMap } from '../map/CampusMap';
 import { campusView, HALL_PLOTS } from '../map/layout';
 import { content, type GameController, type Speed } from '../useGame';
+import { reportTax, TaxBadge } from '../components/TaxBadge';
 
 const HEADLINES = ['Small campus. Big decisions.', 'Growing campus. Bigger bills.', 'Big campus. Big footprint?', 'Mega campus. Worth it?'];
 
@@ -97,6 +98,7 @@ function Kpis({ state, s, r }: { state: GameState; s: number; r: number }) {
           {Math.round(s)} <small>/ 100</small> <Trend v={prev ? s - prev.sustainability : 0} />
         </div>
         <Bar value={s} />
+        <TaxBadge state={state} score={s} balance={content.balance} />
       </div>
       <div className="kpi lavender">
         <div className="eyebrow">Responsibility</div>
@@ -134,6 +136,12 @@ function QuarterReport({ state }: { state: GameState }) {
             <>
               <dt>Carbon tax</dt>
               <dd>−{money(h.carbonTax)}</dd>
+            </>
+          )}
+          {reportTax(h) > 0 && (
+            <>
+              <dt>Sustainability tax</dt>
+              <dd>−{money(reportTax(h))}</dd>
             </>
           )}
           {h.capex > 0 && (

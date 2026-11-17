@@ -159,6 +159,24 @@
 - Money numbers are about 2× bigger than before (prices ×1.7, 20 quarters): balanced ends around €130-145M, greedy €50-85M.
 - Environmental debt per quarter is unchanged on purpose: doubling it (to match the shorter run) plus the tax sent greedy bankrupt in most runs.
 
+## 2026-11-17 15:40 · claude-agent (S5) · pacing, eco-tax UI, onboarding, QA
+
+**Done (branch `agent/s5-pacing-tax-ui`):**
+- **Pacing:** `TICK_MS` 2600 → 4000 in `ui/useGame.ts` (1×/2×/3× kept). Measured at 1× in a real browser with a scripted player (2 s per hint, 7 s per card, 9 s per quiz + 5 s on the explanation, outcome banners left to auto-clear, no building) on 20 quarters: **3 min 54 s** (13 cards, 80 s of pure ticking). A player who builds or upgrades 6-8 times adds ~1-1.5 min, so a run lands at about 5 min. The clock reads `QUARTER x / 20` from `maxTicks`.
+- **Eco-tax display:** new `ui/components/TaxBadge.tsx` (inline styles, no CSS file touched). Under the Sustainability KPI: dashed "⚠ Eco-tax below 50" reminder, red "⚠ Eco-tax −X% revenue" when the next quarter will be taxed. X follows the S1 formula on the score the engine taxes (`history.at(-1).sustainability`, last quarter's), so it matches the ledger. "Sustainability tax" line in the Last quarter ledger; total paid on the end screen (hero panel). Every field is read with a fallback (`?? 0`, threshold 50 / max 0.4), so the UI works before and after S1's merge.
+- **How to play** (`ui/App.tsx`): 20 quarters (5 years, about 5 minutes), eco-tax below the threshold, demolish to replace a building (e.g. wind instead of coal). Numbers come from content.
+- **Onboarding** (`ui/components/Onboarding.tsx`): 5 hints instead of 3 (adds "20 quarters to play", eco-tax, demolish). The storage key is now `dt-onboarded-2`, so players who saw the old 3 hints see the new ones once.
+- Tested merged with `agent/s1-economy-20q` (threshold forced to 90 locally): badge −17 % = ledger €404k / €2.45M revenue; end screen total matches the "What you gave up" line. 1440×900 and 1280×800 in Chromium, iPhone 13 emulation (no horizontal scroll). No console errors. Safari not tested (no Mac in the container).
+
+**Next:**
+- S4 / whoever owns the end-screen copy: `EndScreen.tsx` still says **"Ten years later"**; with 20 quarters it is five years. I did not touch it (only the tax line is mine there).
+- If S1 changes `clientEvery` / `randomEventChance`, re-measure: cards are ~2/3 of a run's time.
+- **Fixed by S2's PR 51 (checked 15:55: the river spot offers "Hydro dam").** Was: integration bug on `main` between S1's merge (263a477) and S2's map: the river spot on the 8-plot map opens a land "Empty plot" ring (Hall, Gas, Coal…, no Dam), because the map still sends index 8 and the engine's river is index 16. Checked in the browser. Screenshot: `s5/merged-s1-river-spot-opens-land-ring.png` on branch `agent/s5-qa-screens`.
+- QA 15:45 (Playwright, Chromium, full runs at 1440×900, S4 also at 1280×800, no console errors): S3 PR 48 passes, including demolish then build on the freed plot. S4 PR 46 fits one screen in game and on the end screen. Its start screen still scrolls 68 px at 1280×800, and the copy says "10 years" / "Ten years later". `main` + S3 + S4 + S5 merge with HANDOFF-only conflicts, and `npm run check` is green on the result.
+
+**Gotchas:**
+- The badge uses last quarter's recorded score, not the live one: after a dirty build the KPI number drops at once, but the badge turns red only after the next quarter is recorded (that is when the engine starts taxing).
+
 ## 2026-11-17 15:50 · claude-agent (S2) · bigger map
 
 **Done (branch `agent/s2-bigger-map`, only `ui/map/*` + this entry):**
