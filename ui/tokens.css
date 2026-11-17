@@ -1,64 +1,80 @@
 /*
- * Design tokens. The single place for colours, type, spacing and radii.
- * Art direction and UX: change values here, not in components.
- * Dark mode is the default look; light mode follows the OS setting.
+ * Design tokens. The single place for colours, type, spacing and borders.
+ * Look: warm paper background, ink-navy outlines, flat lime / lavender / amber
+ * panels, pixel display type for headlines, mono for labels (from the team's
+ * campus template). Art direction and UX: change values here, not in components.
  */
 :root {
-  /* Colour: brand */
-  --c-bg: #0f1714;
-  --c-surface: #17221d;
-  --c-surface-2: #1f2d27;
-  --c-border: #2c3d35;
-  --c-text: #e9f1ec;
-  --c-text-muted: #9bb0a5;
+  /* Surfaces and ink */
+  --c-bg: #f3f1e8;
+  --c-surface: #fffdf6;
+  --c-surface-2: #ebe8dc;
+  --c-ink: #1d2232;
+  --c-ink-2: #2b3247;
+  --c-text: #1d2232;
+  --c-text-muted: #5c6172;
+  --c-on-ink: #f3f1e8;
 
-  /* Colour: meaning (keep these semantic, the game teaches with them) */
-  --c-money: #f2c14e;
-  --c-sustainability: #4cc38a;
-  --c-responsibility: #5aa9e6;
-  --c-danger: #ef5d5d;
-  --c-warning: #f29d4e;
-  --c-good: #4cc38a;
-  --c-trap: #ef5d5d;
-  --c-tradeoff: #c6a0f6;
+  /* Panels */
+  --c-lime: #dcec8f;
+  --c-lime-strong: #c6df5c;
+  --c-lavender: #d7cff4;
+  --c-lavender-strong: #b7a8ee;
+  --c-amber: #f6d878;
+  --c-amber-strong: #f0c040;
+  --c-red: #e2574c;
+  --c-red-soft: #f7c9c3;
+  --c-orange: #ef8a3a;
+
+  /* Meaning (scores) */
+  --c-money: #1d2232;
+  --c-sustainability: var(--c-lime);
+  --c-responsibility: var(--c-lavender);
+  --c-debt: var(--c-amber);
+  --c-good: #57a64a;
+  --c-trap: var(--c-red);
+  --c-tradeoff: #8c74e0;
+
+  /* Map palette (also used by the SVG campus) */
+  --map-sky: #e9f2f2;
+  --map-grass: #8ccf55;
+  --map-grass-2: #7fc24b;
+  --map-grass-dark: #4f8f31;
+  --map-dirt: #c27f43;
+  --map-dirt-dark: #9b5f2e;
+  --map-water: #4db7e6;
+  --map-water-light: #9fe0f7;
+  --map-path: #d9cba5;
 
   /* Type */
+  --font-display: 'Silkscreen', ui-monospace, monospace;
   --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-num: ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --fs-2xs: 0.6875rem;
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
   --fs-md: 1rem;
   --fs-lg: 1.25rem;
   --fs-xl: 1.75rem;
-  --fs-hero: 2.5rem;
+  --fs-2xl: 2.25rem;
 
-  /* Space and shape */
+  /* Space, borders, shape */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
   --sp-4: 16px;
+  --sp-5: 20px;
   --sp-6: 24px;
   --sp-8: 32px;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --tap: 44px; /* minimum touch target */
+  --border: 2px solid var(--c-ink);
+  --border-thin: 1px solid var(--c-ink);
+  --radius: 0;
+  --tap: 44px;
 
   /* Motion */
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dur-fast: 120ms;
   --dur: 220ms;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --c-bg: #f5f8f6;
-    --c-surface: #ffffff;
-    --c-surface-2: #edf2ef;
-    --c-border: #d5e0da;
-    --c-text: #13201a;
-    --c-text-muted: #55685e;
-    --c-money: #b07d00;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
