@@ -291,8 +291,8 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
             <h1 className="pixel">{headline(view.halls)}</h1>
             <p className="muted">Build your empire. Mind your footprint.</p>
           </div>
-          <div className="loc-pill">
-            <Icon.pin /> {loc.name}
+          <div className="loc-pill" title={loc.name}>
+            <Icon.pin /> <span className="loc-pill-name">{loc.name}</span>
           </div>
           <div className="clock">
             <div className="mono">
