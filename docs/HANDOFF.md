@@ -150,5 +150,5 @@
 - Tested with Playwright in Chromium and WebKit (Safari's engine) at 1280×800, 1440×900, 1728×1117 and 390×844: no overlap between options, centre, ×, card; everything inside the map.
 
 **Gotchas:**
-- Engine bug (not fixed, engine is out of S3's lane): `buildOptions` blocks *every* building when power is short, because plants have `needMW = 0` and the test is `needMW > spare` with `spare < 0` ("Needs 0.0 MW spare power"). So after demolishing your only plant you cannot build a new one. Fix: `needMW > 0 && needMW > spare + 1e-9` in `engine/game.ts` (same pattern in `upgradeOptions` / `policyOptions`).
+- Engine bug (fixed separately in PR 50, branch `agent/engine-spare-power-fix`): `buildOptions` blocks *every* building when power is short, because plants have `needMW = 0` and the test is `needMW > spare` with `spare < 0` ("Needs 0.0 MW spare power"). So after demolishing your only plant you cannot build a new one. Fix: `needMW > 0 && needMW > spare + 1e-9` in `engine/game.ts` (same pattern in `upgradeOptions` / `policyOptions`).
 - `CampusMap` still passes `--ring-r` and clamps the anchor with its own R; RingMenu ignores `--ring-r` and does its own fitting inside `.campus`.
