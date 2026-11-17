@@ -227,3 +227,26 @@
 **Gotchas:**
 - Engine bug (fixed separately in PR 50, branch `agent/engine-spare-power-fix`): `buildOptions` blocks *every* building when power is short, because plants have `needMW = 0` and the test is `needMW > spare` with `spare < 0` ("Needs 0.0 MW spare power"). So after demolishing your only plant you cannot build a new one. Fix: `needMW > 0 && needMW > spare + 1e-9` in `engine/game.ts` (same pattern in `upgradeOptions` / `policyOptions`).
 - `CampusMap` still passes `--ring-r` and clamps the anchor with its own R; RingMenu ignores `--ring-r` and does its own fitting inside `.campus`.
+## 2026-11-17 15:55 · claude-opus (S4, Mac layout) · desktop layout + overflow hunt
+
+**Done (branch `agent/s4-desktop-layout`):**
+- **Game screen fits one Mac screen, no page scroll** (`@media (min-width: 1024px) and (min-height: 640px)` in `ui/styles.css`). `.game` is a 100dvh grid: slim top bar, a one-line title row (headline, valley, clock, controls), a compact KPI row, then the board takes all remaining height. The map card measures 928×557 at 1280×800, 1057×655 at 1440×900, 1112×735 at 1512×982 and 1296×863 at 1728×1117 (72-75 % of the width, 70-77 % of the height). The side panel (decision card / quarter report) is 300-380 px wide and scrolls inside itself. Windows shorter than 640 px fall back to the normal scrolling page. A 1280×700 window (a 1280×800 screen minus Safari's bars) also fits; the tagline is hidden below 860 px of height.
+- **Overflow fixes** (tested with a temporary local stress patch: €99.9M+, 3-digit MW, a 40-character valley name):
+  - `min-width: 0` on KPI, board and end-screen children.
+  - KPI values stay on one line; KPI sub-lines, map stats and the map hint get an ellipsis.
+  - The valley pill gets an ellipsis (new `.loc-pill-name` span in GameScreen, with a `title` attribute).
+  - Ledger amounts don't wrap.
+  - Pixel-font titles and decision choice labels wrap.
+  - The How-to-play box scrolls inside (`max-height: 100dvh - 32px`).
+  - The end-screen frontier chart scales with the window height, so the whole end screen fits at 1280×800.
+  - The start screen hero is a bit shorter on laptops.
+- **Phone (375×812):** unchanged. No horizontal scroll, and the bottom sheet still works.
+- No changes to `.ring*` rules, `ui/map/*` or `ringFor`.
+
+**Next / for other sessions:**
+- S5: in the desktop game layout, `.kpi-value` is `white-space: nowrap`. Put the Sustainability tax line as its own block under the bar (like `.kpi-sub`), not inside `.kpi-value`. In the quarter report, the side panel scrolls, so an extra ledger row is fine.
+- S2: `.campus` now gets its height from the grid (`height: auto` in the desktop game layout), not from a fixed clamp. The SVG keeps its aspect ratio, so with 16 plots the map art may want a wider viewBox to use the space.
+- Safari was not tested directly (only Chromium in the app's browser pane at the 4 sizes + 1280×700). The CSS used is supported by Safari 16+ (`dvh`, `aspect-ratio`, `scrollbar-gutter` is ignored where unsupported).
+
+**Gotchas:**
+- The before/after screenshots are on branch `agent/s4-desktop-layout-screens` (images only, linked from the PR), so `main` stays light.
