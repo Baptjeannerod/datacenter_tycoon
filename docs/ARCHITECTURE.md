@@ -22,8 +22,8 @@
                 │                                   │
         ┌───────▼────────┐                 ┌────────▼─────────┐
         │ /ui (React)    │                 │ scripts/sim.ts   │  npm run sim (CI gate)
-        │ today: dev     │                 │ scripts/catalog  │  npm run docs:catalog
-        │ harness App    │                 └──────────────────┘
+        │ screens, map,  │                 │ scripts/catalog  │  npm run docs:catalog
+        │ useGame hook   │                 └──────────────────┘
         └───────┬────────┘
                 │ analytics events (TODO: DEV-5)
         ┌───────▼────────┐        ┌──────────────────┐
@@ -70,9 +70,22 @@ if (s.status !== 'playing') console.log(summarize(s, content));            // le
 ## Front-end
 
 - Vite + React 19 + TypeScript, static build to `dist/`. No router yet: the dashboard is planned as a second Vite entry (`dashboard/index.html` → `/dashboard/`) so it stays static.
-- Styling: plain CSS with **design tokens** in `ui/tokens.css`. No UI framework (frugal).
-- **Performance budget**: initial JS ≤ 100 kB gzip, total page ≤ 300 kB, no web fonts, images as inline SVG. Today: 88 kB gzip JS, almost all React. Swapping to Preact (`preact/compat` alias) would cut ~50 kB (task DEV-12).
-- `ui/App.tsx` is a **dev harness** (plain screens wired to the engine). Real screens replace it (UI tasks).
+- Styling: plain CSS with **design tokens** in `ui/tokens.css` (palette from the team's campus template). No UI framework (frugal). One web font: Silkscreen (pixel display, headlines only) from Google Fonts; everything else uses system fonts.
+- **Performance budget**: initial JS ≤ 100 kB gzip, total page ≤ 300 kB, images as inline SVG. Today: 103 kB gzip JS (React ≈ 60 kB, engine + content the rest), 5 kB CSS. Swapping to Preact (`preact/compat` alias) would cut ~50 kB (task DEV-12).
+
+### UI structure
+
+| File | Role |
+|---|---|
+| `ui/App.tsx` | Screen switch (start → game → end), how-to-play dialog, reads `?seed=&loc=` challenge links |
+| `ui/useGame.ts` | Holds `GameState`, auto-advances one quarter every 2.6 s / speed, pauses on cards, keeps outcome and quiz feedback |
+| `ui/screens/GameScreen.tsx` | Top bar, title + controls, KPI cards, map card, side panel (decision or quarter report), shop |
+| `ui/screens/StartScreen.tsx`, `EndScreen.tsx` | Location picker; archetype, legacy, profit-vs-impact frontier (with scripted players as reference dots), gained/gave up, trap reveal, 1-10 rating, challenge link |
+| `ui/components/DecisionPanel.tsx`, `Shop.tsx` | Cards (bottom sheet on phones) and upgrade cards (effect chips; never the family or the hidden bill) |
+| `ui/map/layout.ts` | Isometric grid, river path, road, 8 hall plots, feature areas, `campusView(state)` = what to draw |
+| `ui/map/CampusMap.tsx` | The SVG campus: slab, river + bridge + waterfall, halls (fill with capacity), next-plot marker, upgrade features, haze/smoke with debt, drag + zoom |
+
+The map only reads state; it never changes the game. Adding a visual for a new upgrade = a flag in `campusView()` + a drawing in `CampusMap.tsx`.
 
 ## Backend (to build: DEV-5, DEV-7)
 

@@ -9,7 +9,7 @@ You are joining a one-day build (SMIC Day, CentraleSupélec, 17 Nov 2026) of **D
    ```bash
    npm install
    npm run check      # lint, typecheck, tests, content validation, catalog, balance sim
-   npm run dev        # http://localhost:5173 (dev harness)
+   npm run dev        # http://localhost:5173 (the game)
    ```
 3. Pick an **unclaimed** task in `docs/TASKS.md` (or a GitHub issue with the same id). Claim it (see below). Branch, build, PR.
 4. Before you stop: append to `docs/HANDOFF.md`.
@@ -22,7 +22,7 @@ You are joining a one-day build (SMIC Day, CentraleSupélec, 17 Nov 2026) of **D
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Vite dev server (the dev harness UI) |
+| `npm run dev` | Vite dev server (the game) |
 | `npm run build` | Typecheck + production build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm run lint` | ESLint |
@@ -41,7 +41,7 @@ engine/        Pure TypeScript game logic. No DOM, no Math.random, no Date. Unit
   game.ts      createGame, step, applyAction, currentDecision, shopUpgrades
   scoring.ts   Sustainability, Responsibility, legacy, archetype, summary
 content/       All game data as JSON (+ schema/). Non-coders edit here.
-ui/            React app. App.tsx is a DEV HARNESS to be replaced. tokens.css = design tokens.
+ui/            React app. screens/ (Start, Game, End), components/, map/ (isometric campus SVG), useGame.ts (timer + feedback), tokens.css.
 scripts/       validate-content.ts, sim.ts, catalog.ts
 dashboard/     /dashboard page (to build: DEV-7)
 api/           Analytics endpoint (to build: DEV-5)
@@ -81,7 +81,7 @@ Need a change outside your lane? Open an issue or leave a note in HANDOFF; don't
 
 - Keep the engine pure and deterministic. Add a test for every engine change.
 - Put every player-facing number in `/content` with `source` and `confidence` (`high` = checked against a primary source; `approx` = order of magnitude from a named source; `illustrative` = game number).
-- Keep the game frugal: no heavy libraries, no web fonts, SVG over PNG, no AI calls at runtime.
+- Keep the game frugal: no heavy libraries, one display web font only (Silkscreen, headlines), SVG over PNG, no AI calls at runtime.
 - Run `npm run check` before every PR.
 - Update README/docs when you change commands or behaviour.
 
