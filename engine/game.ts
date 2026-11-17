@@ -153,7 +153,7 @@ export function buildOptions(state: GameState, content: Content, plot: number): 
     .filter((b) => b.placement === placement && checkCondition(b.requires, state, reader(state, content)))
     .map((b) => {
       const needMW = b.kind === 'datacenter' ? (b.itMW ?? 0) * mwPerLoad(d) : 0;
-      const reason = blocked(state) ?? (state.cash < b.cost ? `Needs ${fmtK(b.cost)}` : needMW > spare + 1e-9 ? `Needs ${needMW.toFixed(1)} MW spare power` : undefined);
+      const reason = blocked(state) ?? (state.cash < b.cost ? `Needs ${fmtK(b.cost)}` : needMW > 0 && needMW > spare + 1e-9 ? `Needs ${needMW.toFixed(1)} MW spare power` : undefined);
       return { item: b, ok: !reason, reason, needMW };
     });
 }
@@ -178,7 +178,7 @@ export function upgradeOptions(state: GameState, content: Content, plot: number)
             ? 'One per building'
             : state.cash < u.cost
               ? `Needs ${fmtK(u.cost)}`
-              : needMW > spare + 1e-9
+              : needMW > 0 && needMW > spare + 1e-9
                 ? `Needs ${needMW.toFixed(1)} MW spare power`
                 : undefined));
       return { item: u, ok: !reason, reason, installed, needMW };
@@ -201,7 +201,7 @@ export function policyOptions(state: GameState, content: Content): Option<Upgrad
             ? 'Exclusive with another policy'
             : state.cash < u.cost
               ? `Needs ${fmtK(u.cost)}`
-              : needMW > spare + 1e-9
+              : needMW > 0 && needMW > spare + 1e-9
                 ? `Needs ${needMW.toFixed(1)} MW spare power`
                 : undefined));
       return { item: u, ok: !reason, reason, installed, needMW };
