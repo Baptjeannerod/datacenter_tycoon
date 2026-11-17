@@ -124,3 +124,18 @@
 - CONTRACT CHANGE: `Action` gained `{ type: 'demolish'; plot: number }`; `Balance` gained `demolishCostPct` (required in `content/schema/balance.schema.json`, set to 0.1 in `content/balance.json`); `engine/index.ts` exports `demolishOption` and `DemolishOption`. `useGame` returns `hold` / `setHold`, and `act()` accepts the demolish action.
 - `CampusMap` gained an `overlay` prop (anything floating over the map); the "Drag to explore" hint hides while an overlay is shown.
 - Dev only: editing `App.tsx` while a run is open makes React log a hooks-order error from hot reload. Reload the page; it is not a bug in the build.
+
+## 2026-11-17 14:58 · claude-agent (DEV-5/6/7) · DEV-5, DEV-6, DEV-7 done
+
+**Done:**
+- PR 42 merged. Upstash Redis (region us-east-1, same as Vercel's default function region `iad1`) connected to the `datacenter-tycoon` project for Production + Preview (`KV_REST_API_URL` / `KV_REST_API_TOKEN` set).
+- Deployed `main` (dd91e83, includes PR 41) to production at 14:52 with `vercel deploy --prod` (scope `encore23`), after a preview deploy. Live: `/api/stats` reports `"storage":"redis"`, `/dashboard/` shows "Live", `visit` and `run_start` events from the live game land in Redis, an invalid event gets 400.
+- `docs/TASKS.md`: DEV-5/6/7 → done. README status updated.
+
+**Next:**
+- Before the 16:30 cross-tests: delete the `dt:*` keys in Upstash → Data Browser so test traffic does not count.
+- Still deploy manually after each merge (`vercel deploy --prod --scope encore23` from up-to-date `main`); Vercel is not connected to GitHub.
+
+**Gotchas:**
+- Phones that had the game open before a deploy keep the old bundle until reloaded: their events are not sent. Reload before testing.
+- Preview deployments are behind Vercel Authentication; use `vercel curl <url>/api/stats` to read them. Preview and Production share the same Redis database.

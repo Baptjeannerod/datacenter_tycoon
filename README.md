@@ -178,8 +178,8 @@ Several people and several AI agents work in parallel. **Read [AGENTS.md](AGENTS
 - [x] Balance simulation passing (`npm run sim`)
 - [x] Playable vertical slice: start screen, living isometric campus map (river, 8 hall plots), HUD, decision cards, quiz, shop, end screen with frontier, 1-10 rating (stored locally), challenge link
 - [x] CI, templates, agent docs
-- [ ] Rating sent to the backend (DEV-6): code in PR, live once Upstash Redis is connected on Vercel
-- [ ] Analytics + dashboard (DEV-5, DEV-7): code in PR (`/api`, `/dashboard/`), live once Upstash Redis is connected on Vercel
+- [x] Rating sent to the backend (DEV-6)
+- [x] Anonymous analytics + live dashboard on Upstash Redis (DEV-5, DEV-7): https://datacenter-tycoon-plum.vercel.app/dashboard/
 - [x] First-run hints (UX-2), demolish action, share image card (DEV-8), daily run (DEV-9)
 - [x] Deployed on Vercel: https://datacenter-tycoon-plum.vercel.app (manual `vercel deploy --prod` for now; auto-deploy on push not set up yet)
 
