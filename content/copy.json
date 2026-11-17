@@ -1,0 +1,239 @@
+{
+  "brand": {
+    "name": "Datacenter Tycoon",
+    "tagline": "Profit or planet?",
+    "footer": "Build a datacenter. Try not to wreck the planet.",
+    "footerNote": "Illustrative game values · sourced facts in the quiz"
+  },
+  "start": {
+    "headline": "Small campus. Big decisions.",
+    "lead": "Run a datacenter for 5 years. Get rich. Stay responsible. You can't max both.",
+    "points": [
+      "Host workloads, or ask if they really need AI.",
+      "No grid: build your own power plants. Coal is cheap, wind needs land.",
+      "5 minutes. No sign-up. Beat your friends' legacy score."
+    ],
+    "pickTitle": "Pick your valley",
+    "go": "Build here →",
+    "dailyTitle": "Daily run",
+    "dailyBody": "Same campus and same luck for everyone today, in {location}.",
+    "dailyBest": "Your best today: {best}.",
+    "dailyNone": "No score yet today.",
+    "challengeTitle": "You were challenged",
+    "challengeBody": "Same campus, same luck. Can you beat their legacy score?",
+    "challengeButton": "Accept the challenge"
+  },
+  "locations": {
+    "paris-basin": {
+      "difficulty": "Classic · start here",
+      "level": 2,
+      "question": "Wind, sun, river: all average here. So what decides?",
+      "answer": "No single clean source is enough, so you mix them, and land runs out. Efficiency and how much you grow matter more than any one plant."
+    },
+    "nordic-fjord": {
+      "difficulty": "Easy to be green",
+      "level": 1,
+      "question": "Clean power is easy here. So why is it hard to get rich?",
+      "answer": "You are far from users: clients pay less and the market is small. Green is cheap here; growth is not."
+    },
+    "coal-valley": {
+      "difficulty": "Hard · cheap and dirty",
+      "level": 3,
+      "question": "Coal is cheap here. What's the catch?",
+      "answer": "Coal emits about 75 times more CO₂ per kWh than wind over its life. Once carbon has a price, the cheap plant becomes the expensive one."
+    },
+    "sun-belt": {
+      "difficulty": "Thirsty",
+      "level": 2,
+      "question": "Sun everywhere. What runs out first?",
+      "answer": "Water. Evaporative cooling and thermal plants drink it, and farms and towns need it too. Solar panels barely use any."
+    }
+  },
+  "intro": {
+    "eyebrow": "Before you build",
+    "reveal": "Why?",
+    "start": "Start the run"
+  },
+  "onboarding": [
+    {
+      "text": "{maxTicks} quarters to play. Tap a plot to build",
+      "icon": "plus"
+    },
+    {
+      "text": "Halls need power: build a plant first",
+      "icon": "plant"
+    },
+    {
+      "text": "A red ! means a hall has no power",
+      "icon": "alert"
+    },
+    {
+      "text": "Sustainability below {taxThreshold}? An eco‑tax eats your revenue",
+      "icon": "tax"
+    },
+    {
+      "text": "Wrong building? Tap it, demolish it, build again",
+      "icon": "demolish"
+    }
+  ],
+  "howToPlay": {
+    "title": "How to play",
+    "steps": [
+      {
+        "lead": "Time runs by itself.",
+        "text": "One quarter every few seconds, {maxTicks} quarters in a run ({years} years, about 5 minutes). Pause or speed up anytime."
+      },
+      {
+        "lead": "Clients knock.",
+        "text": "Accept, refuse, or propose a lighter alternative. Does it really need AI?"
+      },
+      {
+        "lead": "Build on the map.",
+        "text": "Tap a plot to build a datacenter hall or a power plant. There is no grid: halls only run on the power you build (a red \"!\" means a hall has no power). Tap a building to upgrade it; every upgrade has a trade-off you can see, some hide a bill you can't. Wrong building in the wrong place? Tap it and demolish it (for a fee, no refund) to build something else, for example wind instead of coal."
+      },
+      {
+        "lead": "Watch two scores.",
+        "text": "Sustainability (what your campus does to the planet) and Responsibility (how you decide). Coal is cheap and compact, wind and sun are clean but need land. If Sustainability drops below {taxThreshold}, an eco-tax takes a share of your revenue every quarter: the lower the score, the bigger the bite."
+      },
+      {
+        "lead": "Your legacy",
+        "text": "= profit × impact. Pure greed and pure virtue both lose to a smart balance."
+      }
+    ],
+    "close": "Got it"
+  },
+  "game": {
+    "subtitle": "Build your empire. Mind your footprint.",
+    "headlines": [
+      {
+        "maxHalls": 2,
+        "text": "Small campus. Big decisions."
+      },
+      {
+        "maxHalls": 4,
+        "text": "Growing campus. Bigger bills."
+      },
+      {
+        "maxHalls": 6,
+        "text": "Big campus. Big footprint?"
+      },
+      {
+        "maxHalls": 99,
+        "text": "Mega campus. Worth it?"
+      }
+    ],
+    "emptyReport": "Press play. Clients will knock soon.",
+    "tapForInfo": "Tap a score to see what it means."
+  },
+  "scores": {
+    "cash": {
+      "label": "Cash balance",
+      "tooltip": "Money in the bank. Below −€1M you are bankrupt and the run ends."
+    },
+    "power": {
+      "label": "Power",
+      "tooltip": "There is no grid. Your plants must cover what your halls draw (IT load × PUE), or the last halls go dark."
+    },
+    "sustainability": {
+      "label": "Sustainability",
+      "tooltip": "What your datacenter does to the planet, measured: cooling efficiency, carbon, water where it is scarce, server life cycle and total energy compared with day one."
+    },
+    "responsibility": {
+      "label": "Responsibility",
+      "tooltip": "How you decide: questioning the need, measuring before claiming, being honest. Trust fades: it drifts back to 50 unless you keep earning it."
+    },
+    "envDebt": {
+      "label": "Environmental debt",
+      "tooltip": "The bill nobody has sent yet. Smoke, water and waste pile up out of sight; when it is high, fines, rules and angry neighbours arrive."
+    },
+    "legacy": {
+      "label": "Legacy score",
+      "tooltip": "= 1000 × √(profit × impact). Balance beats extremes."
+    }
+  },
+  "debt": [
+    {
+      "min": 0,
+      "label": "Low",
+      "hint": "Nature can absorb this.",
+      "warnings": [
+        "The valley is quiet.",
+        "Birds on the cooling towers. All calm."
+      ]
+    },
+    {
+      "min": 15,
+      "label": "Rising",
+      "hint": "Growth has a footprint.",
+      "warnings": [
+        "A local blog asks about your water use.",
+        "Someone posted a photo of your smoke.",
+        "The river looks a bit lower this summer."
+      ]
+    },
+    {
+      "min": 40,
+      "label": "High",
+      "hint": "Someone will send the bill.",
+      "warnings": [
+        "The town is grumbling…",
+        "A petition is going around the village.",
+        "Inspectors have been asking questions."
+      ]
+    },
+    {
+      "min": 80,
+      "label": "Critical",
+      "hint": "The bills are arriving.",
+      "warnings": [
+        "Clients are reading the headlines.",
+        "Protesters at the gate this morning.",
+        "Your biggest client wants a call about 'reputation'."
+      ]
+    }
+  ],
+  "archetypes": {
+    "frugal-tycoon": {
+      "title": "Frugal Tycoon",
+      "line": "Rich and responsible. You grew where it was worth it and said no where it was not.",
+      "share": "I'm a Frugal Tycoon in Datacenter Tycoon: rich AND responsible, legacy {legacy} in {location}. Same campus, same luck: can you beat me?"
+    },
+    "planet-burner": {
+      "title": "Planet Burner",
+      "line": "The money is real. So is the smoke. Somebody else is paying for your growth.",
+      "share": "I made a fortune in Datacenter Tycoon and the planet paid for it. Legacy {legacy} in {location}. Can you get rich without burning it?"
+    },
+    "cloud-monk": {
+      "title": "Cloud Monk",
+      "line": "Spotless footprint, thin wallet. Frugal is not the same as refusing everything.",
+      "share": "Spotless footprint, thin wallet: I'm a Cloud Monk in Datacenter Tycoon. Legacy {legacy} in {location}. Can you be green AND rich?"
+    },
+    "lost-in-the-fog": {
+      "title": "Lost in the Fog",
+      "line": "Neither rich nor responsible. The bills came, the clients left.",
+      "share": "Datacenter Tycoon got me: Lost in the Fog, legacy {legacy} in {location}. Same campus, same luck. Bet you can't do better?"
+    }
+  },
+  "end": {
+    "tenYears": "Five years later",
+    "bankrupt": "Bankrupt in year {year}",
+    "legacyFormula": "= 1000 × √(profit × impact). Balance beats extremes.",
+    "gained": "What you gained",
+    "gaveUp": "What you gave up",
+    "revealed": "Your upgrades, revealed",
+    "nothingBought": "You bought nothing. Doing nothing is a choice too.",
+    "families": {
+      "good": "Good call",
+      "trap": "Trap",
+      "tradeoff": "Trade-off"
+    },
+    "badges": "Badges earned",
+    "noBadges": "No badge this time. Some are hidden: try another way.",
+    "rateTitle": "How was it?",
+    "rateBody": "Rate the game from 1 to 10.",
+    "share": "Share my result",
+    "shared": "Image saved · link copied!",
+    "replay": "Play again",
+    "otherValley": "Other valley"
+  }
+}

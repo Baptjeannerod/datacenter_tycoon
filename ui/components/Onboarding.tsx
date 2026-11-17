@@ -4,9 +4,8 @@
  * Tapping a plot during the first hint counts as doing it: the next hint shows when the ring closes.
  */
 import { useCallback, useState, type ReactNode } from 'react';
-import { content } from '../useGame';
+import { copy, fillCopy } from '../copy';
 import { BuildingIcon } from './RingMenu';
-import { taxRules } from './TaxBadge';
 
 /** Bumped when the hints change, so returning players see the new ones once. */
 const KEY = 'dt-onboarded-2';
@@ -57,16 +56,16 @@ function Tax() {
   );
 }
 
-const { maxTicks } = content.balance;
-const { threshold } = taxRules(content.balance);
+const ICONS: Record<(typeof copy.onboarding)[number]['icon'], ReactNode> = {
+  plus: <Plus />,
+  plant: <BuildingIcon kind="gas" />,
+  alert: <RedBang />,
+  tax: <Tax />,
+  demolish: <BuildingIcon kind="demolish" />,
+};
 
-const TIPS: { text: string; icon: ReactNode }[] = [
-  { text: `${maxTicks} quarters to play. Tap a plot to build`, icon: <Plus /> },
-  { text: 'Halls need power: build a plant first', icon: <BuildingIcon kind="gas" /> },
-  { text: 'A red ! means a hall has no power', icon: <RedBang /> },
-  { text: `Sustainability below ${threshold}? An eco‑tax eats your revenue`, icon: <Tax /> },
-  { text: 'Wrong building? Tap it, demolish it, build again', icon: <BuildingIcon kind="demolish" /> },
-];
+/** Texts from content/copy.json (GD-2); {maxTicks} and {taxThreshold} follow the game rules. */
+const TIPS = copy.onboarding.map((t) => ({ text: fillCopy(t.text), icon: ICONS[t.icon] }));
 
 /** Hint index (0..TIPS.length-1) or -1 when done. */
 export function useOnboarding() {

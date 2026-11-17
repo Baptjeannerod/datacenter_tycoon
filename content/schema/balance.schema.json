@@ -143,6 +143,11 @@
       "type": "integer",
       "minimum": 1
     },
+    "firstClientTick": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Extra client knock at this tick so the first card of a run is a client"
+    },
     "randomEventChance": {
       "type": "number",
       "minimum": 0,
