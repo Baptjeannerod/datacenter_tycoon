@@ -3,14 +3,19 @@
  * Pure data + helpers, no React. Grid: GRID_W x GRID_H tiles, isometric.
  *
  * To add a plot or move a feature, edit the constants below. Keep hall plots off
- * the river and the road (the `isBlocked` helper is used by the tree scatter).
+ * the river, the roads and the village (`layout.test.ts` checks it; `isBlocked`
+ * is used by the tree scatter).
+ *
+ * The map defines 16 plot positions (PLOT_SLOTS) but only the first
+ * `content.balance.landPlots` are shown and clickable. The river spot (dam) is
+ * plot index `landPlots`, as in the engine.
  */
-import { getBuilding, type Content, type GameState, type Location, type PlantType } from '../../engine';
+import { getBuilding, loadContent, type Content, type GameState, type Location, type PlantType } from '../../engine';
 
 export const TW = 64; // tile width in px (screen)
 export const TH = 32; // tile height in px (screen)
-export const GRID_W = 16;
-export const GRID_H = 12;
+export const GRID_W = 24;
+export const GRID_H = 18;
 export const SLAB_DEPTH = 28;
 
 export interface Pt {
@@ -45,39 +50,101 @@ export const tile = (gx: number, gy: number) => pts([iso(gx, gy), iso(gx + 1, gy
 // The river: two tiles wide, meanders north → south (top-right → bottom-left on screen).
 // RIVER_X[gy] is its first column on row gy.
 // ---------------------------------------------------------------------------
-export const RIVER_X = [10, 10, 9, 9, 9, 9, 8, 8, 9, 9, 10, 10];
-export const ROAD_Y = 5;
+export const RIVER_X = [8, 8, 8, 9, 9, 10, 10, 10, 9, 9, 8, 8, 8, 9, 9, 10, 10, 10];
+/** The main road runs along this row (bridge over the river); side roads run along ROAD_COLS. */
+export const ROAD_Y = 8;
+export const ROAD_COLS = [4, 15] as const;
 export const isRiver = (gx: number, gy: number) => gy >= 0 && gy < GRID_H && (gx === RIVER_X[gy] || gx === RIVER_X[gy] + 1);
-export const isRoad = (gx: number, gy: number) => gy === ROAD_Y || (gx === 3 && gy >= 1 && gy <= 9);
+export const isRoad = (gx: number, gy: number) => gy === ROAD_Y || (ROAD_COLS as readonly number[]).includes(gx);
 
-/** Land plots (2 x 3 tiles each), indexed like `state.plots`. The campus crosses the river at plot 5. */
-export const HALL_PLOTS: { x: number; y: number }[] = [
-  { x: 1, y: 1 },
-  { x: 4, y: 1 },
-  { x: 4, y: 7 },
-  { x: 0, y: 7 },
-  { x: 12, y: 1 },
-  { x: 14, y: 0 },
-  { x: 12, y: 7 },
-  { x: 14, y: 7 },
+export interface Slot {
+  x: number;
+  y: number;
+}
+
+/**
+ * Land plot positions (2 x 3 tiles each), indexed like `state.plots`.
+ * 0-7: the core campus around the bridge (balance.landPlots = 8).
+ * 8-15: the expansion ring (shown when balance.landPlots = 16).
+ * Plot 0 holds the starting hall and plot 1 the starting plant, so keep them side by side.
+ */
+export const PLOT_SLOTS: readonly Slot[] = [
+  { x: 13, y: 5 },
+  { x: 16, y: 5 },
+  { x: 13, y: 9 },
+  { x: 16, y: 9 },
+  { x: 5, y: 5 },
+  { x: 2, y: 5 },
+  { x: 13, y: 1 },
+  { x: 16, y: 1 },
+  // expansion
+  { x: 19, y: 5 },
+  { x: 19, y: 9 },
+  { x: 5, y: 1 },
+  { x: 2, y: 1 },
+  { x: 19, y: 1 },
+  { x: 13, y: 13 },
+  { x: 16, y: 13 },
+  { x: 19, y: 13 },
 ];
 export const HALL_W = 2;
 export const HALL_D = 3;
-/** The river spot (last plot index): where a dam can go. Upstream rows become a reservoir. */
+/** The river spot (plot index landPlots): where a dam can go. Upstream rows become a reservoir. */
 export const DAM_ROW = 2;
+
+/**
+ * How many land plots the map shows: `content.balance.landPlots`, capped at the
+ * positions we have. Dev assertion: logs an error if the content asks for more.
+ */
+export function landPlotCount(content: Content): number {
+  const n = content.balance.landPlots;
+  console.assert(PLOT_SLOTS.length >= n, `ui/map/layout.ts: balance.landPlots is ${n} but the map only has ${PLOT_SLOTS.length} plot positions`);
+  return Math.min(n, PLOT_SLOTS.length);
+}
+
+/**
+ * @deprecated Use `view.plots` (from campusView) or `landPlotCount(content)`.
+ * Kept for GameScreen ("N of M plots free"): the plots shown with the bundled content.
+ */
+export const HALL_PLOTS: readonly Slot[] = PLOT_SLOTS.slice(0, landPlotCount(loadContent()));
 
 /** Fixed decor areas. */
 export const AREAS = {
-  village: { x: 12, y: 10, w: 4, d: 2 },
+  village: { x: 0, y: 11, w: 8, d: 5 },
+  fields: { x: 16, y: 16, w: 6, d: 2 },
 } as const;
 
-const inArea = (gx: number, gy: number, a: { x: number; y: number; w: number; d: number }) => gx >= a.x && gx < a.x + a.w && gy >= a.y && gy < a.y + a.d;
+/** Village houses (0.8 x 0.8 tiles), on both sides of the west road. */
+export const HOUSES: readonly Slot[] = [
+  { x: 0.3, y: 11.3 },
+  { x: 1.7, y: 11.2 },
+  { x: 2.9, y: 11.5 },
+  { x: 5.2, y: 11.2 },
+  { x: 6.6, y: 11.4 },
+  { x: 0.7, y: 12.8 },
+  { x: 2.2, y: 12.9 },
+  { x: 5.4, y: 12.9 },
+  { x: 6.8, y: 13.1 },
+  { x: 1.2, y: 14.4 },
+  { x: 2.8, y: 14.6 },
+  { x: 5.6, y: 14.5 },
+];
 
-/** Tiles where nothing else may be drawn (used to place trees). */
-export function isBlocked(gx: number, gy: number): boolean {
+export const inArea = (gx: number, gy: number, a: { x: number; y: number; w: number; d: number }) => gx >= a.x && gx < a.x + a.w && gy >= a.y && gy < a.y + a.d;
+export const inSlot = (gx: number, gy: number, p: Slot) => inArea(gx, gy, { x: p.x, y: p.y, w: HALL_W, d: HALL_D });
+
+/** Tiles where nothing else may be drawn (used to place trees). Unused plot slots grow trees. */
+export function isBlocked(gx: number, gy: number, landPlots: number = PLOT_SLOTS.length): boolean {
   if (isRiver(gx, gy) || isRoad(gx, gy)) return true;
-  if (HALL_PLOTS.some((p) => inArea(gx, gy, { x: p.x, y: p.y, w: HALL_W, d: HALL_D }))) return true;
+  if (PLOT_SLOTS.slice(0, landPlots).some((p) => inSlot(gx, gy, p))) return true;
   return Object.values(AREAS).some((a) => inArea(gx, gy, a));
+}
+
+/** Screen (SVG) centre of a plot; index `river` (= landPlots) and above is the river spot. */
+export function plotCenter(i: number, river: number): Pt {
+  const p = i < river ? PLOT_SLOTS[i] : undefined;
+  if (!p) return iso(RIVER_X[DAM_ROW] + 1, DAM_ROW + 0.5);
+  return box(p.x, p.y, HALL_W, HALL_D, 0).groundCenter;
 }
 
 /** Deterministic pseudo-random in [0, 1) for a tile (stable tree positions). */
@@ -103,9 +170,12 @@ export interface PlotView {
 }
 
 export interface CampusView {
+  /** The land plots shown on the map (balance.landPlots of them). */
   plots: PlotView[];
   /** The river spot (dam), last entry of state.plots. */
   dam: PlotView;
+  /** Plot index of the river spot (= balance.landPlots). */
+  river: number;
   halls: number;
   outage: boolean;
   debt: DebtLevel;
@@ -135,10 +205,12 @@ export function campusView(state: GameState, content: Content, loc: Location, wu
     }
     return { kind: b.plantType ?? 'gas', upgrades: p.upgrades, unpowered: false };
   };
-  const plots = HALL_PLOTS.map((_, i) => view(i));
+  const plots = Array.from({ length: landPlotCount(content) }, (_, i) => view(i));
+  const river = content.balance.landPlots;
   return {
     plots,
-    dam: view(HALL_PLOTS.length),
+    dam: view(river),
+    river,
     halls: hallNo,
     outage: Boolean(state.history.at(-1)?.outage),
     debt: debtLevel(state.envDebt),

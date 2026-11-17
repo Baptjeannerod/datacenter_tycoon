@@ -124,6 +124,20 @@ describe('demolish', () => {
     expect(plantInfos(s1, content).map((p) => p.building.id)).toEqual(['gas-plant']);
     expect(buildOptions(s1, content, 7).length).toBeGreaterThan(0);
   });
+  it('a plant can replace the only plant, even while power is short', () => {
+    const s0 = rich(newGame());
+    const gasPlot = s0.plots.findIndex((p) => p?.building === 'gas-plant');
+    const s1 = applyAction(s0, { type: 'demolish', plot: gasPlot }, content);
+    expect(s1.plots[gasPlot]).toBeNull();
+    const opts = buildOptions(s1, content, gasPlot);
+    const plants = opts.filter((o) => o.item.kind !== 'datacenter');
+    expect(plants.length).toBeGreaterThan(0);
+    expect(plants.every((o) => o.ok)).toBe(true);
+    // A hall still needs spare power that is not there.
+    expect(opts.find((o) => o.item.kind === 'datacenter')?.ok).toBe(false);
+    const s2 = applyAction(s1, { type: 'build', plot: gasPlot, buildingId: 'solar-farm' }, content);
+    expect(s2.plots[gasPlot]?.building).toBe('solar-farm');
+  });
   it('removing a hall reduces capacity', () => {
     const s0 = twoHalls();
     expect(s0.capacityMW).toBe(4);

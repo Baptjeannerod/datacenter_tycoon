@@ -1,8 +1,8 @@
 /**
  * The living campus: an isometric, pixel-flavoured SVG drawn from game state.
  * - A river crosses the campus (it shrinks when you overuse water).
- * - 8 hall plots: built halls follow capacity, empty plots show room to grow,
- *   the next plot is highlighted with the MW at which it gets built.
+ * - balance.landPlots land plots (up to 16 positions) + one river spot for a dam.
+ *   Empty plots show a "+", built ones show the hall or plant.
  * - Upgrades appear on the map (solar field, wind turbines, cooling towers, tanks,
  *   gas turbines, heat pipe to the village). Haze and smoke grow with hidden debt.
  * Layout constants: ./layout.ts. Colours: ui/tokens.css (map palette mirrored here for SVG).
@@ -14,17 +14,20 @@ import {
   GRID_H,
   GRID_W,
   HALL_D,
-  HALL_PLOTS,
   HALL_W,
+  HOUSES,
+  PLOT_SLOTS,
   RIVER_X,
   ROAD_Y,
   SLAB_DEPTH,
   box,
   hash2,
+  inArea,
   isBlocked,
   isRiver,
   isRoad,
   iso,
+  plotCenter,
   pts,
   tile,
   type CampusView,
@@ -32,15 +35,22 @@ import {
   type Pt,
 } from './layout';
 
+export { plotCenter };
+
 const INK = '#1d2232';
 const BIOME = {
-  temperate: { grass: '#8ccf55', grass2: '#83c74d', tree: '#3f9a3c', tree2: '#2f7a30' },
-  nordic: { grass: '#d3e6dc', grass2: '#c6ddd0', tree: '#2f7a55', tree2: '#235e42' },
-  coal: { grass: '#a6b46c', grass2: '#9caa64', tree: '#6f8a3c', tree2: '#566e2e' },
-  desert: { grass: '#e6c98d', grass2: '#ddbe80', tree: '#5e9e48', tree2: '#467a36' },
+  temperate: { grass: '#8ccf55', grass2: '#83c74d', tree: '#3f9a3c', tree2: '#2f7a30', field: '#e0c95e', field2: '#a9c94e' },
+  nordic: { grass: '#d3e6dc', grass2: '#c6ddd0', tree: '#2f7a55', tree2: '#235e42', field: '#b9d1bf', field2: '#e3ecdf' },
+  coal: { grass: '#a6b46c', grass2: '#9caa64', tree: '#6f8a3c', tree2: '#566e2e', field: '#c9b866', field2: '#8f9f55' },
+  desert: { grass: '#e6c98d', grass2: '#ddbe80', tree: '#5e9e48', tree2: '#467a36', field: '#9fbf5a', field2: '#d6a867' },
 } as const;
 
-const BASE_VB = { x: -405, y: -105, w: 940, h: 625 };
+/** The whole world in SVG units (slab + backdrop + tall buildings). Zoom 1 fits it in the panel. */
+const BASE_VB = { x: -600, y: -150, w: 1392, h: 880 };
+/** The backdrop art was drawn for a 16 x 12 grid; scale it with the world. */
+const BACKDROP_SCALE = GRID_W / 16;
+const MAX_ZOOM = 3;
+const ZOOM_STEP = 0.5;
 
 // ---------------------------------------------------------------------------
 // Small drawing helpers
@@ -140,7 +150,8 @@ function Hall({ x, y, index, view, monitoring, outage }: { x: number; y: number;
         </g>
       )}
       {view.hallNo && (
-        <text x={b.groundCenter.x} y={b.groundCenter.y + 26} textAnchor="middle" className="map-tag" fill={INK}>
+        // Larger than .map-tag: the bigger world is drawn at ~0.6x on a laptop panel.
+        <text x={b.groundCenter.x} y={b.groundCenter.y + 30} textAnchor="middle" className="map-tag" style={{ fontSize: 15 }} fill={INK} stroke="#fffdf6" strokeWidth={3} paintOrder="stroke">
           HALL {String(view.hallNo).padStart(2, '0')}
         </text>
       )}
@@ -255,7 +266,7 @@ function EmptyPlot({ x, y, selected }: { x: number; y: number; selected: boolean
   );
 }
 
-function Tree({ at, biome, s }: { at: Pt; biome: CampusView['biome']; s: number }) {
+const Tree = memo(function Tree({ at, biome, s }: { at: Pt; biome: CampusView['biome']; s: number }) {
   const c = BIOME[biome];
   if (biome === 'desert') {
     return (
@@ -283,7 +294,7 @@ function Tree({ at, biome, s }: { at: Pt; biome: CampusView['biome']; s: number 
       <polygon points="0,-26 -14,-8 0,-3 14,-8" fill={c.tree2} />
     </g>
   );
-}
+});
 
 function WindTurbine({ at }: { at: Pt }) {
   return (
@@ -301,7 +312,7 @@ function WindTurbine({ at }: { at: Pt }) {
   );
 }
 
-function House({ x, y, warm }: { x: number; y: number; warm: boolean }) {
+const House = memo(function House({ x, y, warm }: { x: number; y: number; warm: boolean }) {
   const b = box(x, y, 0.8, 0.8, 16);
   const roofPeak = { x: b.topCenter.x, y: b.topCenter.y - 12 };
   const a = up(iso(x, y), 16);
@@ -317,7 +328,7 @@ function House({ x, y, warm }: { x: number; y: number; warm: boolean }) {
       <rect x={b.groundCenter.x - 4} y={b.groundCenter.y - 12} width={6} height={6} fill={warm ? '#ffcf5a' : '#5b6072'} stroke={INK} strokeWidth={1} />
     </g>
   );
-}
+});
 
 function SolarRow({ gx, gy }: { gx: number; gy: number }) {
   const a = iso(gx + 0.1, gy + 0.15, 9);
@@ -363,6 +374,12 @@ const Ground = memo(function Ground({ biome, lowWater }: { biome: CampusView['bi
         }
       } else if (isRoad(gx, gy)) {
         tiles.push(<polygon key={`t${gx}-${gy}`} points={tile(gx, gy)} fill="#d9cba5" />);
+      } else if (inArea(gx, gy, AREAS.fields)) {
+        // crop fields: one colour per tile, furrows along the tile
+        tiles.push(<polygon key={`t${gx}-${gy}`} points={tile(gx, gy)} fill={hash2(gx, gy, 5) < 0.5 ? c.field : c.field2} stroke={INK} strokeOpacity={0.25} />);
+        const a = iso(gx + 0.5, gy + 0.1);
+        const b = iso(gx + 0.5, gy + 0.9);
+        tiles.push(<line key={`f${gx}-${gy}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={INK} strokeOpacity={0.2} strokeWidth={1.5} />);
       } else if ((gx + gy) % 2 === 0) {
         tiles.push(<polygon key={`t${gx}-${gy}`} points={tile(gx, gy)} fill={c.grass2} />);
       }
@@ -408,7 +425,7 @@ function Backdrop({ biome, debt }: { biome: CampusView['biome']; debt: number })
   const far = 'M-420,170 C-300,60 -200,-30 -60,-40 C80,-50 200,-10 330,60 C430,110 500,150 540,190 L540,420 L-420,420 Z';
   const fill = { temperate: ['#cfe6a8', '#b3d98a'], nordic: ['#e3edf2', '#cfdde6'], coal: ['#c9cbb4', '#b3b89b'], desert: ['#f2d7a6', '#e8c086'] }[biome];
   return (
-    <g>
+    <g transform={`scale(${BACKDROP_SCALE})`}>
       <path d={far} fill={fill[0]} stroke={INK} strokeWidth={1.5} />
       <path d={horizon} fill={fill[1]} stroke={INK} strokeWidth={1.5} />
       {biome === 'nordic' && (
@@ -450,13 +467,6 @@ function Backdrop({ biome, debt }: { biome: CampusView['biome']; debt: number })
 // Main component
 // ---------------------------------------------------------------------------
 
-/** Screen (SVG) centre of a plot; the last index is the river spot. */
-export function plotCenter(i: number): Pt {
-  if (i >= HALL_PLOTS.length) return iso(RIVER_X[DAM_ROW] + 1, DAM_ROW + 0.5);
-  const p = HALL_PLOTS[i];
-  return box(p.x, p.y, HALL_W, HALL_D, 0).groundCenter;
-}
-
 interface MapProps {
   view: CampusView;
   seed: number;
@@ -491,7 +501,10 @@ export function CampusMap({ view, seed, selected = null, onSelect, ring, overlay
   }, []);
 
   const aspect = size.w / size.h;
-  const vbH = BASE_VB.h / zoom;
+  // Zoom 1: landscape panels (desktop) fit the whole world; portrait panels (phones)
+  // fit the height and let you drag sideways, as before.
+  const fitH = aspect >= 1 ? Math.max(BASE_VB.h, BASE_VB.w / aspect) : BASE_VB.h;
+  const vbH = fitH / zoom;
   const vbW = vbH * aspect;
   const limX = Math.max(0, (BASE_VB.w - vbW) / 2);
   const limY = Math.max(0, (BASE_VB.h - vbH) / 2);
@@ -528,25 +541,26 @@ export function CampusMap({ view, seed, selected = null, onSelect, ring, overlay
     if (z === 1) setPan({ x: 0, y: 0 });
   };
 
+  const landPlots = view.plots.length;
   const trees = useMemo(() => {
     const density = { temperate: 0.42, nordic: 0.38, coal: 0.26, desert: 0.16 }[view.biome] * (view.debt >= 3 ? 0.55 : view.debt === 2 ? 0.8 : 1);
     const list: { gx: number; gy: number; at: Pt; s: number }[] = [];
     for (let gy = 0; gy < GRID_H; gy++) {
       for (let gx = 0; gx < GRID_W; gx++) {
-        if (isBlocked(gx, gy) || hash2(gx, gy, seed % 7) > density) continue;
+        if (isBlocked(gx, gy, landPlots) || hash2(gx, gy, seed % 7) > density) continue;
         list.push({ gx, gy, at: iso(gx + 0.3 + hash2(gx, gy, 11) * 0.4, gy + 0.3 + hash2(gx, gy, 13) * 0.4), s: 0.8 + hash2(gx, gy, 17) * 0.4 });
       }
     }
     return list;
-  }, [view.biome, view.debt, seed]);
+  }, [view.biome, view.debt, seed, landPlots]);
 
   // Depth-sorted objects
   const objects: { depth: number; node: ReactNode }[] = [];
   const add = (depth: number, key: string, node: ReactNode) => objects.push({ depth, node: <g key={key}>{node}</g> });
   const alerts: ReactNode[] = [];
 
-  HALL_PLOTS.forEach((p, i) => {
-    const v = view.plots[i];
+  view.plots.forEach((v, i) => {
+    const p = PLOT_SLOTS[i];
     const depth = p.x + HALL_W + p.y + HALL_D;
     const isSel = selected === i;
     const hit = (
@@ -586,17 +600,17 @@ export function CampusMap({ view, seed, selected = null, onSelect, ring, overlay
   });
 
   // River spot: the dam, or an empty build marker on the water
-  const rc = plotCenter(HALL_PLOTS.length);
+  const rc = plotCenter(view.river, view.river);
   if (view.dam.kind === 'hydro') {
     add(RIVER_X[DAM_ROW] + DAM_ROW + 2, 'dam', (
-      <g className="building" onClick={() => pick(HALL_PLOTS.length)}>
+      <g className="building" onClick={() => pick(view.river)}>
         <Dam reservoir />
       </g>
     ));
   } else if (interactive) {
     add(RIVER_X[DAM_ROW] + DAM_ROW + 2, 'dam-spot', (
-      <g className="plot-plus river-spot" onClick={() => pick(HALL_PLOTS.length)} role="button" aria-label="River spot: build a dam">
-        <circle cx={rc.x} cy={rc.y} r={selected === HALL_PLOTS.length ? 17 : 13} fill="#9fe0f7" stroke={INK} strokeWidth={2} strokeDasharray="4 3" />
+      <g className="plot-plus river-spot" onClick={() => pick(view.river)} role="button" aria-label="River spot: build a dam">
+        <circle cx={rc.x} cy={rc.y} r={selected === view.river ? 17 : 13} fill="#9fe0f7" stroke={INK} strokeWidth={2} strokeDasharray="4 3" />
         <path d={`M${rc.x - 6} ${rc.y}h12M${rc.x} ${rc.y - 6}v12`} stroke={INK} strokeWidth={2.5} />
       </g>
     ));
@@ -604,19 +618,12 @@ export function CampusMap({ view, seed, selected = null, onSelect, ring, overlay
 
   // Village (the neighbours); warm windows if any hall shares its heat
   const heat = view.plots.some((p) => p.upgrades.includes('heat-reuse'));
-  const vA = AREAS.village;
-  [
-    { x: vA.x + 0.2, y: vA.y + 0.2 },
-    { x: vA.x + 1.6, y: vA.y + 0.1 },
-    { x: vA.x + 2.9, y: vA.y + 0.3 },
-    { x: vA.x + 0.9, y: vA.y + 1.2 },
-    { x: vA.x + 2.3, y: vA.y + 1.2 },
-  ].forEach((h, i) => add(h.x + h.y + 1.6, `house${i}`, <House x={h.x} y={h.y} warm={heat} />));
+  HOUSES.forEach((h, i) => add(h.x + h.y + 1.6, `house${i}`, <House x={h.x} y={h.y} warm={heat} />));
 
   trees.forEach((t, i) => add(t.gx + t.gy + 0.9, `tree${i}`, <Tree at={t.at} biome={view.biome} s={t.s} />));
   objects.sort((a, b) => a.depth - b.depth);
 
-  const anchor = selected === null ? null : selected < 0 ? { x: size.w / 2, y: size.h / 2 } : toScreen(plotCenter(selected));
+  const anchor = selected === null ? null : selected < 0 ? { x: size.w / 2, y: size.h / 2 } : toScreen(plotCenter(selected, view.river));
   const R = Math.min(118, size.w / 2 - 50, size.h / 2 - 50);
   const ringPos = anchor ? { x: Math.max(R + 44, Math.min(size.w - R - 44, anchor.x)), y: Math.max(R + 40, Math.min(size.h - R - 40, anchor.y)) } : null;
 
@@ -639,7 +646,7 @@ export function CampusMap({ view, seed, selected = null, onSelect, ring, overlay
         {alerts}
         {view.debt > 0 && <rect className="haze" x={BASE_VB.x - 200} y={BASE_VB.y - 200} width={BASE_VB.w + 400} height={BASE_VB.h + 400} fill="#7a5f3c" opacity={0.06 * view.debt} pointerEvents="none" />}
         {view.outage && (
-          <g className="flash" transform={`translate(${iso(HALL_PLOTS[0].x + 1, HALL_PLOTS[0].y).x},${iso(HALL_PLOTS[0].x + 1, HALL_PLOTS[0].y).y - 96})`}>
+          <g className="flash" transform={`translate(${iso(PLOT_SLOTS[0].x + 1, PLOT_SLOTS[0].y).x},${iso(PLOT_SLOTS[0].x + 1, PLOT_SLOTS[0].y).y - 96})`}>
             <rect x={-48} y={-14} width={96} height={24} fill="#e2574c" stroke={INK} strokeWidth={2} />
             <text x={0} y={3} textAnchor="middle" className="map-label" fill="#fff">
               OUTAGE!
@@ -655,10 +662,10 @@ export function CampusMap({ view, seed, selected = null, onSelect, ring, overlay
       {limX > 40 && zoom === 1 && !ring && !overlay && <span className="drag-hint">Drag to explore · tap a plot to build</span>}
       {overlay}
       <div className="zoom">
-        <button type="button" aria-label="Zoom in" onClick={() => setZ(Math.min(2.2, +(zoom + 0.4).toFixed(1)))}>
+        <button type="button" aria-label="Zoom in" disabled={zoom >= MAX_ZOOM} onClick={() => setZ(Math.min(MAX_ZOOM, zoom + ZOOM_STEP))}>
           +
         </button>
-        <button type="button" aria-label="Zoom out" onClick={() => setZ(Math.max(1, +(zoom - 0.4).toFixed(1)))}>
+        <button type="button" aria-label="Zoom out" disabled={zoom <= 1} onClick={() => setZ(Math.max(1, zoom - ZOOM_STEP))}>
           −
         </button>
       </div>
