@@ -376,5 +376,69 @@
     ],
     "source": "Game design",
     "confidence": "illustrative"
+  },
+  {
+    "id": "streamleaf",
+    "name": "StreamLeaf video",
+    "request": "We will pay a premium if you certify our streaming as hosted on 100 % renewable power.",
+    "aiNeed": "not-ai",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Promise 100 % renewable",
+        "stance": "greedy",
+        "hint": "+15 % load at a premium. Whatever your plants are.",
+        "effects": {
+          "demandPct": 0.15,
+          "cashPerTick": 20
+        },
+        "scoreDelta": {
+          "responsibility": -4
+        },
+        "delayed": [
+          {
+            "afterTicks": 8,
+            "chance": 0.6,
+            "if": {
+              "lacksUpgrades": [
+                "energy-monitoring"
+              ]
+            },
+            "triggerEvent": "greenwash-scandal"
+          }
+        ],
+        "outcome": "The badge is on their homepage. Your gas plant is still running."
+      },
+      {
+        "id": "honest",
+        "label": "Accept, publish your real mix",
+        "stance": "neutral",
+        "hint": "+8 % load, no premium.",
+        "effects": {
+          "demandPct": 0.08
+        },
+        "scoreDelta": {
+          "responsibility": 2
+        },
+        "outcome": "They take the honest numbers. Less glamorous, nothing to hide."
+      },
+      {
+        "id": "alternative",
+        "label": "Propose lighter default video",
+        "stance": "responsible",
+        "hint": "+4 % load, a lot less data.",
+        "effects": {
+          "demandPct": 0.04
+        },
+        "scoreDelta": {
+          "sustainability": 1,
+          "responsibility": 6
+        },
+        "outcome": "720p by default on phones. Viewers barely notice; old phones and networks cope better."
+      }
+    ],
+    "quizId": "q-devices-footprint",
+    "source": "Game design",
+    "confidence": "illustrative"
   }
 ]

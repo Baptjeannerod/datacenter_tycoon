@@ -159,6 +159,24 @@
 - Money numbers are about 2× bigger than before (prices ×1.7, 20 quarters): balanced ends around €130-145M, greedy €50-85M.
 - Environmental debt per quarter is unchanged on purpose: doubling it (to match the shorter run) plus the tax sent greedy bankrupt in most runs.
 
+## 2026-11-17 15:40 · claude-agent (S5) · pacing, eco-tax UI, onboarding, QA
+
+**Done (branch `agent/s5-pacing-tax-ui`):**
+- **Pacing:** `TICK_MS` 2600 → 4000 in `ui/useGame.ts` (1×/2×/3× kept). Measured at 1× in a real browser with a scripted player (2 s per hint, 7 s per card, 9 s per quiz + 5 s on the explanation, outcome banners left to auto-clear, no building) on 20 quarters: **3 min 54 s** (13 cards, 80 s of pure ticking). A player who builds or upgrades 6-8 times adds ~1-1.5 min, so a run lands at about 5 min. The clock reads `QUARTER x / 20` from `maxTicks`.
+- **Eco-tax display:** new `ui/components/TaxBadge.tsx` (inline styles, no CSS file touched). Under the Sustainability KPI: dashed "⚠ Eco-tax below 50" reminder, red "⚠ Eco-tax −X% revenue" when the next quarter will be taxed. X follows the S1 formula on the score the engine taxes (`history.at(-1).sustainability`, last quarter's), so it matches the ledger. "Sustainability tax" line in the Last quarter ledger; total paid on the end screen (hero panel). Every field is read with a fallback (`?? 0`, threshold 50 / max 0.4), so the UI works before and after S1's merge.
+- **How to play** (`ui/App.tsx`): 20 quarters (5 years, about 5 minutes), eco-tax below the threshold, demolish to replace a building (e.g. wind instead of coal). Numbers come from content.
+- **Onboarding** (`ui/components/Onboarding.tsx`): 5 hints instead of 3 (adds "20 quarters to play", eco-tax, demolish). The storage key is now `dt-onboarded-2`, so players who saw the old 3 hints see the new ones once.
+- Tested merged with `agent/s1-economy-20q` (threshold forced to 90 locally): badge −17 % = ledger €404k / €2.45M revenue; end screen total matches the "What you gave up" line. 1440×900 and 1280×800 in Chromium, iPhone 13 emulation (no horizontal scroll). No console errors. Safari not tested (no Mac in the container).
+
+**Next:**
+- S4 / whoever owns the end-screen copy: `EndScreen.tsx` still says **"Ten years later"**; with 20 quarters it is five years. I did not touch it (only the tax line is mine there).
+- If S1 changes `clientEvery` / `randomEventChance`, re-measure: cards are ~2/3 of a run's time.
+- **Fixed by S2's PR 51 (checked 15:55: the river spot offers "Hydro dam").** Was: integration bug on `main` between S1's merge (263a477) and S2's map: the river spot on the 8-plot map opens a land "Empty plot" ring (Hall, Gas, Coal…, no Dam), because the map still sends index 8 and the engine's river is index 16. Checked in the browser. Screenshot: `s5/merged-s1-river-spot-opens-land-ring.png` on branch `agent/s5-qa-screens`.
+- QA 15:45 (Playwright, Chromium, full runs at 1440×900, S4 also at 1280×800, no console errors): S3 PR 48 passes, including demolish then build on the freed plot. S4 PR 46 fits one screen in game and on the end screen. Its start screen still scrolls 68 px at 1280×800, and the copy says "10 years" / "Ten years later". `main` + S3 + S4 + S5 merge with HANDOFF-only conflicts, and `npm run check` is green on the result.
+
+**Gotchas:**
+- The badge uses last quarter's recorded score, not the live one: after a dirty build the KPI number drops at once, but the badge turns red only after the next quarter is recorded (that is when the engine starts taxing).
+
 ## 2026-11-17 15:50 · claude-agent (S2) · bigger map
 
 **Done (branch `agent/s2-bigger-map`, only `ui/map/*` + this entry):**
@@ -176,3 +194,59 @@
 - `HALL_PLOTS` is kept but **deprecated**: it is the slots for the bundled content's `landPlots`, only so GameScreen's "N of M plots free" keeps compiling. Owner of GameScreen (S4/S5): switch it to `view.plots.length` and drop the import.
 - On a ~520 px tall map panel the ring around front-row and back-row plots is clamped inside the panel (existing rule in `CampusMap`, offset up to ~55 px from the plot). A taller map panel (S4) or zooming in removes it.
 - To move a plot or add decor, edit `PLOT_SLOTS` / `AREAS` / `HOUSES` in `layout.ts`; the test tells you if it lands on the river, a road or another plot.
+## 2026-11-17 14:30 · claude-opus (content-knowledge agent) · RES-1, RES-2, GD-3, COM-3
+
+**Done (branch `agent/content-knowledge`):**
+- **RES-1:** all 26 `approx` items in `/content` now cite a primary URL and are `high`: IPCC AR5 Annex III Table A.III.2 (plant emissions), IRENA *Renewable Power Generation Costs in 2023* (capacity factors), IEA *Energy and AI*, EED 2023/1791 Art. 12(1) and 26(6), Delegated Reg. 2024/1364, Directive 2024/825 Annex I 4c, Global E-waste Monitor 2024, ADEME-Arcep 2022, ICAP (ETS prices), DCD (EirGrid moratorium, Google Cerrillos). Fixed three claims: IEA 2030 = "more than double, ~945 TWh" (was "roughly double"); e-waste recycled = "less than a quarter (22.3 %)" (was "about a fifth"); EED threshold = "500 kW of IT power or more" (was "above 500 kW"). `docs/sources/SOURCES.md` rewritten with the URLs and the rule used for `high`.
+- **RES-2:** 6 new quiz questions, all sourced and `high`: `q-land-use` (Lovering 2022), `q-capacity-factor` (IRENA), `q-lifecycle-emissions` (IPCC), `q-devices-footprint` (ADEME-Arcep), `q-thermal-water` (Macknick 2012), `q-governance-rebound` (AFNOR Spec 2314). 18 questions in total.
+- **Own-power events:** `drought-cooling` (random, needs `built-thermal`), `coal-protest` (consequence, `built-coal`), `pellet-scandal` (consequence, `built-biomass`, its greedy choice can trigger `greenwash-scandal`), `wind-coop` (random), client `streamleaf` (100 % renewable claim; the greedy promise triggers `greenwash-scandal` unless you meter). Plants now `setFlags`: `built-thermal` (gas, coal, biomass), `built-coal`, `built-biomass`, `built-wind`/`built-solar`/`built-dam` + `built-renewable`. The starting gas plant sets no flag (engine `startBuildings` skips `setFlags`), so the drought only targets players who chose to build a steam plant.
+- **Reachability** (scratch script over `playRun`, 400 runs per strategy): every new event and question shows up. E.g. `coal-protest` in 50 % of greedy runs, `wind-coop` 66-93 %, `streamleaf` ~45-52 %, `q-capacity-factor` 41-50 % for virtuous/balanced, `q-land-use` 24 % greedy; `pellet-scandal` only for players who build biomass (61 % of random runs). The 5-question budget per run is the main limiter.
+- **GD-3:** wind €1.8M → €2.6M, solar €1.2M → €1.8M, dam €3.5M → €4.5M. Greedy now leads the first half in **all four** valleys and wins on money over the full run in the Sun Belt (€52.4M vs €44.6M); balanced keeps the best legacy everywhere. All sim rules green, none relaxed. Table in `GAME_DESIGN.md` §7, §11 updated, §3 notes that real-world renewables are cheaper (IRENA) and the premium stands for off-grid firming.
+- **COM-3:** `docs/PITCH.md`: 5 slides with lines to say, demo script, AFNOR mapping, sim numbers, dashboard slots, 3 jury Q&As.
+
+**Next:**
+- **Engine issue to open (dev engine):** no effect key can change a plant's output, so droughts and protests can only hit money/demand/scores. Proposed: `plantOutputPct` (persistent / temporary) scoped by `PlantType`. I could not open it on GitHub (no credentials on this machine).
+- Engine nicety: `startBuildings` could apply `setFlags` too if the team wants the drought to hit the starting gas plant.
+- `renewableShare` effect is no longer read by the plot-and-power engine (only `derive.ts` clamps it): any content using it does nothing.
+- COM-3: fill the dashboard slots in PITCH slide 4 once DEV-7 is live; rehearse once.
+- Balance: in Paris, Nordic and Coal Valley balanced still out-earns greedy over 10 years (the dam). Next lever: carbon price or coal debt rate.
+
+**Gotchas:**
+- Virtuous money dropped (Sun Belt €44M → €19M) with pricier renewables; still well above the 20 % rule (€11M) and never bankrupt.
+- New events' effect sizes are game values (`illustrative`); the facts their quiz questions teach are `high`.
+- `built-*` flags are set on build and never cleared, so after the new **Demolish** a player who tore down their coal plant can still get `coal-protest` (and `drought-cooling` after removing all steam plants). Fix needs the engine to clear a building's `setFlags` on demolish, or a "has building of type" condition (dev engine).
+## 2026-11-17 15:35 · claude-agent (S3) · ring menu layout + demolish to replace
+
+**Done:**
+- `ui/components/RingMenu.tsx` redone: the centre shows only the plot's name; details (pitch, chips, price, reason, confirm) go in a card beside the ring, on the side with room (the ring slides over if neither side fits). Radius grows with the option count (`ringRadius(n)`: option boxes 80×72 never overlap, centres ≥ 84 px apart). Labels clamp to 2 lines, price is a badge on the icon, × sits at the wheel's corner outside the circle, Esc closes. Phone: the card docks along the bottom of the map and the ring shrinks above it.
+- Styles moved to `ui/components/ring.css` (imported by RingMenu); all `.ring*` rules and the `pop` keyframes removed from `ui/styles.css`.
+- `ringFor()` and the ring helpers moved from `GameScreen.tsx` to `ui/components/rings.tsx`.
+- Demolish to replace: confirm reads "Demolish · €Xk, then pick what to build"; `useGame.act()` keeps the menu open on the freed plot; the ring then asks "What do you build instead?".
+- Tested with Playwright in Chromium and WebKit (Safari's engine) at 1280×800, 1440×900, 1728×1117 and 390×844: no overlap between options, centre, ×, card; everything inside the map.
+
+**Gotchas:**
+- Engine bug (fixed separately in PR 50, branch `agent/engine-spare-power-fix`): `buildOptions` blocks *every* building when power is short, because plants have `needMW = 0` and the test is `needMW > spare` with `spare < 0` ("Needs 0.0 MW spare power"). So after demolishing your only plant you cannot build a new one. Fix: `needMW > 0 && needMW > spare + 1e-9` in `engine/game.ts` (same pattern in `upgradeOptions` / `policyOptions`).
+- `CampusMap` still passes `--ring-r` and clamps the anchor with its own R; RingMenu ignores `--ring-r` and does its own fitting inside `.campus`.
+## 2026-11-17 15:55 · claude-opus (S4, Mac layout) · desktop layout + overflow hunt
+
+**Done (branch `agent/s4-desktop-layout`):**
+- **Game screen fits one Mac screen, no page scroll** (`@media (min-width: 1024px) and (min-height: 640px)` in `ui/styles.css`). `.game` is a 100dvh grid: slim top bar, a one-line title row (headline, valley, clock, controls), a compact KPI row, then the board takes all remaining height. The map card measures 928×557 at 1280×800, 1057×655 at 1440×900, 1112×735 at 1512×982 and 1296×863 at 1728×1117 (72-75 % of the width, 70-77 % of the height). The side panel (decision card / quarter report) is 300-380 px wide and scrolls inside itself. Windows shorter than 640 px fall back to the normal scrolling page. A 1280×700 window (a 1280×800 screen minus Safari's bars) also fits; the tagline is hidden below 860 px of height.
+- **Overflow fixes** (tested with a temporary local stress patch: €99.9M+, 3-digit MW, a 40-character valley name):
+  - `min-width: 0` on KPI, board and end-screen children.
+  - KPI values stay on one line; KPI sub-lines, map stats and the map hint get an ellipsis.
+  - The valley pill gets an ellipsis (new `.loc-pill-name` span in GameScreen, with a `title` attribute).
+  - Ledger amounts don't wrap.
+  - Pixel-font titles and decision choice labels wrap.
+  - The How-to-play box scrolls inside (`max-height: 100dvh - 32px`).
+  - The end-screen frontier chart scales with the window height, so the whole end screen fits at 1280×800.
+  - The start screen hero is a bit shorter on laptops.
+- **Phone (375×812):** unchanged. No horizontal scroll, and the bottom sheet still works.
+- No changes to `.ring*` rules, `ui/map/*` or `ringFor`.
+
+**Next / for other sessions:**
+- S5: in the desktop game layout, `.kpi-value` is `white-space: nowrap`. Put the Sustainability tax line as its own block under the bar (like `.kpi-sub`), not inside `.kpi-value`. In the quarter report, the side panel scrolls, so an extra ledger row is fine.
+- S2: `.campus` now gets its height from the grid (`height: auto` in the desktop game layout), not from a fixed clamp. The SVG keeps its aspect ratio, so with 16 plots the map art may want a wider viewBox to use the space.
+- Safari was not tested directly (only Chromium in the app's browser pane at the 4 sizes + 1280×700). The CSS used is supported by Safari 16+ (`dvh`, `aspect-ratio`, `scrollbar-gutter` is ignored where unsupported).
+
+**Gotchas:**
+- The before/after screenshots are on branch `agent/s4-desktop-layout-screens` (images only, linked from the PR), so `main` stays light.

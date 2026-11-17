@@ -91,7 +91,7 @@
 - **Done when:** DEV-1/DEV-4 read all player text from it; validated by `npm run validate:content`.
 
 ### GD-3 · P1 · Balance pass after playtests
-- **Role:** game-design · **Owner:** _unclaimed_ · **Status:** todo · **Depends on:** GD-1
+- **Role:** game-design · **Owner:** claude-opus (content-knowledge agent) · **Status:** review (branch `agent/content-knowledge`) · **Depends on:** GD-1
 - **Goal:** Adjust numbers in `/content` based on GD-1 and cross-tests; keep `npm run sim` green; update the results table in `docs/GAME_DESIGN.md` §7.
 - **Done when:** sim passes and the weaknesses in GAME_DESIGN §11 are addressed or explicitly accepted.
 
@@ -108,12 +108,12 @@
 ## research
 
 ### RES-1 · P0 · Verify every `approx` number
-- **Role:** research · **Owner:** _unclaimed_ · **Status:** todo
+- **Role:** research · **Owner:** claude-opus (content-knowledge agent) · **Status:** review (branch `agent/content-knowledge`)
 - **Goal:** For each item with `"confidence": "approx"` in `/content` (see `docs/CONTENT_CATALOG.md`), find the primary source, put the URL in `source`, and set `high` if confirmed or `illustrative` if not. Also list sources in `docs/sources/SOURCES.md`.
 - **Done when:** no `approx` item without a URL; `npm run validate:content` passes.
 
 ### RES-2 · P0 · Five more quiz questions
-- **Role:** research · **Owner:** _unclaimed_ · **Status:** todo
+- **Role:** research · **Owner:** claude-opus (content-knowledge agent) · **Status:** review (branch `agent/content-knowledge`)
 - **Goal:** Add 5 questions to `content/quiz.json` on under-covered topics (end-user devices, networks, data storage rules, governance, skills), each with source + confidence, and attach them to events/clients via `quizId`.
 - **Done when:** validator passes; each new question is reachable in a run.
 
@@ -184,7 +184,7 @@
 - **Done when:** assets ready at 15:00; visitor count visible on `/dashboard`.
 
 ### COM-3 · P1 · Pitch (5 slides)
-- **Role:** comms · **Owner:** _unclaimed_ · **Status:** todo
+- **Role:** comms · **Owner:** claude-opus (content-knowledge agent) · **Status:** review (branch `agent/content-knowledge`)
 - **Goal:** Problem, the game in 30 s (live demo), what players learn (AFNOR mapping), live dashboard numbers, what's next.
 - **Done when:** rehearsed once before 17:15.
 

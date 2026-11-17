@@ -6,6 +6,8 @@ html { -webkit-text-size-adjust: 100%; }
 html, body { margin: 0; background: var(--c-bg); color: var(--c-text); font-family: var(--font-ui); font-size: var(--fs-md); line-height: 1.4; }
 body { min-height: 100dvh; }
 h1, h2, h3, p { margin: 0; }
+/* Long words (pixel font, big numbers, names) wrap instead of pushing their box wider. */
+h1, h2, h3, p, li, dt, dd, .btn, .eyebrow { overflow-wrap: break-word; }
 ul, ol { margin: 0; padding: 0; }
 .pixel { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.01em; line-height: 1.1; }
 .mono { font-family: var(--font-mono); letter-spacing: 0.06em; }
@@ -49,7 +51,9 @@ ul, ol { margin: 0; padding: 0; }
 .title-row { display: grid; gap: var(--sp-3); grid-template-columns: 1fr auto; align-items: center; }
 .title-row h1 { font-size: clamp(1.35rem, 4.2vw, 2.1rem); }
 .title-row > div:first-child { grid-column: 1 / -1; }
-.loc-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--c-surface-2); padding: 8px 14px; font-family: var(--font-mono); font-size: var(--fs-sm); justify-self: start; }
+.loc-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--c-surface-2); padding: 8px 14px; font-family: var(--font-mono); font-size: var(--fs-sm); justify-self: start; min-width: 0; max-width: 100%; }
+.loc-pill svg { flex: none; }
+.loc-pill-name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .clock { text-align: right; }
 .clock .mono { font-weight: 700; }
 .controls { display: flex; gap: 8px; grid-column: 1 / -1; }
@@ -64,7 +68,8 @@ ul, ol { margin: 0; padding: 0; }
 .kpi.amber { background: var(--c-amber); }
 .kpi.amber.debt-critical { background: #f3a58f; }
 .kpi-value { font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.1; }
-.kpi-value small { font-size: var(--fs-sm); font-weight: 500; }
+.kpi-value small { font-size: var(--fs-sm); font-weight: 500; min-width: 0; }
+.kpi > * { min-width: 0; }
 .kpi-value.pixel { font-size: 1.35rem; justify-content: space-between; }
 .kpi-sub { font-size: var(--fs-xs); color: var(--c-ink-2); }
 .kpi-sub.pos { color: #3c7a2b; }
@@ -109,39 +114,15 @@ ul, ol { margin: 0; padding: 0; }
 .tour-plots .plot-plus { animation: tour-blink 0.9s steps(2, jump-none) infinite; }
 @keyframes tour-blink { 50% { opacity: 0.35; } }
 
-/* Interactive plots and the ring menu */
+/* Interactive plots (the ring menu's styles live in components/ring.css) */
 .campus.interactive .plot-hit { fill: transparent; cursor: pointer; }
 .campus.interactive .plot-hit:hover { fill: rgba(220, 236, 143, 0.45); }
 .campus.interactive .building, .campus.interactive .plot-plus { cursor: pointer; }
 .plot-plus { transition: transform var(--dur-fast) var(--ease); }
 .alert { animation: bob 1.2s ease-in-out infinite; pointer-events: none; }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-.ring-anchor { position: absolute; width: 0; height: 0; z-index: 5; }
-.ring { position: absolute; left: 0; top: 0; }
-.ring-disc { position: absolute; left: calc(-1 * var(--ring-r) - 8px); top: calc(-1 * var(--ring-r) - 8px); width: calc(2 * var(--ring-r) + 16px); height: calc(2 * var(--ring-r) + 16px); border-radius: 50%; background: rgba(255, 253, 246, 0.55); border: 2px dashed var(--c-ink); backdrop-filter: blur(2px); }
-.ring-item { position: absolute; left: -36px; top: -30px; width: 72px; display: grid; justify-items: center; gap: 2px; background: none; border: 0; padding: 0; font: inherit; color: var(--c-ink); cursor: pointer; animation: pop var(--dur) var(--ease) both; }
-.ring-icon { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--c-lime); border: 2px solid var(--c-ink); font-weight: 800; transition: transform var(--dur-fast) var(--ease); }
-.ring-item:hover .ring-icon, .ring-item.picked .ring-icon { transform: scale(1.12); }
-.ring-item.picked .ring-icon { background: var(--c-amber); box-shadow: 0 0 0 3px var(--c-ink); }
-.ring-item.off .ring-icon { background: var(--c-surface-2); color: var(--c-text-muted); }
-.ring-item.installed .ring-icon { background: var(--c-lavender); }
-.ring-label { font-size: 10px; font-weight: 700; line-height: 1.1; text-align: center; background: var(--c-surface); padding: 1px 4px; border: 1px solid var(--c-ink); max-width: 76px; }
-.ring-cost { font-family: var(--font-mono); font-size: 10px; background: var(--c-ink); color: var(--c-on-ink); padding: 0 4px; }
-.ring-center { position: absolute; left: calc(-1 * (var(--ring-r) - 44px)); top: calc(-1 * (var(--ring-r) - 44px)); width: calc(2 * (var(--ring-r) - 44px)); height: calc(2 * (var(--ring-r) - 44px)); border-radius: 50%; background: var(--c-surface); border: 2px solid var(--c-ink); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px; padding: 10px; overflow: hidden; }
-.ring-name { font-size: 0.85rem; line-height: 1.15; }
-.ring-center .chips { max-width: 100%; }
-.ring-pitch { font-size: 0.68rem; color: var(--c-text-muted); line-height: 1.2; }
-.ring-chips { justify-content: center; gap: 3px; }
-.ring-chips .chip { font-size: 9px; padding: 1px 4px; }
-.ring-note { font-size: 0.62rem; }
-.ring-reason { font-size: 0.72rem; font-weight: 700; color: #a3332a; }
-.ring-go { min-height: 32px; padding: 4px 10px; font-size: 0.75rem; }
-.ring-item.danger .ring-icon { background: var(--c-red-soft); }
-.ring-item.danger.off .ring-icon { background: var(--c-surface-2); }
 .btn.danger { background: var(--c-red); color: #fff; }
 .btn.danger:hover:not(:disabled) { background: #c9443a; }
-.ring-close { position: absolute; left: calc(var(--ring-r) * 0.72); top: calc(-1 * var(--ring-r) * 0.95); width: 30px; height: 30px; z-index: 2; border-radius: 50%; border: 2px solid var(--c-ink); background: var(--c-surface); font-weight: 800; line-height: 1; cursor: pointer; display: grid; place-items: center; padding: 0; }
-@keyframes pop { from { opacity: 0; transform: translate(0, 0) scale(0.6); } }
 .kpi.load.short { background: var(--c-red-soft); }
 
 /* SVG text */
@@ -177,8 +158,9 @@ ul, ol { margin: 0; padding: 0; }
 .delta.down { background: var(--c-red-soft); }
 .answer-line { font-size: var(--fs-md); }
 .source { font-size: var(--fs-2xs); color: var(--c-text-muted); font-family: var(--font-mono); }
-.ledger { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0; font-size: var(--fs-sm); }
-.ledger dd { margin: 0; text-align: right; font-family: var(--font-mono); }
+.ledger { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; margin: 0; font-size: var(--fs-sm); }
+.ledger dt { min-width: 0; }
+.ledger dd { margin: 0; text-align: right; font-family: var(--font-mono); white-space: nowrap; }
 .ledger .total { font-weight: 700; border-top: 1px solid var(--c-ink); padding-top: 4px; }
 .ledger dd.pos { color: #3c7a2b; }
 .ledger dd.neg { color: #b23a30; }
@@ -276,7 +258,7 @@ ul, ol { margin: 0; padding: 0; }
 .btn.rate.on { background: var(--c-ink); color: var(--c-on-ink); }
 
 /* ---------- Modal ---------- */
-.modal { border: var(--border); background: var(--c-surface); color: var(--c-text); padding: var(--sp-6); max-width: 520px; width: calc(100% - 32px); }
+.modal { border: var(--border); background: var(--c-surface); color: var(--c-text); padding: var(--sp-6); max-width: 520px; width: calc(100% - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
 .modal::backdrop { background: rgba(29, 34, 50, 0.55); }
 .modal h2 { font-size: 1.5rem; margin-bottom: var(--sp-4); }
 .modal ol { padding-left: 20px; display: grid; gap: 10px; margin-bottom: var(--sp-5); }
@@ -296,7 +278,7 @@ ul, ol { margin: 0; padding: 0; }
 @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0.35; } }
 @keyframes flow { to { stroke-dashoffset: -32; } }
 @media (prefers-reduced-motion: reduce) {
-  .spin, .puff, .ripple, .blink, .flash, .flow, .fan, .sheet, .alert, .ring-item, .tip, .tour-plots .plot-plus { animation: none !important; }
+  .spin, .puff, .ripple, .blink, .flash, .flow, .fan, .sheet, .alert, .tip, .tour-plots .plot-plus { animation: none !important; }
 }
 
 /* ---------- Small phones: compact header and scores ---------- */
@@ -339,13 +321,90 @@ ul, ol { margin: 0; padding: 0; }
   .title-row h1 { font-size: clamp(1.3rem, 1.85vw, 2rem); }
   .controls { grid-column: auto; }
   .controls .btn.primary { flex: none; min-width: 170px; }
-  .kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-4); }
-  .board { grid-template-columns: minmax(0, 1fr) clamp(320px, 26vw, 400px); align-items: stretch; }
-  .campus { height: clamp(520px, calc(100dvh - 330px), 860px); }
-  .side .panel { max-height: calc(clamp(520px, calc(100dvh - 330px), 860px) + 110px); overflow-y: auto; }
+  .kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-3); }
+  .board { grid-template-columns: minmax(0, 1fr) clamp(300px, 23vw, 380px); align-items: stretch; }
+  .campus { height: clamp(460px, calc(100dvh - 300px), 900px); }
+  .side .panel { max-height: calc(clamp(460px, calc(100dvh - 300px), 900px) + 90px); overflow-y: auto; }
   .hero { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); }
   .locations { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .end-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .end-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .rating { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+/* ---------- Mac / desktop game screen (S4): one screen, no page scroll ----------
+ * From 1024 px wide and 640 px tall, the game fills the viewport: a slim top bar,
+ * one compact title row, one compact KPI row, then the map takes every remaining
+ * pixel. The side panel (decision card / quarter report) is narrower and scrolls
+ * inside itself. Shorter windows fall back to the normal scrolling page. */
+@media (min-width: 1024px) and (min-height: 640px) {
+  .game { height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+  .game .topbar { padding: 6px var(--sp-5); }
+  .game .brand-mark { width: 32px; height: 32px; }
+  .game .topbar-actions .btn { min-height: 34px; padding: 4px 12px; }
+  .game .game-main { width: 100%; max-width: none; min-height: 0; padding: var(--sp-3) var(--sp-5); gap: var(--sp-3); grid-template-rows: auto auto minmax(0, 1fr); }
+
+  /* Title row: headline, valley, clock and controls on one line. */
+  .game .title-row { grid-template-columns: minmax(0, 1fr) minmax(0, max-content) auto auto; gap: var(--sp-4); }
+  .game .title-row h1 { font-size: clamp(1.05rem, 1.45vw, 1.6rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .game .title-row > div:first-child .muted { font-size: var(--fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .game .loc-pill { padding: 6px 12px; max-width: 26ch; }
+  .game .clock { white-space: nowrap; }
+  .game .controls .btn { min-height: 40px; }
+  .game .controls .btn.square { width: 40px; }
+  .game .controls .btn.primary { min-width: 150px; white-space: nowrap; }
+
+  /* KPIs: compact cards, values on one line, sub-lines clipped with an ellipsis. */
+  .game .kpi { padding: 8px 12px; gap: 4px; }
+  .game .kpi-value { font-size: clamp(1.1rem, 1.35vw, 1.45rem); flex-wrap: nowrap; white-space: nowrap; gap: 6px; }
+  .game .kpi-value small { font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; }
+  .game .kpi-value.pixel { font-size: clamp(1rem, 1.2vw, 1.3rem); }
+  .game .kpi-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .game .bar { height: 6px; }
+
+  /* Board: the map card and the side panel share all the height left. */
+  .game .board { min-height: 0; grid-template-rows: minmax(0, 1fr); gap: var(--sp-3); }
+  .game .map-card { min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; }
+  .game .map-head { padding: 6px 12px; flex-wrap: nowrap; min-width: 0; }
+  .game .map-head > * { flex: none; }
+  .game .map-head .muted { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .game .campus { height: auto; min-height: 0; }
+  .game .map-stats { padding: 6px 14px; gap: 6px 14px; }
+  .game .map-stats > div { min-width: 0; }
+  .game .map-stats strong { font-size: var(--fs-sm); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .game .side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+  .game .side .panel { max-height: none; overflow: visible; padding: 14px 16px; }
+  .game .news li { overflow-wrap: anywhere; }
+
+  /* Footer: one slim line (keeps the "illustrative game values" note visible). */
+  .game .footer { width: 100%; max-width: none; padding: 4px var(--sp-5) 6px; flex-wrap: nowrap; gap: 16px; }
+  .game .footer > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+}
+
+/* Short desktop windows (e.g. 1280x800 screen minus the browser bars): drop the tagline. */
+@media (min-width: 1024px) and (min-height: 640px) and (max-height: 860px) {
+  .game .title-row > div:first-child .muted { display: none; }
+}
+
+/* Decision card and lists: long labels wrap inside their box. */
+.btn.choice, .btn.choice strong, .btn.choice small { overflow-wrap: anywhere; min-width: 0; max-width: 100%; }
+.choice-row > * { min-width: 0; }
+.decision h3, .loc-name, .end-hero h1 { overflow-wrap: anywhere; }
+.end-grid > *, .end-hero > *, .locations > *, .hero > * { min-width: 0; }
+
+/* End screen on a laptop: the frontier chart scales with the window height so the
+ * result, the chart and the four panels fit on one 1280x800 screen. */
+@media (min-width: 1024px) {
+  .end-main { gap: var(--sp-4); padding-top: var(--sp-4); padding-bottom: var(--sp-4); }
+  .end-hero .panel { justify-items: center; }
+  .end-hero .panel > :not(.frontier) { justify-self: stretch; }
+  .frontier { width: auto; max-width: 100%; height: min(42vh, 380px); aspect-ratio: 4 / 3; }
+  .legacy { margin: var(--sp-3) 0; }
+}
+
+/* Start screen on a laptop: a shorter hero so the valley cards show up sooner. */
+@media (min-width: 1024px) {
+  .hero-copy { gap: var(--sp-3); }
+  .hero-copy h1 { font-size: clamp(1.8rem, 3.1vw, 3rem); }
+  .hero-map .campus { height: clamp(260px, 38vh, 460px); }
 }

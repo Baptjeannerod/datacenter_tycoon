@@ -8,6 +8,7 @@ import { balanced, greedy, playRun, virtuous } from '../../engine/strategies';
 import { track } from '../analytics';
 import { ARCHETYPES, money } from '../format';
 import { shareResultCard } from '../share/share';
+import { totalTax } from '../components/TaxBadge';
 import { content } from '../useGame';
 import { TopBar } from './GameScreen';
 
@@ -133,6 +134,9 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
             <Frontier you={{ p: sum.profitNorm, i: sum.impact }} refs={refs} />
             <p className="muted small">
               Net worth {money(sum.netWorth)} · average impact {Math.round(sum.impact)}/100
+            </p>
+            <p className="small">
+              Sustainability tax paid: {totalTax(state) > 0 ? <strong>{money(totalTax(state))} of revenue lost to a low score</strong> : <strong>none, you stayed clear of the eco-tax</strong>}
             </p>
           </div>
         </section>
