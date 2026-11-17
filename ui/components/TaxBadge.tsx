@@ -54,6 +54,9 @@ const base = {
   letterSpacing: '0.02em',
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
+  maxWidth: '100%',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 } as const;
 
 /**

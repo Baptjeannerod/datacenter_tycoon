@@ -64,7 +64,7 @@ const TIPS: { text: string; icon: ReactNode }[] = [
   { text: `${maxTicks} quarters to play. Tap a plot to build`, icon: <Plus /> },
   { text: 'Halls need power: build a plant first', icon: <BuildingIcon kind="gas" /> },
   { text: 'A red ! means a hall has no power', icon: <RedBang /> },
-  { text: `Sustainability below ${threshold}? An eco-tax eats your revenue`, icon: <Tax /> },
+  { text: `Sustainability below ${threshold}? An eco‑tax eats your revenue`, icon: <Tax /> },
   { text: 'Wrong building? Tap it, demolish it, build again', icon: <BuildingIcon kind="demolish" /> },
 ];
 
