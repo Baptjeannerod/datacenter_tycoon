@@ -5,6 +5,7 @@
 import { useMemo, useState } from 'react';
 import { getLocation, summarize, type GameState } from '../../engine';
 import { balanced, greedy, playRun, virtuous } from '../../engine/strategies';
+import { track } from '../analytics';
 import { ARCHETYPES, money } from '../format';
 import { content } from '../useGame';
 import { TopBar } from './GameScreen';
@@ -100,7 +101,8 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
     } catch {
       /* private mode */
     }
-    // TODO(DEV-6): send { type: 'rating', value: v } to /api/event once DEV-5 exists.
+    // One rating per run: the API keeps the last value per (session, seed).
+    track('rating', { seed: state.seed, value: v });
   };
 
   return (
@@ -183,6 +185,9 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
             {rating && <p className="small">Thanks! Quiz: {sum.quizCorrect}/{sum.quizAnswered} correct.</p>}
           </div>
         </section>
+        <p className="muted small" style={{ textAlign: 'center' }}>
+          <a href="/dashboard/">Live dashboard</a>
+        </p>
       </main>
     </div>
   );
