@@ -28,6 +28,12 @@ export function taxRate(score: number, balance: Balance): number {
   return (maxPct * (threshold - Math.max(0, score))) / threshold;
 }
 
+/**
+ * The score the engine taxes next quarter: last quarter's recorded Sustainability
+ * (decisions taken since then count from the following quarter), else the live score.
+ */
+export const taxBasis = (state: GameState, liveScore: number): number => state.history.at(-1)?.sustainability ?? liveScore;
+
 /** k€ of sustainability tax paid in a quarter report (0 if the engine does not report it). */
 export const reportTax = (h: TickReport | undefined): number => (h as { sustainabilityTax?: number } | undefined)?.sustainabilityTax ?? 0;
 
@@ -53,11 +59,11 @@ const base = {
 /**
  * Small badge under the Sustainability KPI.
  * Above the threshold: a reminder ("Eco-tax below 50").
- * Below it: red "−X% revenue", the share of revenue taxed next quarter at the current score.
+ * Below it: red "−X% revenue", the share of revenue taxed next quarter.
  */
-export function TaxBadge({ score, balance }: { score: number; balance: Balance }) {
+export function TaxBadge({ state, score, balance }: { state: GameState; score: number; balance: Balance }) {
   const { threshold } = taxRules(balance);
-  const rate = taxRate(score, balance);
+  const rate = taxRate(taxBasis(state, score), balance);
   const explain = `Sustainability below ${threshold} triggers an eco-tax on revenue: the lower the score, the higher the tax.`;
   if (rate <= 0) {
     return (

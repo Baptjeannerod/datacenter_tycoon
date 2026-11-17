@@ -113,7 +113,7 @@ function Kpis({ state, s, r }: { state: GameState; s: number; r: number }) {
           {Math.round(s)} <small>/ 100</small> <Trend v={prev ? s - prev.sustainability : 0} />
         </div>
         <Bar value={s} />
-        <TaxBadge score={s} balance={content.balance} />
+        <TaxBadge state={state} score={s} balance={content.balance} />
       </div>
       <div className="kpi lavender">
         <div className="eyebrow">Responsibility</div>
