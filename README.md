@@ -67,7 +67,7 @@ Requires **Node.js ≥ 22.12** and npm.
 git clone https://github.com/Baptjeannerod/datacenter_tycoon.git
 cd datacenter_tycoon
 npm install
-npm run dev                  # http://localhost:5173 (dev harness, plays a full run)
+npm run dev                  # http://localhost:5173 (the game: pick a valley and play)
 ```
 
 Other commands (all exist in `package.json`):
@@ -85,7 +85,7 @@ npm run sim -- --runs 200    # faster
 npm run check                # everything CI runs except the build
 ```
 
-Add `?seed=123` to the URL to replay a specific run.
+Add `?seed=123&loc=paris-basin` to the URL to open a challenge: same campus, same luck (this is what "Challenge a friend" shares).
 
 ## 6. Repository map
 
@@ -94,7 +94,7 @@ engine/      Pure game simulation (no DOM, no Math.random, no clock). Unit-teste
   types.ts   Shared contracts: content shapes, game state, actions.
 content/     ALL game data as JSON: balance, locations, upgrades, events, clients, quiz.
   schema/    JSON Schemas mirroring engine/types.ts.
-ui/          React app. App.tsx is a dev harness (to be replaced); tokens.css = design tokens.
+ui/          React app: screens/ (start, game, end), components/ (cards, shop, icons), map/ (isometric campus), tokens.css.
 scripts/     validate-content.ts, sim.ts (balance), catalog.ts (docs generator).
 dashboard/   /dashboard page (planned, DEV-7).
 api/         Analytics endpoint (planned, DEV-5).
@@ -171,12 +171,11 @@ Several people and several AI agents work in parallel. **Read [AGENTS.md](AGENTS
 - [x] Content: 4 locations, 22 upgrades, 16 events, 9 clients, 12 quiz questions, validated
 - [x] Engine (pure, seeded, 26 tests)
 - [x] Balance simulation passing (`npm run sim`)
-- [x] Dev harness: full run playable on mobile (not the final UI)
+- [x] Playable vertical slice: start screen, living isometric campus map (river, 8 hall plots), HUD, decision cards, quiz, shop, end screen with frontier, 1-10 rating (stored locally), challenge link
 - [x] CI, templates, agent docs
-- [ ] Real mobile UI: HUD, cards, shop, end screen (DEV-1..4)
-- [ ] Quiz UI + rating (DEV-2, DEV-6)
+- [ ] Rating sent to the backend (DEV-6)
 - [ ] Analytics + dashboard (DEV-5, DEV-7)
-- [ ] Share card + seeded/daily runs (DEV-8, DEV-9)
+- [ ] Share image card + daily runs (DEV-8, DEV-9); the challenge link already works
 - [ ] Deployed (DEV-10)
 
 ## 12. Sources

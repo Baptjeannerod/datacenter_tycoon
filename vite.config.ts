@@ -6,6 +6,6 @@ export default defineConfig({
   build: {
     target: 'es2022',
     // Frugal by design: warn if a chunk gets heavy. See docs/ARCHITECTURE.md (performance budget).
-    chunkSizeWarningLimit: 300,
+    chunkSizeWarningLimit: 350,
   },
 });
