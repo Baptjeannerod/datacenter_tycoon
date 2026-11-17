@@ -1,0 +1,163 @@
+[
+  {
+    "id": "datacenter-hall",
+    "name": "Datacenter hall",
+    "pitch": "2 MW of servers for your clients. Needs power to run.",
+    "kind": "datacenter",
+    "placement": "land",
+    "cost": 1500,
+    "itMW": 2,
+    "scoreDelta": {},
+    "whyItMatters": "More capacity serves more clients, and every MW of servers needs more MW of power behind it.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "gas-plant",
+    "name": "Gas power plant",
+    "pitch": "6 MW, steady, cheap to build. Burns gas.",
+    "kind": "plant",
+    "plantType": "gas",
+    "placement": "land",
+    "cost": 1000,
+    "nameplateMW": 6,
+    "capacityFactor": 1,
+    "costPerMWh": 70,
+    "fuel": true,
+    "fixedCostPerTick": 30,
+    "carbonPerMWh": 490,
+    "waterPerMWh": 0.6,
+    "scoreDelta": {
+      "sustainability": -2
+    },
+    "whyItMatters": "Gas is reliable and compact, but every MWh emits around half a tonne of CO2 over its life cycle.",
+    "source": "IPCC AR5 WGIII (2014) Annex III, life-cycle median for gas combined cycle: 490 gCO2e/kWh",
+    "confidence": "approx"
+  },
+  {
+    "id": "coal-plant",
+    "name": "Coal power plant",
+    "pitch": "10 MW, the cheapest power per MWh. Also the dirtiest.",
+    "kind": "plant",
+    "plantType": "coal",
+    "placement": "land",
+    "cost": 1400,
+    "nameplateMW": 10,
+    "capacityFactor": 1,
+    "costPerMWh": 40,
+    "fuel": true,
+    "fixedCostPerTick": 50,
+    "carbonPerMWh": 820,
+    "waterPerMWh": 1.9,
+    "effects": {
+      "envDebtPerTick": 0.6
+    },
+    "scoreDelta": {
+      "sustainability": -5,
+      "responsibility": -3
+    },
+    "whyItMatters": "Coal packs a lot of power on little land, at the highest carbon and air-pollution cost of any source.",
+    "source": "IPCC AR5 WGIII (2014) Annex III, life-cycle median for coal: 820 gCO2e/kWh",
+    "confidence": "approx"
+  },
+  {
+    "id": "biomass-plant",
+    "name": "Biomass plant",
+    "pitch": "5 MW from burning wood. Sounds green.",
+    "kind": "plant",
+    "plantType": "biomass",
+    "placement": "land",
+    "cost": 1500,
+    "nameplateMW": 5,
+    "capacityFactor": 1,
+    "costPerMWh": 60,
+    "fuel": true,
+    "fixedCostPerTick": 40,
+    "carbonPerMWh": 230,
+    "waterPerMWh": 1.5,
+    "effects": {
+      "envDebtPerTick": 0.3
+    },
+    "scoreDelta": {
+      "sustainability": 1
+    },
+    "whyItMatters": "Burning wood emits CO2 now; regrowing forests take decades to absorb it. Whether it is green depends on where the wood comes from.",
+    "source": "IPCC AR5 WGIII (2014) Annex III, life-cycle median for dedicated biomass: 230 gCO2e/kWh (highly debated)",
+    "confidence": "approx"
+  },
+  {
+    "id": "wind-farm",
+    "name": "Wind farm",
+    "pitch": "9 MW of turbines. Delivers about a third of that, when the wind blows.",
+    "kind": "plant",
+    "plantType": "wind",
+    "placement": "land",
+    "cost": 1800,
+    "nameplateMW": 9,
+    "capacityFactor": 0.33,
+    "resource": "wind",
+    "variability": 0.35,
+    "costPerMWh": 8,
+    "fixedCostPerTick": 25,
+    "carbonPerMWh": 11,
+    "waterPerMWh": 0,
+    "scoreDelta": {
+      "sustainability": 3,
+      "responsibility": 1
+    },
+    "whyItMatters": "Wind is clean and cheap to run, but it needs a lot of land per MW and it does not blow on demand.",
+    "source": "IPCC AR5 WGIII (2014) Annex III, life-cycle median for onshore wind: 11 gCO2e/kWh; capacity factor ~25-40 %",
+    "confidence": "approx"
+  },
+  {
+    "id": "solar-farm",
+    "name": "Solar farm",
+    "pitch": "12 MW of panels. Delivers a sixth of that on average. Better in the south.",
+    "kind": "plant",
+    "plantType": "solar",
+    "placement": "land",
+    "cost": 1200,
+    "nameplateMW": 12,
+    "capacityFactor": 0.16,
+    "resource": "solar",
+    "variability": 0.2,
+    "costPerMWh": 5,
+    "fixedCostPerTick": 15,
+    "carbonPerMWh": 48,
+    "waterPerMWh": 0,
+    "scoreDelta": {
+      "sustainability": 3
+    },
+    "whyItMatters": "Solar is clean and cheap to run, but only works by day: a sunny site produces twice as much as a northern one.",
+    "source": "IPCC AR5 WGIII (2014) Annex III, life-cycle median for utility solar PV: 48 gCO2e/kWh; capacity factor ~10-25 %",
+    "confidence": "approx"
+  },
+  {
+    "id": "dam",
+    "name": "Hydro dam",
+    "pitch": "Big, clean, steady power from the river. The valley floods.",
+    "kind": "plant",
+    "plantType": "hydro",
+    "placement": "river",
+    "cost": 3500,
+    "nameplateMW": 14,
+    "capacityFactor": 0.45,
+    "resource": "river",
+    "variability": 0.15,
+    "costPerMWh": 5,
+    "fixedCostPerTick": 40,
+    "carbonPerMWh": 24,
+    "waterPerMWh": 0,
+    "effects": {
+      "envDebt": 6,
+      "envDebtPerTick": 0.15
+    },
+    "scoreDelta": {
+      "sustainability": 1,
+      "responsibility": -2
+    },
+    "whyItMatters": "Hydro is low-carbon and dependable, but a dam floods land, blocks fish and changes the river for everyone downstream.",
+    "source": "IPCC AR5 WGIII (2014) Annex III, life-cycle median for hydropower: 24 gCO2e/kWh",
+    "confidence": "approx"
+  }
+]

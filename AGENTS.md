@@ -38,9 +38,10 @@ You are joining a one-day build (SMIC Day, CentraleSupélec, 17 Nov 2026) of **D
 ```
 engine/        Pure TypeScript game logic. No DOM, no Math.random, no Date. Unit-tested.
   types.ts     THE contract. Content shapes, state, actions.
-  game.ts      createGame, step, applyAction, currentDecision, shopUpgrades
+  game.ts      createGame, step, applyAction (build / buy / choose / answer), buildOptions, upgradeOptions, policyOptions
+  power.ts     plants' output, merit-order dispatch, power budget (there is no grid)
   scoring.ts   Sustainability, Responsibility, legacy, archetype, summary
-content/       All game data as JSON (+ schema/). Non-coders edit here.
+content/       All game data as JSON (+ schema/): buildings (halls, plants), upgrades (hall / plant / policy), events, clients, quiz. Non-coders edit here.
 ui/            React app. screens/ (Start, Game, End), components/, map/ (isometric campus SVG), useGame.ts (timer + feedback), tokens.css.
 scripts/       validate-content.ts, sim.ts, catalog.ts
 dashboard/     /dashboard page (to build: DEV-7)

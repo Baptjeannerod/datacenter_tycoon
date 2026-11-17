@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "buildings.schema.json",
+  "title": "Buildings: datacenter halls and power plants (content/buildings.json)",
+  "type": "array",
+  "minItems": 2,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "name",
+      "pitch",
+      "kind",
+      "placement",
+      "cost",
+      "scoreDelta",
+      "whyItMatters",
+      "source",
+      "confidence"
+    ],
+    "properties": {
+      "id": {
+        "$ref": "common.schema.json#/definitions/id"
+      },
+      "name": {
+        "type": "string",
+        "maxLength": 30
+      },
+      "pitch": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "kind": {
+        "enum": [
+          "datacenter",
+          "plant"
+        ]
+      },
+      "plantType": {
+        "$ref": "common.schema.json#/definitions/plantType"
+      },
+      "placement": {
+        "enum": [
+          "land",
+          "river"
+        ]
+      },
+      "cost": {
+        "type": "number",
+        "minimum": 0
+      },
+      "itMW": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "nameplateMW": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "capacityFactor": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "maximum": 1
+      },
+      "resource": {
+        "enum": [
+          "wind",
+          "solar",
+          "river"
+        ]
+      },
+      "variability": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "costPerMWh": {
+        "type": "number",
+        "minimum": 0
+      },
+      "fuel": {
+        "type": "boolean"
+      },
+      "fixedCostPerTick": {
+        "type": "number",
+        "minimum": 0
+      },
+      "carbonPerMWh": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1500
+      },
+      "waterPerMWh": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 10
+      },
+      "effects": {
+        "$ref": "common.schema.json#/definitions/effects"
+      },
+      "scoreDelta": {
+        "$ref": "common.schema.json#/definitions/scoreDelta"
+      },
+      "delayed": {
+        "type": "array",
+        "items": {
+          "$ref": "common.schema.json#/definitions/delayed"
+        }
+      },
+      "setFlags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "requires": {
+        "$ref": "common.schema.json#/definitions/condition"
+      },
+      "whyItMatters": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 200
+      },
+      "source": {
+        "type": "string",
+        "minLength": 3
+      },
+      "confidence": {
+        "$ref": "common.schema.json#/definitions/confidence"
+      }
+    }
+  }
+}

@@ -21,6 +21,7 @@ const read = (p: string) => JSON.parse(readFileSync(join(contentDir, p), 'utf8')
 const FILES = {
   balance: 'balance.json',
   locations: 'locations.json',
+  buildings: 'buildings.json',
   upgrades: 'upgrades.json',
   events: 'events.json',
   clients: 'clients.json',
@@ -60,6 +61,7 @@ if (errors.length === 0) {
   const c = data as unknown as Content;
   const ids = {
     locations: new Set(c.locations.map((l) => l.id)),
+    buildings: new Set(c.buildings.map((b) => b.id)),
     upgrades: new Set(c.upgrades.map((u) => u.id)),
     events: new Set(c.events.map((e) => e.id)),
     clients: new Set(c.clients.map((x) => x.id)),
@@ -68,6 +70,7 @@ if (errors.length === 0) {
 
   for (const [key, list] of Object.entries({
     locations: c.locations,
+    buildings: c.buildings,
     upgrades: c.upgrades,
     events: c.events,
     clients: c.clients,
@@ -109,8 +112,27 @@ if (errors.length === 0) {
     if (quizId && !ids.quiz.has(quizId)) errors.push(`${where}: quizId "${quizId}" does not exist in quiz.json`);
   };
 
+  // Buildings and the starting campus
+  for (const b of c.buildings) {
+    const where = `buildings.json [${b.id}]`;
+    if (b.kind === 'datacenter' && !b.itMW) errors.push(`${where}: a datacenter needs itMW`);
+    if (b.kind === 'plant' && (!b.plantType || !b.nameplateMW || b.carbonPerMWh === undefined)) errors.push(`${where}: a plant needs plantType, nameplateMW and carbonPerMWh`);
+    checkCondition(`${where} requires`, b.requires);
+    checkDelayed(where, b.delayed);
+  }
+  if (!c.buildings.some((b) => b.kind === 'datacenter')) errors.push('buildings.json: needs at least one datacenter');
+  for (const sb of c.balance.startBuildings) {
+    const b = c.buildings.find((x) => x.id === sb.building);
+    if (!b) errors.push(`balance.json startBuildings: unknown building "${sb.building}"`);
+    else if ((sb.plot === c.balance.landPlots) !== (b.placement === 'river')) errors.push(`balance.json startBuildings: "${sb.building}" cannot stand on plot ${sb.plot}`);
+    if (sb.plot > c.balance.landPlots) errors.push(`balance.json startBuildings: plot ${sb.plot} does not exist`);
+  }
+
   for (const u of c.upgrades) {
     const where = `upgrades.json [${u.id}]`;
+    if (u.scope === 'plant' && !u.plantTypes?.length) errors.push(`${where}: a plant upgrade needs plantTypes`);
+    if (u.scope !== 'plant' && (u.plantTypes || u.plantEffects)) errors.push(`${where}: plantTypes / plantEffects only make sense with scope "plant"`);
+    for (const t of u.plantTypes ?? []) if (!c.buildings.some((b) => b.plantType === t)) warnings.push(`${where}: no building has plantType "${t}"`);
     checkCondition(`${where} requires`, u.requires);
     checkDelayed(where, u.delayed);
     for (const loc of Object.keys(u.contextModifiers ?? {}))
@@ -118,8 +140,9 @@ if (errors.length === 0) {
     // Design rule: a trap must be tempting (some short-term upside) and must carry a hidden cost.
     if (u.family === 'trap') {
       const e = u.effects;
-      const upside = (e.cashPerTick ?? 0) > 0 || (e.growthRate ?? 0) > 0 || (e.pricePct ?? 0) > 0 || (e.pue ?? 0) < 0 || (e.energyPricePct ?? 0) < 0 || (e.itEfficiency ?? 0) > 0;
-      const hidden = Boolean(u.delayed?.length) || (e.envDebtPerTick ?? 0) > 0 || (e.failureRate ?? 0) > 0 || (e.wue ?? 0) > 0 || (e.hardwareLifespan ?? 0) < 0 || (e.carbonIntensity ?? 0) > 0;
+      const pe = u.plantEffects ?? {};
+      const upside = (e.cashPerTick ?? 0) > 0 || (e.growthRate ?? 0) > 0 || (e.pricePct ?? 0) > 0 || (e.pue ?? 0) < 0 || (e.energyPricePct ?? 0) < 0 || (e.itEfficiency ?? 0) > 0 || (pe.costPct ?? 0) < 0 || (pe.outputPct ?? 0) > 0;
+      const hidden = Boolean(u.delayed?.length) || (e.envDebtPerTick ?? 0) > 0 || (e.failureRate ?? 0) > 0 || (e.wue ?? 0) > 0 || (e.hardwareLifespan ?? 0) < 0 || (e.carbonIntensity ?? 0) > 0 || (pe.carbonPct ?? 0) > 0 || (u.powerMW ?? 0) > 0;
       if (!upside) errors.push(`${where}: a trap needs a short-term upside (cash, growth, price, efficiency)`);
       if (!hidden) errors.push(`${where}: a trap needs a hidden cost (delayed effect, envDebtPerTick, failures, water, lifespan, carbon)`);
     }
@@ -155,10 +178,10 @@ if (errors.length === 0) {
   if (fam('good') === 0 || fam('trap') === 0 || fam('tradeoff') === 0) errors.push('upgrades.json needs at least one good, one trap and one tradeoff');
   if (c.events.length < 10) warnings.push(`only ${c.events.length} events (target 10+)`);
   if (c.quiz.length < 8) warnings.push(`only ${c.quiz.length} quiz questions (target 8+)`);
-  const unsourced = [...c.upgrades, ...c.events, ...c.quiz, ...c.locations, ...c.clients].filter((x) => x.confidence !== 'illustrative' && /^game design$/i.test(x.source));
+  const unsourced = [...c.upgrades, ...c.events, ...c.quiz, ...c.locations, ...c.clients, ...c.buildings].filter((x) => x.confidence !== 'illustrative' && /^game design$/i.test(x.source));
   for (const x of unsourced) errors.push(`[${x.id}]: confidence "${x.confidence}" but source is just "game design" (cite a real source or mark it illustrative)`);
 
-  const counts = `${c.locations.length} locations, ${c.upgrades.length} upgrades (${fam('good')} good / ${fam('trap')} trap / ${fam('tradeoff')} tradeoff), ${c.events.length} events, ${c.clients.length} clients, ${c.quiz.length} quiz questions`;
+  const counts = `${c.locations.length} locations, ${c.buildings.length} buildings, ${c.upgrades.length} upgrades (${fam('good')} good / ${fam('trap')} trap / ${fam('tradeoff')} tradeoff), ${c.events.length} events, ${c.clients.length} clients, ${c.quiz.length} quiz questions`;
   if (errors.length === 0) console.log(`✓ Content valid: ${counts}`);
 }
 

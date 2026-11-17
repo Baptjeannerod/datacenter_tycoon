@@ -5,7 +5,7 @@
  * To add a plot or move a feature, edit the constants below. Keep hall plots off
  * the river and the road (the `isBlocked` helper is used by the tree scatter).
  */
-import type { GameState, Location } from '../../engine';
+import { getBuilding, type Content, type GameState, type Location, type PlantType } from '../../engine';
 
 export const TW = 64; // tile width in px (screen)
 export const TH = 32; // tile height in px (screen)
@@ -50,7 +50,7 @@ export const ROAD_Y = 5;
 export const isRiver = (gx: number, gy: number) => gy >= 0 && gy < GRID_H && (gx === RIVER_X[gy] || gx === RIVER_X[gy] + 1);
 export const isRoad = (gx: number, gy: number) => gy === ROAD_Y || (gx === 3 && gy >= 1 && gy <= 9);
 
-/** Datacenter hall plots, in build order. Footprint 2 x 3 tiles. The campus crosses the river at hall 5. */
+/** Land plots (2 x 3 tiles each), indexed like `state.plots`. The campus crosses the river at plot 5. */
 export const HALL_PLOTS: { x: number; y: number }[] = [
   { x: 1, y: 1 },
   { x: 4, y: 1 },
@@ -63,15 +63,12 @@ export const HALL_PLOTS: { x: number; y: number }[] = [
 ];
 export const HALL_W = 2;
 export const HALL_D = 3;
+/** The river spot (last plot index): where a dam can go. Upstream rows become a reservoir. */
+export const DAM_ROW = 2;
 
-/** Fixed feature areas. */
+/** Fixed decor areas. */
 export const AREAS = {
-  cooling: { x: 6, y: 1, w: 2, d: 3 },
-  water: { x: 6, y: 7, w: 2, d: 2 },
-  gas: { x: 0, y: 4, w: 3, d: 1 },
-  solar: { x: 0, y: 10, w: 7, d: 2 },
   village: { x: 12, y: 10, w: 4, d: 2 },
-  wind: { x: 11, y: 6, w: 5, d: 1 },
 } as const;
 
 const inArea = (gx: number, gy: number, a: { x: number; y: number; w: number; d: number }) => gx >= a.x && gx < a.x + a.w && gy >= a.y && gy < a.y + a.d;
@@ -91,28 +88,30 @@ export function hash2(gx: number, gy: number, salt = 0): number {
 }
 
 // ---------------------------------------------------------------------------
-// What the map shows, derived from game state (no engine changes needed).
+// What the map shows, derived from game state (no game rules here).
 // ---------------------------------------------------------------------------
-export type Cooling = 'chillers' | 'free' | 'evaporative' | 'liquid';
 export type DebtLevel = 0 | 1 | 2 | 3;
+export type PlotKind = 'empty' | 'hall' | PlantType;
+
+export interface PlotView {
+  kind: PlotKind;
+  upgrades: string[];
+  /** A hall with no power this quarter (red "!"). */
+  unpowered: boolean;
+  /** Hall number (1-based) for labels. */
+  hallNo?: number;
+}
 
 export interface CampusView {
+  plots: PlotView[];
+  /** The river spot (dam), last entry of state.plots. */
+  dam: PlotView;
   halls: number;
-  mwPerHall: number;
-  /** Fill of the newest hall, 0..1. */
-  newestFill: number;
-  nextHallAtMW: number | null;
-  cooling: Cooling;
-  solar: boolean;
-  wind: boolean;
-  heatReuse: boolean;
-  waterLoop: boolean;
-  gas: boolean;
-  gpu: boolean;
-  monitoring: boolean;
   outage: boolean;
   debt: DebtLevel;
   lowWater: boolean;
+  gpu: boolean;
+  monitoring: boolean;
   biome: 'temperate' | 'nordic' | 'coal' | 'desert';
 }
 
@@ -123,35 +122,29 @@ export function debtLevel(envDebt: number): DebtLevel {
   return 0;
 }
 
-export function campusView(state: GameState, loc: Location, wue: number): CampusView {
-  const owned = new Set(state.owned);
-  const chose = (id: string) => state.decisions.includes(id);
-  const mwPerHall = loc.marketMW / HALL_PLOTS.length;
-  const raw = state.capacityMW / mwPerHall;
-  const halls = Math.max(1, Math.min(HALL_PLOTS.length, Math.ceil(raw - 1e-6)));
-  const cooling: Cooling = owned.has('liquid-cooling')
-    ? 'liquid'
-    : owned.has('evaporative-cooling')
-      ? 'evaporative'
-      : owned.has('free-cooling')
-        ? 'free'
-        : 'chillers';
+export function campusView(state: GameState, content: Content, loc: Location, wue: number): CampusView {
+  const unpowered = new Set(state.history.at(-1)?.unpoweredPlots ?? []);
+  let hallNo = 0;
+  const view = (i: number): PlotView => {
+    const p = state.plots[i];
+    if (!p) return { kind: 'empty', upgrades: [], unpowered: false };
+    const b = getBuilding(content, p.building);
+    if (b.kind === 'datacenter') {
+      hallNo += 1;
+      return { kind: 'hall', upgrades: p.upgrades, unpowered: unpowered.has(i), hallNo };
+    }
+    return { kind: b.plantType ?? 'gas', upgrades: p.upgrades, unpowered: false };
+  };
+  const plots = HALL_PLOTS.map((_, i) => view(i));
   return {
-    halls,
-    mwPerHall,
-    newestFill: Math.min(1, Math.max(0.05, raw - (halls - 1))),
-    nextHallAtMW: halls < HALL_PLOTS.length ? halls * mwPerHall : null,
-    cooling,
-    solar: owned.has('onsite-solar'),
-    wind: owned.has('renewable-ppa') || chose('event:carbon-tax:clean-contract'),
-    heatReuse: owned.has('heat-reuse'),
-    waterLoop: owned.has('water-closed-loop') || chose('event:water-restriction:closed-loop'),
-    gas: owned.has('gas-turbines') || chose('event:power-cap:turbines'),
-    gpu: state.flags.includes('ai-hype'),
-    monitoring: owned.has('energy-monitoring'),
+    plots,
+    dam: view(HALL_PLOTS.length),
+    halls: hallNo,
     outage: Boolean(state.history.at(-1)?.outage),
     debt: debtLevel(state.envDebt),
     lowWater: wue * loc.waterStress >= 1.5 || state.firedEvents.includes('water-restriction'),
+    gpu: state.flags.includes('ai-hype'),
+    monitoring: state.policies.includes('energy-monitoring'),
     biome: loc.id === 'nordic-fjord' ? 'nordic' : loc.id === 'coal-valley' ? 'coal' : loc.id === 'sun-belt' ? 'desert' : 'temperate',
   };
 }

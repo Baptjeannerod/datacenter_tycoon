@@ -12,7 +12,7 @@
  *   time       1 tick = 1 quarter (3 months). A run is 40 ticks = 10 years.
  *   power      MW of IT load
  *   energy     MWh
- *   carbon     tonnes CO2e (t)
+ *   carbon     tonnes CO2e (t); intensities in kg/MWh (= g/kWh)
  *   water      m³
  *   e-waste    tonnes (t)
  */
@@ -174,6 +174,23 @@ export type UpgradeCategory =
   | 'communication'
   | 'water';
 
+/**
+ * Where an upgrade is installed:
+ *  - "hall":   on one datacenter hall (intensive effects like PUE are averaged over all halls)
+ *  - "plant":  on one power plant of a type listed in `plantTypes` (uses `plantEffects`)
+ *  - "policy": campus-wide, bought from the Policies menu
+ */
+export type UpgradeScope = 'hall' | 'plant' | 'policy';
+
+/** Effects of a plant upgrade on that plant only (relative deltas). */
+export interface PlantEffects {
+  outputPct?: number;
+  carbonPct?: number;
+  costPct?: number;
+  waterPct?: number;
+  variabilityPct?: number;
+}
+
 export interface Upgrade extends Sourced {
   id: string;
   name: string;
@@ -182,8 +199,14 @@ export interface Upgrade extends Sourced {
   family: UpgradeFamily;
   category: UpgradeCategory;
   themes: FrugalTheme[];
-  /** Upfront cost in k€. */
+  scope: UpgradeScope;
+  /** For scope "plant": which plant types can take it. */
+  plantTypes?: PlantType[];
+  /** Upfront cost in k€ (per building for hall and plant upgrades). */
   cost: number;
+  /** Extra power the upgrade draws, MW. Needs that much spare power to install. */
+  powerMW?: number;
+  plantEffects?: PlantEffects;
   /** Persistent effects while owned. One-off keys (cash, demandPct, envDebt) apply at purchase. */
   effects: Effects;
   scoreDelta: ScoreDelta;
@@ -200,6 +223,61 @@ export interface Upgrade extends Sourced {
   whyItMatters: string;
   /** True if part of the vertical slice (first playable). */
   slice?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Buildings: datacenter halls and power plants, built on map plots
+// ---------------------------------------------------------------------------
+
+export type PlantType = 'gas' | 'coal' | 'biomass' | 'wind' | 'solar' | 'hydro';
+export type Resource = 'wind' | 'solar' | 'river';
+
+export interface Building extends Sourced {
+  id: string;
+  name: string;
+  /** One line shown in the build ring. */
+  pitch: string;
+  kind: 'datacenter' | 'plant';
+  plantType?: PlantType;
+  /** "land" plots or the single "river" spot (the dam). */
+  placement: 'land' | 'river';
+  /** Upfront cost, k€. */
+  cost: number;
+  /** Datacenter: IT capacity added, MW. Needs itMW x PUE of spare power to build. */
+  itMW?: number;
+  /** Plant: nameplate power, MW. */
+  nameplateMW?: number;
+  /** Plant: average share of nameplate actually delivered (before the location's resource multiplier). */
+  capacityFactor?: number;
+  /** Plant: the location resource that scales its output (wind, sun, river). Thermal plants: none. */
+  resource?: Resource;
+  /** Plant: random swing of output each quarter (0.3 = ±30 %). Renewables vary, thermal does not. */
+  variability?: number;
+  /** Plant: fuel + variable O&M, € per MWh produced. */
+  costPerMWh?: number;
+  /** Plant: true if the location's fuel price applies (gas, coal, biomass). */
+  fuel?: boolean;
+  /** Fixed running cost, k€ per tick. */
+  fixedCostPerTick?: number;
+  /** Plant: life-cycle emissions, kg CO2e per MWh (= g/kWh). */
+  carbonPerMWh?: number;
+  /** Plant: cooling water consumed, m³ per MWh. */
+  waterPerMWh?: number;
+  /** Persistent effects while the building stands (e.g. envDebtPerTick for a dam). One-off keys apply at build. */
+  effects?: Effects;
+  scoreDelta: ScoreDelta;
+  delayed?: DelayedEffect[];
+  setFlags?: string[];
+  requires?: Condition;
+  whyItMatters: string;
+}
+
+/** What stands on a plot. */
+export interface PlotState {
+  building: string;
+  upgrades: string[];
+  /** Tick the building (for halls: its current servers) was installed. */
+  builtTick: number;
 }
 
 /** How a choice leans. Used by the balance sim and by analytics (good vs trap picks). */
@@ -276,12 +354,12 @@ export interface Location extends Sourced {
   basePue: number;
   /** L/kWh */
   baseWue: number;
-  /** gCO2e/kWh of the local grid. */
-  gridCarbon: number;
   /** 0 = plenty of water, 1 = stressed, >1 = severe. Weighs water in scores and debt. */
   waterStress: number;
-  /** €/MWh */
-  energyPrice: number;
+  /** Multipliers on renewable plant output here (1 = average). */
+  resources: Record<Resource, number>;
+  /** Multiplier on fuel costs (gas, coal, biomass) here. */
+  fuelPrice: number;
   /** k€ revenue per MW of IT load per tick. */
   pricePerMW: number;
   /** Demand growth per tick. */
@@ -307,9 +385,12 @@ export interface QuizQuestion extends Sourced {
 export interface Balance {
   maxTicks: number;
   hoursPerTick: number;
+  /** Number of land plots on the map (the river spot comes after them). */
+  landPlots: number;
+  /** Buildings standing at the start of a run. */
+  startBuildings: { plot: number; building: string }[];
   fixedOpexPerTick: number;
   maintenancePerMW: number;
-  capexPerMW: number;
   refreshCostPerMW: number;
   eWastePerMW: number;
   embodiedCarbonPerMW: number;
@@ -352,6 +433,7 @@ export interface Balance {
 export interface Content {
   balance: Balance;
   locations: Location[];
+  buildings: Building[];
   upgrades: Upgrade[];
   events: GameEvent[];
   clients: Client[];
@@ -368,6 +450,8 @@ export interface Modifier {
   effects: Effects;
   /** Tick at which it stops applying (exclusive). Undefined = permanent. */
   expiresAt?: number;
+  /** "hall": installed on one hall; intensive effects (PUE, WUE…) are averaged over all halls. */
+  scope?: 'hall';
 }
 
 export interface ScheduledEffect extends DelayedEffect {
@@ -396,6 +480,14 @@ export interface TickReport {
   waterM3: number;
   eWasteT: number;
   outage: boolean;
+  /** Average power the plants could deliver this tick, MW. */
+  supplyMW: number;
+  /** Facility power needed to serve all demand the halls could take, MW. */
+  needMW: number;
+  /** Halls (by plot index) that had no power this tick. */
+  unpoweredPlots: number[];
+  /** Emissions per MWh of electricity used this tick, kg/MWh (= g/kWh). */
+  carbonIntensity: number;
   sustainability: number;
   responsibility: number;
   envDebt: number;
@@ -427,7 +519,7 @@ export interface GameState {
 
   cash: number;
   demandMW: number;
-  /** Built capacity. Follows demand up (capex), does not shrink when clients leave. */
+  /** IT capacity of all built halls, MW. */
   capacityMW: number;
   hardwareAge: number;
   envDebt: number;
@@ -436,6 +528,11 @@ export interface GameState {
   /** Bonus on top of measured sustainability, from decisions. Clamped ±30. */
   sustainabilityBonus: number;
 
+  /** One entry per plot (land plots, then the river spot). null = empty. */
+  plots: (PlotState | null)[];
+  /** Campus-wide policies bought. */
+  policies: string[];
+  /** Every upgrade id installed anywhere (hall, plant or policy). Used by conditions. */
   owned: string[];
   modifiers: Modifier[];
   scheduled: ScheduledEffect[];
@@ -476,9 +573,9 @@ export interface DerivedStats {
   itEfficiency: number;
   hardwareLifespan: number;
   eWasteMultiplier: number;
-  /** gCO2e/kWh after renewables. */
-  effectiveCarbon: number;
   carbonPrice: number;
+  /** Number of datacenter halls standing. */
+  halls: number;
 }
 
 export interface Scores {
@@ -520,6 +617,7 @@ export interface RunSummary {
 }
 
 export type Action =
-  | { type: 'buy'; upgradeId: string }
+  | { type: 'build'; plot: number; buildingId: string }
+  | { type: 'buy'; upgradeId: string; plot?: number }
   | { type: 'choose'; choiceId: string }
   | { type: 'answer'; answerIndex: number };

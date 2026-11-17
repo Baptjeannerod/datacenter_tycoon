@@ -10,6 +10,7 @@
 import { memo, useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import {
   AREAS,
+  DAM_ROW,
   GRID_H,
   GRID_W,
   HALL_D,
@@ -27,6 +28,7 @@ import {
   pts,
   tile,
   type CampusView,
+  type PlotView,
   type Pt,
 } from './layout';
 
@@ -93,41 +95,43 @@ function Windows({ a, b, h, n, lit, color, off }: { a: Pt; b: Pt; h: number; n: 
 // ---------------------------------------------------------------------------
 // Pieces
 // ---------------------------------------------------------------------------
-function Hall({ x, y, index, fill, gpu, outage, monitoring, label }: { x: number; y: number; index: number; fill: number; gpu: boolean; outage: boolean; monitoring: boolean; label?: string }) {
+function Hall({ x, y, index, view, monitoring, outage }: { x: number; y: number; index: number; view: PlotView; monitoring: boolean; outage: boolean }) {
   const h = 38;
   const b = box(x, y, HALL_W, HALL_D, h);
   const D = iso(x, y + HALL_D);
   const C = iso(x + HALL_W, y + HALL_D);
   const B = iso(x + HALL_W, y);
-  const lightOn = outage ? '#ff6b5e' : gpu ? '#f39cff' : '#a8f5c9';
-  // Alternate building palettes so a big campus does not look like one block.
+  const up = new Set(view.upgrades);
+  const gpu = up.has('gpu-hype-cluster');
+  const dark = view.unpowered;
+  const lightOn = dark ? '#3a3f5c' : outage ? '#ff6b5e' : gpu ? '#f39cff' : '#a8f5c9';
   const palettes = [
     { top: '#a9a6ec', left: '#5d63b4', right: '#474c96' },
     { top: '#f2a46a', left: '#d9673f', right: '#b8512f' },
     { top: '#8fd6cf', left: '#3f8f9a', right: '#2f7380' },
   ];
   const pal = gpu ? { top: '#c9a6f2', left: '#5d63b4', right: '#474c96' } : palettes[index % palettes.length];
-  const leftN = 4;
-  const rightN = 6;
-  const litLeft = Math.round(leftN * fill);
-  const litRight = Math.round(rightN * fill);
+  const roof = up.has('free-cooling') ? '#a8e3f2' : '#d9d8f3';
   return (
-    <g className="hall">
+    <g className={`hall${dark ? ' dark' : ''}`}>
       <Box x={x} y={y} w={HALL_W} d={HALL_D} h={h} top={pal.top} left={pal.left} right={pal.right} />
-      <Windows a={D} b={C} h={h} n={leftN} lit={litLeft} color={lightOn} off="#2a2f55" />
-      <Windows a={B} b={C} h={h} n={rightN} lit={litRight} color={lightOn} off="#23284a" />
-      {/* roof units */}
+      <Windows a={D} b={C} h={h} n={4} lit={4} color={lightOn} off="#2a2f55" />
+      <Windows a={B} b={C} h={h} n={6} lit={6} color={lightOn} off="#23284a" />
       <g transform={`translate(0,${-h})`}>
-        <Box x={x + 0.35} y={y + 0.5} w={0.6} d={0.8} h={8} top="#d9d8f3" left="#9a99c8" right="#8483b8" />
-        <Box x={x + 1.1} y={y + 1.6} w={0.6} d={0.8} h={8} top="#d9d8f3" left="#9a99c8" right="#8483b8" />
+        <Box x={x + 0.35} y={y + 0.5} w={0.6} d={0.8} h={8} top={roof} left="#9a99c8" right="#8483b8" />
+        <Box x={x + 1.1} y={y + 1.6} w={0.6} d={0.8} h={8} top={roof} left="#9a99c8" right="#8483b8" />
       </g>
+      {up.has('evaporative-cooling') && <Puffs at={{ x: b.topCenter.x - 14, y: b.topCenter.y - 12 }} color="#ffffff" count={2} size={7} />}
+      {up.has('liquid-cooling') && <Cylinder at={{ x: B.x + 6, y: B.y + 4 }} r={8} h={18} body="#5fd0e0" topFill="#a6eef5" />}
+      {up.has('water-closed-loop') && <Cylinder at={{ x: D.x - 4, y: D.y - 6 }} r={8} h={16} body="#b7a8ee" topFill="#d7cff4" />}
+      {up.has('heat-reuse') && <line x1={C.x} y1={C.y - 4} x2={C.x + 22} y2={C.y + 8} stroke="#ef8a3a" strokeWidth={5} strokeLinecap="round" />}
       {monitoring && index === 0 && (
         <g>
           <line x1={b.topCenter.x + 18} y1={b.topCenter.y + 4} x2={b.topCenter.x + 18} y2={b.topCenter.y - 22} stroke={INK} strokeWidth={2} />
           <circle className="blink" cx={b.topCenter.x + 18} cy={b.topCenter.y - 24} r={3.5} fill="#8be36b" stroke={INK} strokeWidth={1} />
         </g>
       )}
-      {gpu && index === 0 && (
+      {gpu && (
         <g transform={`translate(${b.topCenter.x - 18},${b.topCenter.y - 14})`}>
           <rect width={36} height={13} fill={INK} />
           <text x={18} y={10} textAnchor="middle" className="map-tag" fill="#f39cff">
@@ -135,31 +139,118 @@ function Hall({ x, y, index, fill, gpu, outage, monitoring, label }: { x: number
           </text>
         </g>
       )}
-      {label && (
-        <g transform={`translate(${b.topCenter.x},${b.topCenter.y - 34})`}>
-          <rect x={-62} y={-13} width={124} height={22} fill={INK} />
-          <text x={0} y={3} textAnchor="middle" className="map-label" fill="#f3f1e8">
-            {label}
-          </text>
-        </g>
+      {view.hallNo && (
+        <text x={b.groundCenter.x} y={b.groundCenter.y + 26} textAnchor="middle" className="map-tag" fill={INK}>
+          HALL {String(view.hallNo).padStart(2, '0')}
+        </text>
       )}
     </g>
   );
 }
 
-function EmptyPlot({ x, y, next, nextAt }: { x: number; y: number; next: boolean; nextAt?: number }) {
+/** Red "!" above a building that has no power. */
+function Alert({ at }: { at: Pt }) {
+  return (
+    <g className="alert" transform={`translate(${at.x},${at.y})`}>
+      <title>No power: build a plant or upgrade one</title>
+      <circle r={13} fill="#e2574c" stroke={INK} strokeWidth={2} />
+      <rect x={-2.5} y={-8} width={5} height={10} fill="#fff" />
+      <rect x={-2.5} y={4} width={5} height={4} fill="#fff" />
+    </g>
+  );
+}
+
+function GasPlant({ x, y }: { x: number; y: number }) {
+  const b = box(x + 0.3, y + 0.6, 1.4, 1.8, 20);
+  return (
+    <g>
+      <Box x={x + 0.3} y={y + 0.6} w={1.4} d={1.8} h={20} top="#cfd3dc" left="#9ea4b3" right="#878d9d" />
+      <rect x={b.topCenter.x + 6} y={b.topCenter.y - 34} width={8} height={36} fill="#b9bdc8" stroke={INK} strokeWidth={1.4} />
+      <Puffs at={{ x: b.topCenter.x + 10, y: b.topCenter.y - 40 }} color="#d8dade" count={2} size={7} />
+      <Cylinder at={{ x: b.groundCenter.x - 30, y: b.groundCenter.y + 12 }} r={10} h={14} body="#e9e2c9" topFill="#f5f0de" />
+    </g>
+  );
+}
+
+function CoalPlant({ x, y }: { x: number; y: number }) {
+  const b = box(x + 0.2, y + 0.4, 1.6, 2.2, 26);
+  return (
+    <g>
+      <Box x={x + 0.2} y={y + 0.4} w={1.6} d={2.2} h={26} top="#7b808c" left="#5d6270" right="#4a4f5c" />
+      {[-10, 10].map((dx) => (
+        <g key={dx}>
+          <rect x={b.topCenter.x + dx - 5} y={b.topCenter.y - 48} width={10} height={50} fill="#8a8f9c" stroke={INK} strokeWidth={1.4} />
+          <rect x={b.topCenter.x + dx - 5} y={b.topCenter.y - 48} width={10} height={6} fill="#e2574c" />
+          <Puffs at={{ x: b.topCenter.x + dx, y: b.topCenter.y - 54 }} color="#4e5260" count={3} size={9} />
+        </g>
+      ))}
+      <polygon points={pts([iso(x + 0.1, y + 2.75), iso(x + 0.9, y + 2.6, 10), iso(x + 1.6, y + 2.85)])} fill="#2b2b2f" stroke={INK} strokeWidth={1.2} />
+    </g>
+  );
+}
+
+function BiomassPlant({ x, y }: { x: number; y: number }) {
+  const b = box(x + 0.3, y + 0.5, 1.4, 1.6, 20);
+  return (
+    <g>
+      <Box x={x + 0.3} y={y + 0.5} w={1.4} d={1.6} h={20} top="#c9b38a" left="#9c7f53" right="#866b43" />
+      <rect x={b.topCenter.x + 4} y={b.topCenter.y - 30} width={8} height={32} fill="#a68e6a" stroke={INK} strokeWidth={1.4} />
+      <Puffs at={{ x: b.topCenter.x + 8, y: b.topCenter.y - 36 }} color="#b9b2a2" count={2} size={7} />
+      {[0, 1, 2].map((i) => {
+        const p = iso(x + 0.5 + i * 0.35, y + 2.6);
+        return <ellipse key={i} cx={p.x} cy={p.y - 4} rx={9} ry={5} fill="#8a5a33" stroke={INK} strokeWidth={1.2} />;
+      })}
+    </g>
+  );
+}
+
+function SolarPlot({ x, y, batteries }: { x: number; y: number; batteries: boolean }) {
+  const rows: ReactNode[] = [];
+  for (let gy = 0; gy < HALL_D; gy++) for (let gx = 0; gx < HALL_W; gx++) rows.push(<SolarRow key={`${gx}-${gy}`} gx={x + gx} gy={y + gy} />);
+  return (
+    <g>
+      {rows}
+      {batteries && <Box x={x + 1.4} y={y + 2.4} w={0.5} d={0.5} h={10} top="#9be36b" left="#5e9e48" right="#467a36" />}
+    </g>
+  );
+}
+
+function WindPlot({ x, y, batteries }: { x: number; y: number; batteries: boolean }) {
+  return (
+    <g>
+      {[
+        { gx: x + 0.5, gy: y + 0.6 },
+        { gx: x + 1.5, gy: y + 1.5 },
+        { gx: x + 0.6, gy: y + 2.4 },
+      ].map((t, i) => (
+        <WindTurbine key={i} at={iso(t.gx, t.gy)} />
+      ))}
+      {batteries && <Box x={x + 1.4} y={y + 2.4} w={0.5} d={0.5} h={10} top="#9be36b" left="#5e9e48" right="#467a36" />}
+    </g>
+  );
+}
+
+function Dam({ reservoir }: { reservoir: boolean }) {
+  const rx = RIVER_X[DAM_ROW];
+  return (
+    <g>
+      {reservoir && [0, 1].map((gy) => <polygon key={gy} points={pts([iso(RIVER_X[gy] - 0.4, gy), iso(RIVER_X[gy] + 2.4, gy), iso(RIVER_X[gy] + 2.4, gy + 1), iso(RIVER_X[gy] - 0.4, gy + 1)])} fill="#3fa2d6" stroke={INK} strokeWidth={1} />)}
+      <Box x={rx - 0.3} y={DAM_ROW + 0.35} w={2.6} d={0.4} h={18} top="#d9d6cc" left="#b4b0a4" right="#9c988c" />
+      <Box x={rx + 0.8} y={DAM_ROW + 0.1} w={0.5} d={0.5} h={26} top="#e6e2d6" left="#c4c0b4" right="#aaa69a" />
+      <line className="ripple" x1={iso(rx + 0.5, DAM_ROW + 0.8).x} y1={iso(rx + 0.5, DAM_ROW + 0.8).y} x2={iso(rx + 0.5, DAM_ROW + 1.4).x} y2={iso(rx + 0.5, DAM_ROW + 1.4).y} stroke="#ffffff" strokeWidth={3} />
+    </g>
+  );
+}
+
+function EmptyPlot({ x, y, selected }: { x: number; y: number; selected: boolean }) {
   const b = box(x, y, HALL_W, HALL_D, 0);
   return (
     <g>
-      <polygon points={b.top} fill={next ? 'rgba(220,236,143,0.55)' : 'rgba(255,253,246,0.22)'} stroke={INK} strokeWidth={1.5} strokeDasharray="6 5" />
-      {next && nextAt !== undefined && (
-        <g transform={`translate(${b.groundCenter.x},${b.groundCenter.y})`}>
-          <rect x={-66} y={-12} width={132} height={22} fill="#dcec8f" stroke={INK} strokeWidth={1.5} />
-          <text x={0} y={3.5} textAnchor="middle" className="map-label" fill={INK}>
-            + NEXT HALL {nextAt.toFixed(1)} MW
-          </text>
-        </g>
-      )}
+      <polygon points={b.top} fill={selected ? 'rgba(220,236,143,0.8)' : 'rgba(255,253,246,0.35)'} stroke={INK} strokeWidth={selected ? 2.5 : 1.5} strokeDasharray="6 5" />
+      <g transform={`translate(${b.groundCenter.x},${b.groundCenter.y})`} className="plot-plus">
+        <circle r={13} fill="#dcec8f" stroke={INK} strokeWidth={2} />
+        <path d="M-6 0h12M0 -6v12" stroke={INK} strokeWidth={2.5} />
+      </g>
     </g>
   );
 }
@@ -358,12 +449,31 @@ function Backdrop({ biome, debt }: { biome: CampusView['biome']; debt: number })
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
-export function CampusMap({ view, seed }: { view: CampusView; seed: number }) {
+
+/** Screen (SVG) centre of a plot; the last index is the river spot. */
+export function plotCenter(i: number): Pt {
+  if (i >= HALL_PLOTS.length) return iso(RIVER_X[DAM_ROW] + 1, DAM_ROW + 0.5);
+  const p = HALL_PLOTS[i];
+  return box(p.x, p.y, HALL_W, HALL_D, 0).groundCenter;
+}
+
+interface MapProps {
+  view: CampusView;
+  seed: number;
+  /** Selected plot (index into state.plots), -1 for the Policies menu, null for none. */
+  selected?: number | null;
+  onSelect?: (plot: number | null) => void;
+  /** The ring menu, positioned around the selected plot (or the centre for -1). */
+  ring?: ReactNode;
+}
+
+export function CampusMap({ view, seed, selected = null, onSelect, ring }: MapProps) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [size, setSize] = useState({ w: BASE_VB.w, h: BASE_VB.h });
-  const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
+  const drag = useRef<{ x: number; y: number; px: number; py: number; moved: boolean } | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+  const interactive = Boolean(onSelect);
 
   // Match the viewBox to the container's shape: wide screens show extra sky,
   // narrow (phone) screens crop the sides and let you drag to explore.
@@ -387,16 +497,29 @@ export function CampusMap({ view, seed }: { view: CampusView; seed: number }) {
   const cp = clampPan(pan);
   const vb = { x: BASE_VB.x + (BASE_VB.w - vbW) / 2 + cp.x, y: BASE_VB.y + (BASE_VB.h - vbH) / 2 + cp.y, w: vbW, h: vbH };
   const canPan = limX > 0 || limY > 0;
+  const toScreen = (p: Pt) => ({ x: ((p.x - vb.x) / vb.w) * size.w, y: ((p.y - vb.y) / vb.h) * size.h });
 
   const onDown = (e: PointerEvent<SVGSVGElement>) => {
     if (!canPan) return;
-    drag.current = { x: e.clientX, y: e.clientY, px: cp.x, py: cp.y };
-    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { x: e.clientX, y: e.clientY, px: cp.x, py: cp.y, moved: false };
   };
   const onMove = (e: PointerEvent<SVGSVGElement>) => {
-    if (!drag.current) return;
+    const dr = drag.current;
+    if (!dr) return;
+    if (!dr.moved && Math.hypot(e.clientX - dr.x, e.clientY - dr.y) < 6) return;
+    if (!dr.moved) {
+      dr.moved = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
     const scale = vbW / size.w;
-    setPan(clampPan({ x: drag.current.px - (e.clientX - drag.current.x) * scale, y: drag.current.py - (e.clientY - drag.current.y) * scale }));
+    setPan(clampPan({ x: dr.px - (e.clientX - dr.x) * scale, y: dr.py - (e.clientY - dr.y) * scale }));
+  };
+  const endDrag = () => {
+    setTimeout(() => (drag.current = null), 0);
+  };
+  const pick = (i: number) => {
+    if (drag.current?.moved) return;
+    onSelect?.(selected === i ? null : i);
   };
   const setZ = (z: number) => {
     setZoom(z);
@@ -418,106 +541,67 @@ export function CampusMap({ view, seed }: { view: CampusView; seed: number }) {
   // Depth-sorted objects
   const objects: { depth: number; node: ReactNode }[] = [];
   const add = (depth: number, key: string, node: ReactNode) => objects.push({ depth, node: <g key={key}>{node}</g> });
+  const alerts: ReactNode[] = [];
 
   HALL_PLOTS.forEach((p, i) => {
+    const v = view.plots[i];
     const depth = p.x + HALL_W + p.y + HALL_D;
-    if (i < view.halls) {
-      const newest = i === view.halls - 1;
-      add(
-        depth,
-        `hall${i}`,
-        <Hall
-          x={p.x}
-          y={p.y}
-          index={i}
-          fill={newest ? view.newestFill : 1}
-          gpu={view.gpu && i < 2}
-          outage={view.outage}
-          monitoring={view.monitoring}
-          label={newest ? `HALL ${String(i + 1).padStart(2, '0')} · ${Math.round(view.newestFill * 100)}% FULL` : undefined}
-        />,
-      );
-      if (view.debt >= 2) add(depth + 0.1, `smoke${i}`, <Puffs at={box(p.x, p.y, HALL_W, HALL_D, 46).topCenter} color={view.debt >= 3 ? '#6b6457' : '#9a9385'} count={view.debt} size={8} />);
-    } else {
-      add(-1, `plot${i}`, <EmptyPlot x={p.x} y={p.y} next={i === view.halls} nextAt={i === view.halls ? (view.nextHallAtMW ?? undefined) : undefined} />);
+    const isSel = selected === i;
+    const hit = (
+      <polygon
+        className={`plot-hit${isSel ? ' selected' : ''}`}
+        points={box(p.x, p.y, HALL_W, HALL_D, 0).top}
+        onClick={() => pick(i)}
+        role={interactive ? 'button' : undefined}
+        aria-label={interactive ? (v.kind === 'empty' ? `Empty plot ${i + 1}: build here` : `Plot ${i + 1}: ${v.kind}, upgrade`) : undefined}
+      />
+    );
+    if (v.kind === 'empty') {
+      add(-1, `plot${i}`, (
+        <g>
+          <EmptyPlot x={p.x} y={p.y} selected={isSel} />
+          {interactive && hit}
+        </g>
+      ));
+      return;
     }
+    let node: ReactNode;
+    if (v.kind === 'hall') node = <Hall x={p.x} y={p.y} index={i} view={v} monitoring={view.monitoring} outage={view.outage} />;
+    else if (v.kind === 'gas') node = <GasPlant x={p.x} y={p.y} />;
+    else if (v.kind === 'coal') node = <CoalPlant x={p.x} y={p.y} />;
+    else if (v.kind === 'biomass') node = <BiomassPlant x={p.x} y={p.y} />;
+    else if (v.kind === 'solar') node = <SolarPlot x={p.x} y={p.y} batteries={v.upgrades.includes('battery-storage')} />;
+    else node = <WindPlot x={p.x} y={p.y} batteries={v.upgrades.includes('battery-storage')} />;
+    add(depth, `b${i}`, (
+      <g className="building" onClick={() => pick(i)}>
+        {isSel && <polygon points={box(p.x, p.y, HALL_W, HALL_D, 0).top} fill="rgba(220,236,143,0.7)" stroke={INK} strokeWidth={2.5} />}
+        {interactive && hit}
+        {node}
+      </g>
+    ));
+    if (v.kind === 'hall' && view.debt >= 2) add(depth + 0.1, `smoke${i}`, <Puffs at={box(p.x, p.y, HALL_W, HALL_D, 46).topCenter} color={view.debt >= 3 ? '#6b6457' : '#9a9385'} count={view.debt} size={8} />);
+    if (v.unpowered) alerts.push(<Alert key={`alert${i}`} at={{ x: box(p.x, p.y, HALL_W, HALL_D, 70).topCenter.x, y: box(p.x, p.y, HALL_W, HALL_D, 70).topCenter.y }} />);
   });
 
-  // Cooling plant
-  const cA = AREAS.cooling;
-  if (view.cooling === 'evaporative') {
-    [0, 1].forEach((i) => {
-      const at = iso(cA.x + 1, cA.y + 0.8 + i * 1.4);
-      add(cA.x + 1 + cA.y + 1 + i * 1.4, `tower${i}`, (
-        <g>
-          <path d={`M${at.x - 20},${at.y} Q${at.x - 10},${at.y - 20} ${at.x - 14},${at.y - 40} L${at.x + 14},${at.y - 40} Q${at.x + 10},${at.y - 20} ${at.x + 20},${at.y} Z`} fill="#e6e2d6" stroke={INK} strokeWidth={1.5} />
-          <ellipse cx={at.x} cy={at.y - 40} rx={14} ry={5} fill="#c9c4b4" stroke={INK} strokeWidth={1.5} />
-          <Puffs at={{ x: at.x, y: at.y - 48 }} color="#ffffff" count={3} size={9} />
-        </g>
-      ));
-    });
-  } else if (view.cooling === 'liquid') {
-    [0, 1].forEach((i) => {
-      const at = iso(cA.x + 1, cA.y + 0.9 + i * 1.3);
-      add(cA.x + 1 + cA.y + 1 + i * 1.3, `tank${i}`, <Cylinder at={at} r={17} h={26} body="#5fd0e0" topFill="#a6eef5" />);
-    });
-    const p1 = iso(cA.x, cA.y + 1.5, 6);
-    const p2 = iso(HALL_PLOTS[1].x + HALL_W, cA.y + 1.5, 6);
-    add(0, 'pipe-liquid', <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#3aa6c9" strokeWidth={5} strokeLinecap="round" />);
-  } else {
-    const n = view.cooling === 'free' ? 3 : 2;
-    for (let i = 0; i < n; i++) {
-      const y = cA.y + 0.2 + i * (view.cooling === 'free' ? 0.95 : 1.3);
-      const b = box(cA.x + 0.3, y, 1.2, 0.8, 14);
-      add(cA.x + 1.5 + y + 0.8, `chiller${i}`, (
-        <g>
-          <Box x={cA.x + 0.3} y={y} w={1.2} d={0.8} h={14} top="#cfd3dc" left="#9ea4b3" right="#878d9d" />
-          <ellipse className={view.cooling === 'free' ? 'fan' : undefined} cx={b.topCenter.x} cy={b.topCenter.y} rx={12} ry={6} fill={view.cooling === 'free' ? '#a8e3f2' : '#6b7180'} stroke={INK} strokeWidth={1.2} />
-        </g>
-      ));
-    }
+  // River spot: the dam, or an empty build marker on the water
+  const rc = plotCenter(HALL_PLOTS.length);
+  if (view.dam.kind === 'hydro') {
+    add(RIVER_X[DAM_ROW] + DAM_ROW + 2, 'dam', (
+      <g className="building" onClick={() => pick(HALL_PLOTS.length)}>
+        <Dam reservoir />
+      </g>
+    ));
+  } else if (interactive) {
+    add(RIVER_X[DAM_ROW] + DAM_ROW + 2, 'dam-spot', (
+      <g className="plot-plus river-spot" onClick={() => pick(HALL_PLOTS.length)} role="button" aria-label="River spot: build a dam">
+        <circle cx={rc.x} cy={rc.y} r={selected === HALL_PLOTS.length ? 17 : 13} fill="#9fe0f7" stroke={INK} strokeWidth={2} strokeDasharray="4 3" />
+        <path d={`M${rc.x - 6} ${rc.y}h12M${rc.x} ${rc.y - 6}v12`} stroke={INK} strokeWidth={2.5} />
+      </g>
+    ));
   }
 
-  // Water loop tanks
-  if (view.waterLoop) {
-    const wA = AREAS.water;
-    [0, 1].forEach((i) => {
-      const at = iso(wA.x + 0.6 + i * 0.9, wA.y + 1);
-      add(wA.x + i + wA.y + 1.5, `wtank${i}`, <Cylinder at={at} r={14} h={22} body="#b7a8ee" topFill="#d7cff4" />);
-    });
-  }
-
-  // Gas turbines
-  if (view.gas) {
-    const gA = AREAS.gas;
-    [0, 1, 2].forEach((i) => {
-      const x = gA.x + i + 0.15;
-      const b = box(x, gA.y + 0.15, 0.7, 0.7, 12);
-      add(x + gA.y + 1.6, `gas${i}`, (
-        <g>
-          <Box x={x} y={gA.y + 0.15} w={0.7} d={0.7} h={12} top="#c1c4cc" left="#8b909c" right="#767b88" />
-          <rect x={b.topCenter.x - 2.5} y={b.topCenter.y - 18} width={5} height={18} fill="#6d7280" stroke={INK} strokeWidth={1.2} />
-          <Puffs at={{ x: b.topCenter.x, y: b.topCenter.y - 22 }} color="#55595f" count={2} size={7} />
-        </g>
-      ));
-    });
-  }
-
-  // Solar field
-  if (view.solar) {
-    const sA = AREAS.solar;
-    for (let gy = sA.y; gy < sA.y + sA.d; gy++) for (let gx = sA.x; gx < sA.x + sA.w; gx++) if (!isRoad(gx, gy)) add(gx + gy + 0.5, `solar${gx}-${gy}`, <SolarRow gx={gx} gy={gy} />);
-  }
-
-  // Wind turbines
-  if (view.wind) {
-    [11.5, 13.2, 14.9].forEach((gx, i) => {
-      const at = iso(gx, AREAS.wind.y + 0.5);
-      add(gx + AREAS.wind.y + 0.5, `wind${i}`, <WindTurbine at={at} />);
-    });
-  }
-
-  // Village (always there: the neighbours) and the heat pipe
+  // Village (the neighbours); warm windows if any hall shares its heat
+  const heat = view.plots.some((p) => p.upgrades.includes('heat-reuse'));
   const vA = AREAS.village;
   [
     { x: vA.x + 0.2, y: vA.y + 0.2 },
@@ -525,41 +609,32 @@ export function CampusMap({ view, seed }: { view: CampusView; seed: number }) {
     { x: vA.x + 2.9, y: vA.y + 0.3 },
     { x: vA.x + 0.9, y: vA.y + 1.2 },
     { x: vA.x + 2.3, y: vA.y + 1.2 },
-  ].forEach((h, i) => add(h.x + h.y + 1.6, `house${i}`, <House x={h.x} y={h.y} warm={view.heatReuse} />));
-
-  let heatPipe: ReactNode = null;
-  if (view.heatReuse) {
-    const path = [iso(cA.x + 1, cA.y + cA.d, 4), iso(cA.x + 1, ROAD_Y + 0.85, 4), iso(13.2, ROAD_Y + 0.85, 4), iso(13.2, vA.y, 4)];
-    heatPipe = (
-      <g>
-        <polyline points={pts(path)} fill="none" stroke={INK} strokeWidth={7} strokeLinejoin="round" />
-        <polyline points={pts(path)} fill="none" stroke="#ef8a3a" strokeWidth={4} strokeLinejoin="round" />
-        <polyline className="flow" points={pts(path)} fill="none" stroke="#ffd29a" strokeWidth={2} strokeDasharray="6 10" />
-      </g>
-    );
-  }
+  ].forEach((h, i) => add(h.x + h.y + 1.6, `house${i}`, <House x={h.x} y={h.y} warm={heat} />));
 
   trees.forEach((t, i) => add(t.gx + t.gy + 0.9, `tree${i}`, <Tree at={t.at} biome={view.biome} s={t.s} />));
-
   objects.sort((a, b) => a.depth - b.depth);
 
+  const anchor = selected === null ? null : selected < 0 ? { x: size.w / 2, y: size.h / 2 } : toScreen(plotCenter(selected));
+  const R = Math.min(118, size.w / 2 - 50, size.h / 2 - 50);
+  const ringPos = anchor ? { x: Math.max(R + 44, Math.min(size.w - R - 44, anchor.x)), y: Math.max(R + 40, Math.min(size.h - R - 40, anchor.y)) } : null;
+
   return (
-    <div className="campus" ref={boxRef}>
+    <div className={`campus${interactive ? ' interactive' : ''}`} ref={boxRef}>
       <svg
         className={`campus-svg${canPan ? ' can-pan' : ''}`}
         viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label={`Your campus: ${view.halls} datacenter hall${view.halls > 1 ? 's' : ''} of ${HALL_PLOTS.length} plots, a river, ${view.solar ? 'a solar field, ' : ''}${view.wind ? 'wind turbines, ' : ''}${view.gas ? 'gas turbines, ' : ''}and the village.`}
+        aria-label={`Your campus: ${view.halls} datacenter hall${view.halls === 1 ? '' : 's'}, ${view.plots.filter((p) => p.kind !== 'empty' && p.kind !== 'hall').length} power plants, ${view.plots.filter((p) => p.kind === 'empty').length} free plots, a river.`}
         onPointerDown={onDown}
         onPointerMove={onMove}
-        onPointerUp={() => (drag.current = null)}
-        onPointerCancel={() => (drag.current = null)}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
       >
         <Backdrop biome={view.biome} debt={view.debt} />
         <Ground biome={view.biome} lowWater={view.lowWater} />
-        {heatPipe}
         {objects.map((o) => o.node)}
+        {alerts}
         {view.debt > 0 && <rect className="haze" x={BASE_VB.x - 200} y={BASE_VB.y - 200} width={BASE_VB.w + 400} height={BASE_VB.h + 400} fill="#7a5f3c" opacity={0.06 * view.debt} pointerEvents="none" />}
         {view.outage && (
           <g className="flash" transform={`translate(${iso(HALL_PLOTS[0].x + 1, HALL_PLOTS[0].y).x},${iso(HALL_PLOTS[0].x + 1, HALL_PLOTS[0].y).y - 96})`}>
@@ -570,7 +645,12 @@ export function CampusMap({ view, seed }: { view: CampusView; seed: number }) {
           </g>
         )}
       </svg>
-      {limX > 40 && zoom === 1 && <span className="drag-hint">Drag to explore</span>}
+      {ring && ringPos && (
+        <div className="ring-anchor" style={{ left: ringPos.x, top: ringPos.y, ['--ring-r' as string]: `${R}px` }}>
+          {ring}
+        </div>
+      )}
+      {limX > 40 && zoom === 1 && !ring && <span className="drag-hint">Drag to explore · tap a plot to build</span>}
       <div className="zoom">
         <button type="button" aria-label="Zoom in" onClick={() => setZ(Math.min(2.2, +(zoom + 0.4).toFixed(1)))}>
           +

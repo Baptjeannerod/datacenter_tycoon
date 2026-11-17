@@ -1,9 +1,19 @@
 {
   "maxTicks": 40,
   "hoursPerTick": 2190,
+  "landPlots": 8,
+  "startBuildings": [
+    {
+      "plot": 0,
+      "building": "datacenter-hall"
+    },
+    {
+      "plot": 1,
+      "building": "gas-plant"
+    }
+  ],
   "fixedOpexPerTick": 150,
   "maintenancePerMW": 60,
-  "capexPerMW": 1200,
   "refreshCostPerMW": 500,
   "eWastePerMW": 8,
   "embodiedCarbonPerMW": 300,

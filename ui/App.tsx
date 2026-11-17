@@ -34,10 +34,10 @@ function HowToPlay({ onClose }: { onClose: () => void }) {
           <strong>Clients knock.</strong> Accept, refuse, or propose a lighter alternative. Does it really need AI?
         </li>
         <li>
-          <strong>Buy upgrades.</strong> Every one has a trade-off you can see. Some also hide a bill you can&rsquo;t.
+          <strong>Build on the map.</strong> Tap a plot to build a datacenter hall or a power plant. There is no grid: halls only run on the power you build (a red &ldquo;!&rdquo; means a hall has no power). Tap a building to upgrade it; every upgrade has a trade-off you can see, some hide a bill you can&rsquo;t.
         </li>
         <li>
-          <strong>Watch two scores.</strong> Sustainability (what your campus does to the planet) and Responsibility (how you decide). Growth builds new halls on your free plots, and grows your footprint.
+          <strong>Watch two scores.</strong> Sustainability (what your campus does to the planet) and Responsibility (how you decide). Coal is cheap and compact, wind and sun are clean but need land.
         </li>
         <li>
           <strong>Your legacy</strong> = profit × impact. Pure greed and pure virtue both lose to a smart balance.

@@ -8,6 +8,7 @@
     "themes": [
       "efficiency"
     ],
+    "scope": "hall",
     "cost": 120,
     "effects": {
       "pue": -0.08
@@ -29,6 +30,7 @@
     "themes": [
       "efficiency"
     ],
+    "scope": "policy",
     "cost": 0,
     "effects": {
       "pue": -0.06,
@@ -50,6 +52,7 @@
     "themes": [
       "efficiency"
     ],
+    "scope": "hall",
     "cost": 700,
     "effects": {
       "pue": -0.25,
@@ -93,6 +96,7 @@
       "water",
       "efficiency"
     ],
+    "scope": "hall",
     "cost": 250,
     "effects": {
       "pue": -0.22,
@@ -136,7 +140,9 @@
       "efficiency",
       "water"
     ],
+    "scope": "hall",
     "cost": 1600,
+    "powerMW": 0.1,
     "effects": {
       "pue": -0.3,
       "wue": -0.5,
@@ -156,119 +162,18 @@
     "confidence": "illustrative"
   },
   {
-    "id": "renewable-ppa",
-    "name": "Renewable power contract",
-    "pitch": "Pay a premium to fund new wind and solar on your grid.",
-    "family": "good",
-    "category": "energy",
-    "themes": [
-      "energy-mix"
-    ],
-    "cost": 300,
-    "effects": {
-      "renewableShare": 0.6,
-      "cashPerTick": -35
-    },
-    "scoreDelta": {
-      "sustainability": 2,
-      "responsibility": 3
-    },
-    "exclusiveGroup": "power-contract",
-    "contextModifiers": {
-      "coal-valley": {
-        "effects": {
-          "renewableShare": 0.6,
-          "cashPerTick": -60
-        },
-        "note": "On a coal grid this is your single biggest carbon lever."
-      },
-      "sun-belt": {
-        "effects": {
-          "renewableShare": 0.6,
-          "cashPerTick": -15
-        },
-        "note": "Solar is cheap here: the premium is small."
-      },
-      "paris-basin": {
-        "note": "Your grid is already low-carbon. A real but small gain: is it the best use of your money?"
-      }
-    },
-    "whyItMatters": "A green contract only cuts real emissions if it adds new renewable capacity on your grid. Otherwise it is accounting.",
-    "source": "GHG Protocol Scope 2 Guidance (market-based method) and the additionality debate",
-    "confidence": "approx",
-    "slice": true
-  },
-  {
-    "id": "cheap-fossil-contract",
-    "name": "Discount fossil power deal",
-    "pitch": "Lock in 15 % cheaper electricity from a gas and coal supplier.",
-    "family": "trap",
-    "category": "energy",
-    "themes": [
-      "energy-mix"
-    ],
-    "cost": 0,
-    "effects": {
-      "energyPricePct": -0.15,
-      "carbonIntensity": 300,
-      "envDebtPerTick": 0.3
-    },
-    "scoreDelta": {
-      "sustainability": -3
-    },
-    "exclusiveGroup": "power-contract",
-    "whyItMatters": "Cheap fossil power is cheap because its damage is not on the bill yet. Carbon prices change that.",
-    "source": "Game design",
-    "confidence": "illustrative"
-  },
-  {
-    "id": "onsite-solar",
-    "name": "Solar roof and batteries",
-    "pitch": "Make some of your own power and sell the surplus.",
-    "family": "good",
-    "category": "energy",
-    "themes": [
-      "energy-mix"
-    ],
-    "cost": 900,
-    "effects": {
-      "renewableShare": 0.12,
-      "cashPerTick": 12
-    },
-    "scoreDelta": {
-      "sustainability": 2
-    },
-    "contextModifiers": {
-      "sun-belt": {
-        "effects": {
-          "renewableShare": 0.25,
-          "cashPerTick": 30
-        },
-        "note": "This is solar country: it pays back fast."
-      },
-      "nordic-fjord": {
-        "effects": {
-          "renewableShare": 0.04,
-          "cashPerTick": 3
-        },
-        "note": "Winter daylight lasts a few hours here."
-      }
-    },
-    "whyItMatters": "On-site solar covers only a slice of a datacenter's hunger, but in sunny places it pays for itself.",
-    "source": "Game design (relative yields by latitude are realistic in direction, not in exact value)",
-    "confidence": "illustrative"
-  },
-  {
     "id": "heat-reuse",
     "name": "Heat reuse network",
-    "pitch": "Pipe your waste heat to warm nearby homes and pools.",
+    "pitch": "Pipe this hall's waste heat to warm nearby homes.",
     "family": "good",
     "category": "energy",
     "themes": [
       "efficiency",
       "lifecycle"
     ],
+    "scope": "hall",
     "cost": 900,
+    "powerMW": 0.1,
     "effects": {
       "cashPerTick": 15
     },
@@ -304,6 +209,7 @@
     "themes": [
       "measure"
     ],
+    "scope": "policy",
     "cost": 150,
     "effects": {
       "pue": -0.04,
@@ -330,6 +236,7 @@
     "themes": [
       "lifecycle"
     ],
+    "scope": "hall",
     "cost": 200,
     "effects": {
       "hardwareLifespan": 8,
@@ -354,6 +261,7 @@
     "themes": [
       "lifecycle"
     ],
+    "scope": "policy",
     "cost": 250,
     "effects": {
       "eWasteFactor": -0.6,
@@ -377,6 +285,7 @@
       "lifecycle",
       "rebound"
     ],
+    "scope": "policy",
     "cost": 800,
     "effects": {
       "hardwareLifespan": -8,
@@ -397,13 +306,15 @@
   {
     "id": "overclock-and-cram",
     "name": "Overclock and cram",
-    "pitch": "Pack more servers per rack and push them harder. More revenue per MW.",
+    "pitch": "Pack more servers in this hall and push them harder.",
     "family": "trap",
     "category": "hardware",
     "themes": [
       "lifecycle"
     ],
+    "scope": "hall",
     "cost": 0,
+    "powerMW": 0.3,
     "effects": {
       "pricePct": 0.12,
       "failureRate": 0.05,
@@ -422,14 +333,16 @@
   {
     "id": "gpu-hype-cluster",
     "name": "GenAI GPU cluster",
-    "pitch": "Every startup wants GPUs. Build a cluster and ride the AI boom.",
+    "pitch": "Fill this hall with GPUs and ride the AI boom. Power-hungry.",
     "family": "trap",
     "category": "ai",
     "themes": [
       "question-the-need",
       "rebound"
     ],
+    "scope": "hall",
     "cost": 1500,
+    "powerMW": 0.5,
     "effects": {
       "growthRate": 0.03,
       "pricePct": 0.1,
@@ -455,35 +368,6 @@
     "slice": true
   },
   {
-    "id": "gas-turbines",
-    "name": "On-site gas turbines",
-    "pitch": "The grid queue is 5 years long. Bring your own power and grow now.",
-    "family": "trap",
-    "category": "energy",
-    "themes": [
-      "energy-mix"
-    ],
-    "cost": 400,
-    "effects": {
-      "growthRate": 0.02,
-      "energyPricePct": 0.1,
-      "envDebtPerTick": 1.2
-    },
-    "scoreDelta": {
-      "sustainability": -6,
-      "responsibility": -3
-    },
-    "delayed": [
-      {
-        "afterTicks": 10,
-        "triggerEvent": "permit-audit"
-      }
-    ],
-    "whyItMatters": "Some AI datacenters install gas turbines to grow faster than the grid allows. Growth now, emissions and permit fights later.",
-    "source": "Press reports (2024-2025) on gas turbines powering AI datacenters; numbers are game design",
-    "confidence": "illustrative"
-  },
-  {
     "id": "carbon-offsets-greenwash",
     "name": "\"Carbon neutral\" badge",
     "pitch": "Buy cheap offsets, put a green leaf on the website, charge a premium.",
@@ -492,6 +376,7 @@
     "themes": [
       "honest-communication"
     ],
+    "scope": "policy",
     "cost": 60,
     "effects": {
       "cashPerTick": 25,
@@ -529,6 +414,7 @@
       "question-the-need",
       "governance"
     ],
+    "scope": "policy",
     "cost": 100,
     "effects": {
       "growthRate": -0.004
@@ -554,6 +440,7 @@
       "efficiency",
       "rebound"
     ],
+    "scope": "policy",
     "cost": 450,
     "effects": {
       "itEfficiency": 0.15,
@@ -579,6 +466,7 @@
     "themes": [
       "skills"
     ],
+    "scope": "policy",
     "cost": 80,
     "effects": {
       "failureRate": -0.005
@@ -600,6 +488,7 @@
       "rebound",
       "governance"
     ],
+    "scope": "policy",
     "cost": 0,
     "effects": {
       "growthCap": 0.015
@@ -621,7 +510,9 @@
     "themes": [
       "water"
     ],
+    "scope": "hall",
     "cost": 500,
+    "powerMW": 0.1,
     "effects": {
       "wue": -0.8,
       "pue": 0.04
@@ -641,5 +532,299 @@
     "whyItMatters": "Recycling water cuts withdrawals, but pumps and chillers use more energy: a real trade-off between water and carbon.",
     "source": "Water-energy trade-off in cooling design (WUE vs. PUE, The Green Grid)",
     "confidence": "approx"
+  },
+  {
+    "id": "coal-scrubbers",
+    "name": "Smoke scrubbers",
+    "pitch": "Filter soot and sulfur out of the chimney. Not the CO2.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "coal"
+    ],
+    "cost": 600,
+    "plantEffects": {
+      "costPct": 0.1
+    },
+    "effects": {
+      "envDebtPerTick": -0.4
+    },
+    "scoreDelta": {
+      "sustainability": 2,
+      "responsibility": 2
+    },
+    "whyItMatters": "Scrubbers clean the air locally, but the climate damage of coal stays the same.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "cheap-lignite",
+    "name": "Cheap lignite",
+    "pitch": "Burn low-grade brown coal. 30 % cheaper fuel.",
+    "family": "trap",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "coal"
+    ],
+    "cost": 0,
+    "plantEffects": {
+      "costPct": -0.3,
+      "carbonPct": 0.15
+    },
+    "effects": {
+      "envDebtPerTick": 0.5
+    },
+    "scoreDelta": {
+      "sustainability": -3
+    },
+    "whyItMatters": "Lignite is the dirtiest coal: cheaper fuel, more CO2 and more pollution per MWh.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "carbon-capture",
+    "name": "Carbon capture",
+    "pitch": "Capture most of the CO2. Costs a lot and eats a fifth of the output.",
+    "family": "tradeoff",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "coal",
+      "gas"
+    ],
+    "cost": 2500,
+    "plantEffects": {
+      "carbonPct": -0.7,
+      "costPct": 0.35,
+      "outputPct": -0.2
+    },
+    "effects": {},
+    "scoreDelta": {
+      "sustainability": 4
+    },
+    "whyItMatters": "Capture works on paper; in practice it is expensive and uses part of the plant's own power.",
+    "source": "IPCC AR5 WGIII (2014): CCS energy penalty and costs (order of magnitude)",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "gas-heat-recovery",
+    "name": "Heat recovery",
+    "pitch": "Reuse exhaust heat to make more power from the same gas.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "efficiency"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "gas"
+    ],
+    "cost": 500,
+    "plantEffects": {
+      "outputPct": 0.15
+    },
+    "effects": {},
+    "scoreDelta": {
+      "sustainability": 2
+    },
+    "whyItMatters": "Efficiency gains at the plant mean less fuel for the same MWh.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "methane-leak-checks",
+    "name": "Methane leak checks",
+    "pitch": "Find and fix gas leaks on the supply line.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "measure"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "gas"
+    ],
+    "cost": 200,
+    "plantEffects": {
+      "carbonPct": -0.12
+    },
+    "effects": {},
+    "scoreDelta": {
+      "responsibility": 2
+    },
+    "whyItMatters": "Leaked methane warms the planet far more than CO2 over 20 years; measuring leaks is cheap.",
+    "source": "IEA Global Methane Tracker (order of magnitude)",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "certified-wood",
+    "name": "Certified local wood",
+    "pitch": "Only wood from sustainably managed local forests. Pricier.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "lifecycle"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "biomass"
+    ],
+    "cost": 300,
+    "plantEffects": {
+      "costPct": 0.25
+    },
+    "effects": {
+      "envDebtPerTick": -0.25
+    },
+    "scoreDelta": {
+      "responsibility": 3
+    },
+    "whyItMatters": "Biomass is only low-carbon if the forest regrows; certification and short supply chains help.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "imported-pellets",
+    "name": "Imported pellets",
+    "pitch": "Cheap wood pellets shipped from overseas forests.",
+    "family": "trap",
+    "category": "energy",
+    "themes": [
+      "lifecycle"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "biomass"
+    ],
+    "cost": 0,
+    "plantEffects": {
+      "costPct": -0.3,
+      "carbonPct": 0.4
+    },
+    "effects": {
+      "envDebtPerTick": 0.5
+    },
+    "scoreDelta": {
+      "sustainability": -2
+    },
+    "whyItMatters": "Shipping pellets across oceans from cleared forests can make biomass worse than gas.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "bigger-rotors",
+    "name": "Bigger rotors",
+    "pitch": "Longer blades catch more wind: +30 % output.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "wind"
+    ],
+    "cost": 900,
+    "plantEffects": {
+      "outputPct": 0.3
+    },
+    "effects": {},
+    "scoreDelta": {
+      "sustainability": 1
+    },
+    "whyItMatters": "Repowering an existing site gets more clean MWh from the same land.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "battery-storage",
+    "name": "Battery storage",
+    "pitch": "Store sunny or windy hours for the calm ones.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "energy-mix",
+      "lifecycle"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "wind",
+      "solar"
+    ],
+    "cost": 800,
+    "plantEffects": {
+      "variabilityPct": -0.6,
+      "outputPct": 0.05
+    },
+    "effects": {},
+    "scoreDelta": {
+      "sustainability": 1
+    },
+    "whyItMatters": "Batteries smooth renewables so your halls stay on; they also need mined metals.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "solar-trackers",
+    "name": "Sun trackers",
+    "pitch": "Panels that follow the sun: +25 % output.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "solar"
+    ],
+    "cost": 600,
+    "plantEffects": {
+      "outputPct": 0.25
+    },
+    "effects": {},
+    "scoreDelta": {
+      "sustainability": 1
+    },
+    "whyItMatters": "More output from the same land, at the price of moving parts.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "fish-ladders",
+    "name": "Fish ladders",
+    "pitch": "Let fish swim past the dam and keep a minimum river flow.",
+    "family": "good",
+    "category": "water",
+    "themes": [
+      "water"
+    ],
+    "scope": "plant",
+    "plantTypes": [
+      "hydro"
+    ],
+    "cost": 400,
+    "plantEffects": {
+      "outputPct": -0.05
+    },
+    "effects": {
+      "envDebtPerTick": -0.2
+    },
+    "scoreDelta": {
+      "responsibility": 4
+    },
+    "whyItMatters": "A little less power, a living river downstream.",
+    "source": "Game design",
+    "confidence": "illustrative"
   }
 ]

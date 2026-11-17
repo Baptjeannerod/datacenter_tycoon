@@ -33,7 +33,7 @@ export function DecisionPanel({ decision, feedback, seed, onChoose, onAnswer, on
         <div className="eyebrow">
           <span className={`dot ${feedback.correct ? 'ok' : 'bad'}`} /> {feedback.correct ? 'Correct' : 'Not quite'}
         </div>
-        <h3 className="pixel">{q.question}</h3>
+        <h3 className="question">{q.question}</h3>
         <p className="answer-line">
           <strong>{q.answers[q.correctIndex]}</strong>
         </p>
@@ -75,7 +75,7 @@ export function DecisionPanel({ decision, feedback, seed, onChoose, onAnswer, on
         <div className="eyebrow">
           <span className="dot quiz" /> Quick question
         </div>
-        <h3 className="pixel">{q.question}</h3>
+        <h3 className="question">{q.question}</h3>
         <div className="choices">
           {answerOrder(q, seed).map((i) => (
             <button key={i} className="btn choice" onClick={() => onAnswer(i)}>

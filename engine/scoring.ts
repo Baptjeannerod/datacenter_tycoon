@@ -1,4 +1,5 @@
-import { clamp, derive, getLocation } from './derive';
+import { clamp, derive, getBuilding, getLocation } from './derive';
+import { expectedIntensity } from './power';
 import type { Archetype, Content, DerivedStats, GameState, RunSummary, Scores } from './types';
 
 /**
@@ -15,15 +16,20 @@ export const SUSTAINABILITY_WEIGHTS = {
 
 export function computeScores(state: GameState, content: Content, d: DerivedStats = derive(state, content)): Scores {
   const loc = getLocation(content, state.locationId);
-  const lastEnergy = state.history.at(-1)?.energyMWh ?? state.baselineEnergyMWh;
+  const last = state.history.at(-1);
+  const lastEnergy = last?.energyMWh ?? state.baselineEnergyMWh;
+  // Carbon of the electricity you actually used (your own plants: there is no grid).
+  const intensity = last && last.energyMWh > 0 ? last.carbonIntensity : expectedIntensity(state, content, d);
+  // Water per MWh of IT energy, including the cooling water of thermal plants.
+  const effWue = last && last.energyMWh > 0 ? last.waterM3 / (last.energyMWh / d.pue) : d.wue;
 
   const breakdown = {
     // PUE 2.0 -> 0, PUE 1.1 -> 100
     pue: clamp((2.0 - d.pue) / 0.9, 0, 1) * 100,
-    // 700 gCO2e/kWh (coal) -> 0, 0 -> 100
-    carbon: clamp(1 - d.effectiveCarbon / 700, 0, 1) * 100,
-    // Water weighted by local stress: WUE x stress of 2 or more -> 0
-    water: clamp(1 - (d.wue * loc.waterStress) / 2, 0, 1) * 100,
+    // 900 gCO2e/kWh (coal plant) -> 0, 0 -> 100
+    carbon: clamp(1 - intensity / 900, 0, 1) * 100,
+    // Water (IT cooling + plant cooling) weighted by local stress: 2.5 L/kWh x stress -> 0
+    water: clamp(1 - (effWue * loc.waterStress) / 2.5, 0, 1) * 100,
     // Lifespan 2 years -> 0, 8 years -> 60 pts; e-waste cut by 70 % -> +40 pts
     lifecycle:
       clamp((d.hardwareLifespan - 8) / 24, 0, 1) * 60 + clamp((1 - d.eWasteMultiplier) / 0.7, 0, 1) * 40,
@@ -75,24 +81,26 @@ export function summarize(state: GameState, content: Content): RunSummary {
       ? (scores.sustainability + scores.responsibility) / 2
       : state.history.reduce((acc, h) => acc + (h.sustainability + h.responsibility) / 2, 0) / state.history.length;
 
-  const greenSpend = state.owned
-    .map((id) => content.upgrades.find((u) => u.id === id))
-    .filter((u) => u && u.family === 'good')
-    .reduce((acc, u) => acc + (u?.cost ?? 0), 0);
-  const traps = state.owned.filter((id) => content.upgrades.find((u) => u.id === id)?.family === 'trap');
+  const bought = state.decisions.filter((d) => d.startsWith('upgrade:')).map((d) => content.upgrades.find((u) => u.id === d.slice(8)));
+  const built = state.decisions.filter((d) => d.startsWith('build:')).map((d) => getBuilding(content, d.slice(6)));
+  const cleanBuilt = built.filter((b) => b.kind === 'plant' && (b.carbonPerMWh ?? 0) < 100);
+  const greenSpend =
+    bought.filter((u) => u?.family === 'good').reduce((acc, u) => acc + (u?.cost ?? 0), 0) + cleanBuilt.reduce((acc, b) => acc + b.cost, 0);
+  const traps = [...new Set(bought.filter((u) => u?.family === 'trap').map((u) => u!.id))];
+  const halls = state.plots.filter((p) => p && getBuilding(content, p.building).kind === 'datacenter').length;
   const declined = state.decisions.filter((d) => d.startsWith('client:') && !d.endsWith(':accept')).length;
   const accepted = state.decisions.filter((d) => d.startsWith('client:') && d.endsWith(':accept')).length;
   const consequences = state.firedEvents.filter(
     (id) => content.events.find((e) => e.id === id)?.kind === 'consequence',
   ).length;
 
-  const gained: string[] = [`${fmtMoney(netWorth)} net worth`];
+  const gained: string[] = [`${fmtMoney(netWorth)} net worth`, `${halls} datacenter hall${halls > 1 ? 's' : ''} built`];
   if (accepted > 0) gained.push(`${accepted} client deal${accepted > 1 ? 's' : ''} accepted`);
   if (traps.length > 0) gained.push(`Fast growth from ${traps.length} shortcut${traps.length > 1 ? 's' : ''}`);
   gained.push(`Sustainability ${Math.round(scores.sustainability)}/100, Responsibility ${Math.round(scores.responsibility)}/100`);
 
   const gaveUp: string[] = [];
-  if (greenSpend > 0) gaveUp.push(`${fmtMoney(greenSpend)} invested in green upgrades`);
+  if (greenSpend > 0) gaveUp.push(`${fmtMoney(greenSpend)} invested in clean power and green upgrades`);
   if (declined > 0) gaveUp.push(`${declined} client deal${declined > 1 ? 's' : ''} refused or downsized`);
   if (state.totals.carbonTax > 0) gaveUp.push(`${fmtMoney(state.totals.carbonTax)} paid in carbon tax`);
   if (consequences > 0) gaveUp.push(`${consequences} environmental bill${consequences > 1 ? 's' : ''} came due`);

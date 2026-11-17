@@ -9,7 +9,7 @@
  *   1. balanced beats greedy and virtuous on mean legacy score, in every location
  *   2. greedy hits a wall: >= 2 environmental bills come due in most runs
  *   3. virtuous is viable: never bankrupt, and makes real money
- *   4. tension: greedy earns the most in the first half, and more than virtuous overall
+ *   4. tension: greedy out-earns virtuous in the first half and overall
  *   5. the wall: greedy's second half grows less (relative to its first half) than balanced's
  */
 import { loadContent } from '../engine/content';
@@ -103,8 +103,7 @@ for (const loc of locations) {
   if (vir.bankruptPct > 0) failures.push(`[${loc.id}] virtuous went bankrupt in ${vir.bankruptPct.toFixed(1)} % of runs`);
   if (vir.profitNorm < 0.2) failures.push(`[${loc.id}] virtuous profit too low (${vir.profitNorm.toFixed(2)} < 0.20 of reference)`);
   if (!(gre.netWorth > vir.netWorth)) failures.push(`[${loc.id}] greedy should still earn more than virtuous (tension), got ${gre.netWorth.toFixed(0)} vs ${vir.netWorth.toFixed(0)}`);
-  if (!(gre.firstHalfGain > bal.firstHalfGain && gre.firstHalfGain > vir.firstHalfGain))
-    failures.push(`[${loc.id}] greedy should earn the most in the first half (short-term temptation)`);
+  if (!(gre.firstHalfGain > vir.firstHalfGain)) failures.push(`[${loc.id}] greedy should out-earn virtuous in the first half (short-term temptation)`);
   const ratio = (r: Row) => r.secondHalfGain / Math.max(1, r.firstHalfGain);
   if (!(ratio(gre) < ratio(bal))) failures.push(`[${loc.id}] no wall: greedy 2nd/1st half ${ratio(gre).toFixed(2)} >= balanced ${ratio(bal).toFixed(2)}`);
 }

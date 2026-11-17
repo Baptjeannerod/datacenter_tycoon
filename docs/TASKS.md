@@ -18,23 +18,23 @@
 ## dev
 
 ### DEV-1 · P0 · Game screen: HUD and auto-advancing quarters
-- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** review (PR agent/DEV-1-vertical-slice-ui) · **Depends on:** UX-1 (can start before)
+- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** done (PR 38) · **Depends on:** UX-1 (can start before)
 - **Goal:** Replace the harness `Game` view with the real mobile screen: top HUD (cash, last quarter, Sustainability, Responsibility, year/quarter), datacenter area, a timer that calls `step()` every ~4 s and pauses while a card is open, a speed-up button.
 - **Done when:** a full run plays on a 375 px screen with no scrolling needed for the HUD; time stops on every card; no console errors.
 - **Files:** `ui/` (new components), keep `engine/` untouched.
 
 ### DEV-2 · P0 · Decision cards (client, event, quiz)
-- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** review · **Depends on:** DEV-1
+- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** done · **Depends on:** DEV-1
 - **Goal:** Bottom-sheet card for `currentDecision()`. Clients and events show title, body, choices with `hint`; after choosing, show `outcome` for ~1.5 s with floating score/money deltas. Quiz shows answers (shuffle order with the run seed), then the `explanation` and right/wrong.
 - **Done when:** every card type in the slice can be answered with one thumb; the outcome text is visible before the next tick.
 
 ### DEV-3 · P0 · Upgrade shop
-- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** review · **Depends on:** DEV-1
+- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** done · **Depends on:** DEV-1
 - **Goal:** Shop drawer listing `shopUpgrades()` with name, pitch, cost, location note (`resolveUpgrade().note`), disabled when `!canBuy()`. After buying, show `whyItMatters` once.
 - **Done when:** buying works mid-run; **family (good/trap/tradeoff) is never shown before purchase**.
 
 ### DEV-4 · P0 · End screen: frontier, archetype, gained / gave up
-- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** review · **Depends on:** DEV-1
+- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** done · **Depends on:** DEV-1
 - **Goal:** From `summarize()`: archetype title + one-liner (copy from GD-2), legacy score, an SVG plot with profit (x) vs impact (y) and the player's dot (plus faint dots for the 4 sim strategies as reference), "what you gained / what you gave up", and the reveal of each owned upgrade's family.
 - **Done when:** the screen fits a phone, explains the trade-off in under 10 seconds of reading, and has Replay + Share + Rate buttons.
 
@@ -64,7 +64,7 @@
 - **Done when:** two phones get the same run on the same day.
 
 ### DEV-10 · P0 · Deploy to Vercel
-- **Role:** dev · **Owner:** _unclaimed_ · **Status:** todo
+- **Role:** dev · **Owner:** claude-opus (bootstrap agent) · **Status:** done: https://datacenter-tycoon-plum.vercel.app (Vercel project `datacenter-tycoon`, team Encore). Follow-up: connect the GitHub repo so pushes to `main` deploy automatically and PRs get previews.
 - **Goal:** Vercel project linked to this repo; production = `main`; preview per PR. Put the URL in the README.
 - **Done when:** the README "Live demo" link works on a phone over mobile data.
 

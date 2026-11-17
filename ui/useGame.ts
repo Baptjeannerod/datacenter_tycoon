@@ -8,6 +8,8 @@ import {
   applyAction,
   computeScores,
   createGame,
+  getBuilding,
+  getUpgrade,
   currentDecision,
   loadContent,
   nextRandom,
@@ -48,6 +50,8 @@ export function useGame() {
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  /** Plot whose ring menu is open (-1 = policies), or null. Time pauses while it is open. */
+  const [menu, setMenu] = useState<number | null>(null);
 
   const decision = state ? currentDecision(state, content) : null;
   const hasDecision = decision !== null;
@@ -55,10 +59,10 @@ export function useGame() {
 
   // Auto-advance: one quarter every TICK_MS / speed, unless paused or a card is open.
   useEffect(() => {
-    if (!state || !playing || paused || hasDecision || feedback) return;
+    if (!state || !playing || paused || hasDecision || feedback || menu !== null) return;
     const id = window.setTimeout(() => setState((s) => (s ? step(s, content) : s)), TICK_MS / speed);
     return () => window.clearTimeout(id);
-  }, [state, playing, paused, speed, hasDecision, feedback]);
+  }, [state, playing, paused, speed, hasDecision, feedback, menu]);
 
   // Outcome banners clear themselves; quiz explanations wait for "Continue".
   useEffect(() => {
@@ -105,16 +109,39 @@ export function useGame() {
     [state, decision],
   );
 
-  const buy = useCallback((upgradeId: string) => setState((s) => (s ? applyAction(s, { type: 'buy', upgradeId }, content) : s)), []);
+  /** Build on a plot or install an upgrade, close the ring, and explain what it does. */
+  const act = useCallback(
+    (action: { type: 'build'; plot: number; buildingId: string } | { type: 'buy'; upgradeId: string; plot?: number }) => {
+      if (!state) return;
+      const next = applyAction(state, action, content);
+      if (next === state) return;
+      const before = computeScores(state, content);
+      const after = computeScores(next, content);
+      const item = action.type === 'build' ? getBuilding(content, action.buildingId) : getUpgrade(content, action.upgradeId);
+      const dirty = action.type === 'build' && (getBuilding(content, action.buildingId).carbonPerMWh ?? 0) > 300;
+      setState(next);
+      setMenu(null);
+      setFeedback({
+        kind: 'outcome',
+        title: action.type === 'build' ? 'Built' : 'Installed',
+        label: item.name,
+        text: item.whyItMatters,
+        stance: dirty ? 'greedy' : 'neutral',
+        delta: { cash: next.cash - state.cash, s: after.sustainability - before.sustainability, r: after.responsibility - before.responsibility },
+      });
+    },
+    [state],
+  );
   const nextQuarter = useCallback(() => setState((s) => (s ? step(s, content) : s)), []);
   const quit = useCallback(() => {
     setState(null);
     setFeedback(null);
+    setMenu(null);
   }, []);
 
   const scores = useMemo(() => (state ? computeScores(state, content) : null), [state]);
 
-  return { state, decision, scores, paused, setPaused, speed, setSpeed, feedback, setFeedback, start, choose, answer, buy, nextQuarter, quit };
+  return { state, decision, scores, paused, setPaused, speed, setSpeed, feedback, setFeedback, menu, setMenu, start, choose, answer, act, nextQuarter, quit };
 }
 
 export type GameController = ReturnType<typeof useGame>;

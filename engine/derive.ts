@@ -1,13 +1,4 @@
-import type {
-  Content,
-  DerivedStats,
-  Effects,
-  GameState,
-  Location,
-  Modifier,
-  Upgrade,
-  ContextOverride,
-} from './types';
+import type { Building, Content, ContextOverride, DerivedStats, Effects, GameState, Location, Modifier, Upgrade } from './types';
 
 export const PERSISTENT_KEYS = [
   'pue',
@@ -25,6 +16,9 @@ export const PERSISTENT_KEYS = [
   'eWasteFactor',
   'carbonIntensity',
 ] as const satisfies readonly (keyof Effects)[];
+
+/** Keys that describe "how each hall works": a hall-scoped upgrade counts 1/halls of its value. */
+const INTENSIVE_KEYS = new Set<keyof Effects>(['pue', 'wue', 'failureRate', 'itEfficiency', 'hardwareLifespan', 'eWasteFactor', 'pricePct', 'growthRate']);
 
 export const ONE_OFF_KEYS = ['cash', 'demandPct', 'envDebt'] as const satisfies readonly (keyof Effects)[];
 
@@ -44,11 +38,14 @@ export function getUpgrade(content: Content, id: string): Upgrade {
   return up;
 }
 
+export function getBuilding(content: Content, id: string): Building {
+  const b = content.buildings.find((x) => x.id === id);
+  if (!b) throw new Error(`Unknown building "${id}"`);
+  return b;
+}
+
 /** Location overrides REPLACE base values for the keys they give. */
-export function resolveUpgrade(
-  upgrade: Upgrade,
-  locationId: string,
-): { effects: Effects; scoreDelta: Upgrade['scoreDelta']; note?: string } {
+export function resolveUpgrade(upgrade: Upgrade, locationId: string): { effects: Effects; scoreDelta: Upgrade['scoreDelta']; note?: string } {
   const override: ContextOverride | undefined = upgrade.contextModifiers?.[locationId];
   return {
     effects: { ...upgrade.effects, ...(override?.effects ?? {}) },
@@ -70,9 +67,15 @@ export function isActive(mod: Modifier, tick: number): boolean {
   return mod.expiresAt === undefined || tick < mod.expiresAt;
 }
 
-/** Sum of every active modifier, plus the tightest growth cap. */
-export function sumModifiers(modifiers: Modifier[], tick: number): Required<Omit<Effects, 'growthCap' | 'cash' | 'demandPct' | 'envDebt'>> & { growthCap: number } {
-  const total = {
+export function hallCount(state: GameState, content: Content): number {
+  return state.plots.filter((p) => p && getBuilding(content, p.building).kind === 'datacenter').length;
+}
+
+type Summed = Required<Omit<Effects, 'growthCap' | 'cash' | 'demandPct' | 'envDebt'>> & { growthCap: number };
+
+/** Sum of every active modifier (hall-scoped intensive effects averaged over halls), plus the tightest growth cap. */
+export function sumModifiers(modifiers: Modifier[], tick: number, halls = 1): Summed {
+  const total: Summed = {
     pue: 0,
     wue: 0,
     renewableShare: 0,
@@ -88,23 +91,18 @@ export function sumModifiers(modifiers: Modifier[], tick: number): Required<Omit
     eWasteFactor: 0,
     carbonIntensity: 0,
   };
+  const share = 1 / Math.max(1, halls);
   for (const mod of modifiers) {
     if (!isActive(mod, tick)) continue;
-    const e = mod.effects;
-    total.pue += e.pue ?? 0;
-    total.wue += e.wue ?? 0;
-    total.renewableShare += e.renewableShare ?? 0;
-    total.growthRate += e.growthRate ?? 0;
-    if (e.growthCap !== undefined) total.growthCap = Math.min(total.growthCap, e.growthCap);
-    total.failureRate += e.failureRate ?? 0;
-    total.cashPerTick += e.cashPerTick ?? 0;
-    total.envDebtPerTick += e.envDebtPerTick ?? 0;
-    total.pricePct += e.pricePct ?? 0;
-    total.energyPricePct += e.energyPricePct ?? 0;
-    total.itEfficiency += e.itEfficiency ?? 0;
-    total.hardwareLifespan += e.hardwareLifespan ?? 0;
-    total.eWasteFactor += e.eWasteFactor ?? 0;
-    total.carbonIntensity += e.carbonIntensity ?? 0;
+    for (const [k, v] of Object.entries(mod.effects) as [keyof Effects, number][]) {
+      if (k === 'growthCap') {
+        total.growthCap = Math.min(total.growthCap, v);
+        continue;
+      }
+      if (k === 'cash' || k === 'demandPct' || k === 'envDebt') continue;
+      const weight = mod.scope === 'hall' && INTENSIVE_KEYS.has(k) ? share : 1;
+      total[k] += v * weight;
+    }
   }
   return total;
 }
@@ -113,17 +111,16 @@ export function sumModifiers(modifiers: Modifier[], tick: number): Required<Omit
 export function derive(state: GameState, content: Content): DerivedStats {
   const b = content.balance;
   const loc = getLocation(content, state.locationId);
-  const m = sumModifiers(state.modifiers, state.tick);
+  const halls = hallCount(state, content);
+  const m = sumModifiers(state.modifiers, state.tick, halls);
 
   const hardwareLifespan = Math.max(4, b.baseHardwareLifespan + m.hardwareLifespan);
   const agingTicks = Math.max(0, state.hardwareAge - 0.75 * hardwareLifespan);
-  const renewableShare = clamp(m.renewableShare, 0, 1);
-  const gridCarbon = Math.max(0, loc.gridCarbon + m.carbonIntensity);
 
   return {
     pue: Math.max(b.minPue, loc.basePue + m.pue),
     wue: Math.max(0, loc.baseWue + m.wue),
-    renewableShare,
+    renewableShare: clamp(m.renewableShare, 0, 1),
     growthRate: Math.max(-0.15, Math.min(loc.baseGrowth + m.growthRate, m.growthCap)),
     failureRate: clamp(b.baseFailureRate + m.failureRate + agingTicks * b.agingFailurePerTick, 0, 0.6),
     cashPerTick: m.cashPerTick,
@@ -133,7 +130,7 @@ export function derive(state: GameState, content: Content): DerivedStats {
     itEfficiency: clamp(m.itEfficiency, 0, 0.6),
     hardwareLifespan,
     eWasteMultiplier: Math.max(0.1, 1 + m.eWasteFactor),
-    effectiveCarbon: gridCarbon * (1 - renewableShare),
     carbonPrice: state.flags.includes('carbon-tax') ? b.carbonPriceWhenTaxed : 0,
+    halls,
   };
 }
