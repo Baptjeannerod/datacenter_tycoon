@@ -109,23 +109,24 @@ export function useGame() {
     [state, decision],
   );
 
-  /** Build on a plot or install an upgrade, close the ring, and explain what it does. */
+  /** Build on a plot, install an upgrade or demolish, close the ring, and explain what it does. */
   const act = useCallback(
-    (action: { type: 'build'; plot: number; buildingId: string } | { type: 'buy'; upgradeId: string; plot?: number }) => {
+    (action: { type: 'build'; plot: number; buildingId: string } | { type: 'buy'; upgradeId: string; plot?: number } | { type: 'demolish'; plot: number }) => {
       if (!state) return;
       const next = applyAction(state, action, content);
       if (next === state) return;
       const before = computeScores(state, content);
       const after = computeScores(next, content);
-      const item = action.type === 'build' ? getBuilding(content, action.buildingId) : getUpgrade(content, action.upgradeId);
+      const demolished = action.type === 'demolish' ? state.plots[action.plot] : null;
+      const item = action.type === 'build' ? getBuilding(content, action.buildingId) : action.type === 'buy' ? getUpgrade(content, action.upgradeId) : getBuilding(content, demolished!.building);
       const dirty = action.type === 'build' && (getBuilding(content, action.buildingId).carbonPerMWh ?? 0) > 300;
       setState(next);
       setMenu(null);
       setFeedback({
         kind: 'outcome',
-        title: action.type === 'build' ? 'Built' : 'Installed',
+        title: action.type === 'build' ? 'Built' : action.type === 'buy' ? 'Installed' : 'Demolished',
         label: item.name,
-        text: item.whyItMatters,
+        text: demolished ? `The plot is free again${demolished.upgrades.length ? `, and its ${demolished.upgrades.length} upgrade${demolished.upgrades.length > 1 ? 's are' : ' is'} gone` : ''}. Nothing is refunded, and bills already on their way still arrive.` : item.whyItMatters,
         stance: dirty ? 'greedy' : 'neutral',
         delta: { cash: next.cash - state.cash, s: after.sustainability - before.sustainability, r: after.responsibility - before.responsibility },
       });

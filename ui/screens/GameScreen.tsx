@@ -5,6 +5,7 @@
  */
 import {
   buildOptions,
+  demolishOption,
   derive,
   getBuilding,
   getLocation,
@@ -216,6 +217,9 @@ function upgradeItem(state: GameState, o: Option<Upgrade>): RingItem {
   return { id: u.id, label: u.name, name: u.name, pitch: u.pitch, cost: u.cost, icon: <CategoryIcon category={u.category} />, ok: o.ok, reason: o.reason, installed: o.installed, chips, note: r.note };
 }
 
+/** Ring item id for "tear this building down" (never a real upgrade id). */
+const DEMOLISH = '__demolish';
+
 function ringFor(game: GameController, plot: number) {
   const state = game.state!;
   if (plot < 0) {
@@ -239,6 +243,14 @@ function ringFor(game: GameController, plot: number) {
   }
   const b = getBuilding(content, p.building);
   const items = upgradeOptions(state, content, plot).map((o) => upgradeItem(state, o));
+  const demo = demolishOption(state, content, plot);
+  if (demo) {
+    const chips: RingItem['chips'] = [{ text: 'No refund', tone: 'down' }];
+    if (b.kind === 'datacenter') chips.push({ text: `−${b.itMW} MW of servers`, tone: 'down' });
+    else chips.push({ text: 'Its power is lost', tone: 'down' });
+    if (p.upgrades.length) chips.push({ text: `${p.upgrades.length} upgrade${p.upgrades.length > 1 ? 's' : ''} removed`, tone: 'info' });
+    items.push({ id: DEMOLISH, label: 'Demolish', name: `Demolish ${b.kind === 'datacenter' ? 'this hall' : b.name}`, pitch: 'Free the plot. Nothing is refunded.', cost: demo.cost, icon: <BuildingIcon kind="demolish" />, ok: demo.ok, reason: demo.reason, chips, verb: 'Demolish', danger: true });
+  }
   const hallNo = state.plots.slice(0, plot + 1).filter((x) => x && getBuilding(content, x.building).kind === 'datacenter').length;
   return (
     <RingMenu
@@ -246,7 +258,7 @@ function ringFor(game: GameController, plot: number) {
       subtitle={`${p.upgrades.length} upgrade${p.upgrades.length === 1 ? '' : 's'} installed${b.kind === 'datacenter' ? ' · applies to this hall' : ''}`}
       items={items}
       verb="Install"
-      onConfirm={(id) => game.act({ type: 'buy', upgradeId: id, plot })}
+      onConfirm={(id) => game.act(id === DEMOLISH ? { type: 'demolish', plot } : { type: 'buy', upgradeId: id, plot })}
       onClose={() => game.setMenu(null)}
     />
   );

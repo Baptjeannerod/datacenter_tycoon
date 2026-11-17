@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loadContent } from './content';
 import { derive, resolveUpgrade } from './derive';
-import { applyAction, buildOptions, canBuy, createGame, currentDecision, policyOptions, riverPlot, saturate, step, upgradeOptions } from './game';
+import { applyAction, buildOptions, canBuy, createGame, currentDecision, demolishOption, policyOptions, riverPlot, saturate, step, upgradeOptions } from './game';
 import { dispatch, plantInfos, powerBudget } from './power';
 import { nextRandom, seedFromString } from './rng';
 import { archetypeOf, computeScores, legacyScore, summarize } from './scoring';
@@ -89,8 +89,9 @@ describe('power', () => {
     s = applyAction(s, { type: 'build', plot: 4, buildingId: 'datacenter-hall' }, content);
     s = applyAction(s, { type: 'build', plot: 5, buildingId: 'datacenter-hall' }, content);
     s = applyAction(s, { type: 'build', plot: 6, buildingId: 'datacenter-hall' }, content);
-    // Demolishing is not possible, so simulate losing the coal plant: 5 halls on 6 MW of gas.
-    s = { ...s, plots: s.plots.map((p, i) => (i === 7 ? null : p)), demandMW: 12 };
+    // Tear the coal plant down: 5 halls on 6 MW of gas.
+    s = { ...applyAction(s, { type: 'demolish', plot: 7 }, content), demandMW: 12 };
+    expect(s.plots[7]).toBeNull();
     const next = step(s, content);
     expect(next.history.at(-1)!.unpoweredPlots.length).toBeGreaterThan(0);
     expect(next.history.at(-1)!.loadMW).toBeLessThan(next.history.at(-1)!.demandMW);
@@ -99,6 +100,92 @@ describe('power', () => {
     const s = rich(newGame());
     expect(buildOptions(s, content, 3).map((o) => o.item.id)).not.toContain('dam');
     expect(buildOptions(s, content, riverPlot(content)).map((o) => o.item.id)).toEqual(['dam']);
+  });
+});
+
+describe('demolish', () => {
+  const twoHalls = () => {
+    let s = rich(newGame());
+    s = applyAction(s, { type: 'build', plot: 7, buildingId: 'coal-plant' }, content);
+    s = applyAction(s, { type: 'build', plot: 2, buildingId: 'datacenter-hall' }, content);
+    return s;
+  };
+  it('removes the building, frees the plot and charges a fee without refund', () => {
+    const s0 = twoHalls();
+    const coal = content.buildings.find((b) => b.id === 'coal-plant')!;
+    const fee = Math.round(coal.cost * content.balance.demolishCostPct);
+    expect(demolishOption(s0, content, 7)).toEqual({ ok: true, cost: fee, reason: undefined });
+    const s1 = applyAction(s0, { type: 'demolish', plot: 7 }, content);
+    expect(s1.plots[7]).toBeNull();
+    expect(s1.cash).toBe(s0.cash - fee);
+    expect(s1.decisions).toContain('demolish:coal-plant');
+    expect(plantInfos(s1, content).map((p) => p.building.id)).toEqual(['gas-plant']);
+    expect(buildOptions(s1, content, 7).length).toBeGreaterThan(0);
+  });
+  it('removing a hall reduces capacity', () => {
+    const s0 = twoHalls();
+    expect(s0.capacityMW).toBe(4);
+    const s1 = applyAction(s0, { type: 'demolish', plot: 2 }, content);
+    expect(s1.capacityMW).toBe(2);
+    expect(derive(s1, content).halls).toBe(1);
+  });
+  it('removes its upgrades and their effects', () => {
+    let s = twoHalls();
+    const base = derive(s, content).pue;
+    s = applyAction(s, { type: 'buy', upgradeId: 'free-cooling', plot: 2 }, content);
+    expect(derive(s, content).pue).toBeLessThan(base);
+    expect(s.owned).toContain('free-cooling');
+    s = applyAction(s, { type: 'demolish', plot: 2 }, content);
+    expect(derive(s, content).pue).toBeCloseTo(content.locations.find((l) => l.id === 'paris-basin')!.basePue);
+    expect(s.owned).not.toContain('free-cooling');
+    expect(s.modifiers.some((m) => m.source.startsWith('plot:2:'))).toBe(false);
+  });
+  it('keeps the same upgrade on another building', () => {
+    let s = twoHalls();
+    s = applyAction(s, { type: 'buy', upgradeId: 'free-cooling', plot: 0 }, content);
+    s = applyAction(s, { type: 'buy', upgradeId: 'free-cooling', plot: 2 }, content);
+    s = applyAction(s, { type: 'demolish', plot: 2 }, content);
+    expect(s.owned).toContain('free-cooling');
+    expect(s.modifiers.some((m) => m.source === 'plot:0:free-cooling')).toBe(true);
+  });
+  it("removes a plant's own upgrades, output and hidden debt", () => {
+    let s = twoHalls();
+    expect(derive(s, content).envDebtPerTick).toBeGreaterThan(0);
+    const before = powerBudget(s, content).supplyMW;
+    s = applyAction(s, { type: 'build', plot: 3, buildingId: 'gas-plant' }, content);
+    s = applyAction(s, { type: 'buy', upgradeId: 'gas-heat-recovery', plot: 3 }, content);
+    s = applyAction(s, { type: 'demolish', plot: 3 }, content);
+    expect(powerBudget(s, content).supplyMW).toBeCloseTo(before);
+    expect(s.owned).not.toContain('gas-heat-recovery');
+    s = applyAction(s, { type: 'demolish', plot: 7 }, content);
+    expect(derive(s, content).envDebtPerTick).toBe(0);
+  });
+  it('frees the power an upgrade drew, but a bill already scheduled still arrives', () => {
+    let s = twoHalls();
+    const spare = powerBudget(s, content).spareMW;
+    s = applyAction(s, { type: 'buy', upgradeId: 'gpu-hype-cluster', plot: 2 }, content);
+    expect(s.scheduled.length).toBeGreaterThan(0);
+    const scheduled = s.scheduled.length;
+    s = applyAction(s, { type: 'demolish', plot: 2 }, content);
+    expect(s.scheduled.length).toBe(scheduled);
+    expect(powerBudget(s, content).spareMW).toBeGreaterThan(spare);
+  });
+  it('cannot demolish the only hall, an empty plot, without the fee, or while a card is open', () => {
+    const s = rich(newGame());
+    expect(demolishOption(s, content, 0)!.ok).toBe(false);
+    expect(applyAction(s, { type: 'demolish', plot: 0 }, content)).toBe(s);
+    expect(demolishOption(s, content, 5)).toBeNull();
+    expect(applyAction(s, { type: 'demolish', plot: 5 }, content)).toBe(s);
+    const broke = { ...twoHalls(), cash: 10 };
+    expect(demolishOption(broke, content, 7)!.reason).toMatch(/Needs/);
+    const busy = { ...twoHalls(), queue: [{ kind: 'event' as const, id: 'heatwave' }] };
+    expect(applyAction(busy, { type: 'demolish', plot: 7 }, content)).toBe(busy);
+  });
+  it('is pure', () => {
+    const s0 = twoHalls();
+    const snapshot = JSON.stringify(s0);
+    applyAction(s0, { type: 'demolish', plot: 7 }, content);
+    expect(JSON.stringify(s0)).toBe(snapshot);
   });
 });
 

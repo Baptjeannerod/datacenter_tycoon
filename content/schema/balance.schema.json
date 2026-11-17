@@ -34,7 +34,8 @@
     "profitReference",
     "minPue",
     "landPlots",
-    "startBuildings"
+    "startBuildings",
+    "demolishCostPct"
   ],
   "properties": {
     "maxTicks": {
@@ -157,6 +158,12 @@
     "minPue": {
       "type": "number",
       "minimum": 1
+    },
+    "demolishCostPct": {
+      "description": "Demolition fee as a share of the building's price (no refund of the price or of its upgrades).",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
     },
     "landPlots": {
       "type": "integer",
