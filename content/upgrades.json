@@ -17,8 +17,8 @@
       "sustainability": 1
     },
     "whyItMatters": "Some green moves simply pay: less fan and chiller energy for the same compute.",
-    "source": "EU Code of Conduct on Data Centre Energy Efficiency, best practices (airflow management)",
-    "confidence": "approx",
+    "source": "EU Code of Conduct on Data Centre Energy Efficiency, Best Practice Guidelines (airflow management and containment). PUE delta is a game value. https://e3p.jrc.ec.europa.eu/communities/data-centres-code-conduct",
+    "confidence": "high",
     "slice": true
   },
   {
@@ -82,8 +82,8 @@
       }
     },
     "whyItMatters": "Where you build decides how much energy cooling needs. The same upgrade is great in the north and nearly useless in the desert.",
-    "source": "Free cooling potential depends on climate (EU Code of Conduct on Data Centre Energy Efficiency)",
-    "confidence": "approx",
+    "source": "EU Code of Conduct on Data Centre Energy Efficiency, Best Practice Guidelines (free cooling / economisers; potential depends on climate). PUE and WUE deltas are game values. https://e3p.jrc.ec.europa.eu/communities/data-centres-code-conduct",
+    "confidence": "high",
     "slice": true
   },
   {
@@ -127,8 +127,8 @@
       }
     },
     "whyItMatters": "Saving energy by consuming water is a transfer of impact, not a free win. Where water is scarce, it is a time bomb.",
-    "source": "Water-energy trade-off in datacenter cooling (WUE metric, The Green Grid)",
-    "confidence": "approx"
+    "source": "The Green Grid WP#35, Water Usage Effectiveness (WUE), standardised as ISO/IEC 30134-9: evaporative cooling lowers energy but raises water use. Deltas are game values. https://www.thegreengrid.org/en/resources/library-and-tools/238-WP",
+    "confidence": "high"
   },
   {
     "id": "liquid-cooling",
@@ -197,8 +197,8 @@
       }
     },
     "whyItMatters": "Almost every kWh a server uses ends up as heat. Selling it to a district heating network turns waste into warm homes.",
-    "source": "EU Energy Efficiency Directive (EU) 2023/1791 (waste heat recovery for datacenters above 1 MW)",
-    "confidence": "approx"
+    "source": "Energy Efficiency Directive (EU) 2023/1791, Art. 26(6): datacenters with total rated energy input above 1 MW must use waste heat unless technically or economically unfeasible. Income is a game value. https://eur-lex.europa.eu/eli/dir/2023/1791/oj",
+    "confidence": "high"
   },
   {
     "id": "energy-monitoring",
@@ -248,8 +248,8 @@
       "responsibility": 2
     },
     "whyItMatters": "Manufacturing is a big share of hardware's footprint. Using servers longer avoids a whole replacement cycle, at the price of more breakdowns.",
-    "source": "ADEME-Arcep 2022 study on the environmental footprint of digital in France (manufacturing dominates equipment impacts)",
-    "confidence": "approx",
+    "source": "ADEME-Arcep (Jan 2022), digital footprint in France: manufacturing equipment is 78 % of the carbon footprint, use 21 %. Lifespan and failure deltas are game values. https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf",
+    "confidence": "high",
     "slice": true
   },
   {
@@ -271,9 +271,9 @@
       "sustainability": 4,
       "responsibility": 3
     },
-    "whyItMatters": "Only about a fifth of the world's e-waste is documented as properly collected and recycled.",
-    "source": "Global E-waste Monitor 2024 (UNITAR/ITU): 22.3 % formally collected and recycled in 2022",
-    "confidence": "approx"
+    "whyItMatters": "Less than a quarter (22.3 %) of the world's e-waste is documented as properly collected and recycled.",
+    "source": "Global E-waste Monitor 2024 (UNITAR/ITU): 62 Mt of e-waste in 2022, 22.3 % documented as formally collected and recycled. https://ewastemonitor.info/the-global-e-waste-monitor-2024/",
+    "confidence": "high"
   },
   {
     "id": "fast-refresh",
@@ -363,8 +363,8 @@
       }
     ],
     "whyItMatters": "AI demand is real, but chasing every hype project locks in power-hungry hardware for uses nobody questioned.",
-    "source": "IEA, Energy and AI (2025): datacenter electricity demand projected to roughly double by 2030",
-    "confidence": "approx",
+    "source": "IEA, Energy and AI (2025): datacenters used ~415 TWh (~1.5 % of world electricity) in 2024, set to more than double to ~945 TWh by 2030, driven by AI. Effects are game values. https://www.iea.org/reports/energy-and-ai/executive-summary",
+    "confidence": "high",
     "slice": true
   },
   {
@@ -400,8 +400,8 @@
       }
     ],
     "whyItMatters": "Offsets don't remove your emissions. EU rules now ban 'carbon neutral' product claims based on offsetting.",
-    "source": "Directive (EU) 2024/825 on empowering consumers for the green transition (bans neutrality claims based on offsetting)",
-    "confidence": "approx",
+    "source": "Directive (EU) 2024/825, Annex I point 4c: bans product claims of neutral, reduced or positive GHG impact based on offsetting (applies from 27 Sep 2026). https://eur-lex.europa.eu/eli/dir/2024/825/oj",
+    "confidence": "high",
     "slice": true
   },
   {
@@ -530,8 +530,8 @@
       }
     },
     "whyItMatters": "Recycling water cuts withdrawals, but pumps and chillers use more energy: a real trade-off between water and carbon.",
-    "source": "Water-energy trade-off in cooling design (WUE vs. PUE, The Green Grid)",
-    "confidence": "approx"
+    "source": "The Green Grid WP#35, Water Usage Effectiveness (WUE), ISO/IEC 30134-9: water and energy trade off in cooling design. Deltas are game values. https://www.thegreengrid.org/en/resources/library-and-tools/238-WP",
+    "confidence": "high"
   },
   {
     "id": "coal-scrubbers",

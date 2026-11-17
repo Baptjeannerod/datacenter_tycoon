@@ -61,8 +61,8 @@
       }
     ],
     "quizId": "q-carbon-grid",
-    "source": "EU ETS carbon prices have hovered around €60-100/t in recent years; €100 is a round game value",
-    "confidence": "approx",
+    "source": "EU ETS allowance prices averaged about €80/t (2022), €84/t (2023), €65/t (2024) and €73/t (2025) per ICAP; €100 is a round game value at the top of that range. https://icapcarbonaction.com/en/ets/eu-emissions-trading-system-eu-ets",
+    "confidence": "high",
     "slice": true
   },
   {
@@ -192,8 +192,8 @@
         "outcome": "Growth pauses, but the town starts to see you as a neighbour."
       }
     ],
-    "source": "Grid connection queues and moratoria on new datacenter connections have occurred in several regions (e.g. around Dublin and Amsterdam); details are game design",
-    "confidence": "approx"
+    "source": "In 2022 EirGrid said it would offer no new grid connections to datacenters in the Dublin region until 2028 (grid saturation); the two-year freeze is game design. https://www.datacenterdynamics.com/en/news/eirgrid-says-no-new-applications-for-data-centers-in-dublin-till-2028",
+    "confidence": "high"
   },
   {
     "id": "local-opposition",
@@ -386,8 +386,8 @@
       }
     ],
     "quizId": "q-wue",
-    "source": "Water stress and datacenter siting conflicts have been reported in several dry regions; numbers are game design",
-    "confidence": "approx"
+    "source": "In 2024 a Chilean environmental court partly reversed the permit of Google's Cerrillos datacenter over water use during a long drought; Google switched to air cooling. Caps and numbers are game design. https://www.datacenterdynamics.com/en/news/chile-partially-reverses-google-data-center-permit-over-water-use-concerns",
+    "confidence": "high"
   },
   {
     "id": "greenwash-scandal",
@@ -431,8 +431,8 @@
       }
     ],
     "quizId": "q-greenwashing",
-    "source": "Directive (EU) 2024/825 restricts generic environmental claims and offset-based neutrality claims",
-    "confidence": "approx",
+    "source": "Directive (EU) 2024/825, Annex I point 4c: bans claims that a product has a neutral, reduced or positive GHG impact based on offsetting (applies from 27 Sep 2026). https://eur-lex.europa.eu/eli/dir/2024/825/oj",
+    "confidence": "high",
     "slice": true
   },
   {
@@ -538,7 +538,7 @@
   {
     "id": "eu-reporting",
     "title": "New EU reporting duty",
-    "body": "Datacenters above 500 kW must now report their energy, water and renewable figures every year.",
+    "body": "Datacenters with 500 kW of IT power or more must now report their energy, water and renewable figures every year.",
     "kind": "milestone",
     "themes": [
       "measure",
@@ -595,8 +595,8 @@
       }
     ],
     "quizId": "q-eed",
-    "source": "Energy Efficiency Directive (EU) 2023/1791, Art. 12, and Delegated Regulation (EU) 2024/1364 (reporting for datacenters with ≥500 kW IT power)",
-    "confidence": "approx",
+    "source": "Energy Efficiency Directive (EU) 2023/1791, Art. 12(1): datacenters with at least 500 kW of installed IT power demand publish Annex VII information by 15 May 2024 and yearly after; KPIs set by Delegated Regulation (EU) 2024/1364. https://eur-lex.europa.eu/eli/dir/2023/1791/oj ; https://eur-lex.europa.eu/eli/reg_del/2024/1364/oj",
+    "confidence": "high",
     "slice": true
   },
   {
@@ -753,8 +753,8 @@
       }
     ],
     "quizId": "q-ewaste",
-    "source": "Global E-waste Monitor 2024 (UNITAR/ITU) documents large undocumented and transboundary e-waste flows",
-    "confidence": "approx"
+    "source": "Global E-waste Monitor 2024 (UNITAR/ITU): about 5.1 Mt of used electronics cross borders each year, around 65 % of it uncontrolled or undocumented, mostly from high- to lower-income countries. https://ewastemonitor.info/the-global-e-waste-monitor-2024/",
+    "confidence": "high"
   },
   {
     "id": "investor-pressure",
