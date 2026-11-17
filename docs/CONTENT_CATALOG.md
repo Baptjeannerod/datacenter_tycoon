@@ -3,53 +3,74 @@
 > **Generated** by `npm run docs:catalog` from `/content`. Do not edit by hand: edit the JSON, then regenerate.
 > Units: money in k€, 1 tick = 1 quarter. S = sustainability, R = responsibility. Field meanings: `engine/types.ts`.
 
-**4 locations · 22 upgrades · 16 events · 9 clients · 12 quiz questions**
+**4 locations · 29 upgrades · 16 events · 9 clients · 12 quiz questions**
 
 ## Locations
 
-| id | name | PUE | WUE | gCO2e/kWh | water stress | €/MWh | k€/MW/tick | growth | market MW | enabled |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `paris-basin` | Paris Basin | 1.6 | 1 | 40 | 0.5 | 110 | 720 | 0.04 | 16 | yes |
-| `nordic-fjord` | Nordic Fjord | 1.25 | 0.3 | 30 | 0.2 | 60 | 560 | 0.035 | 12 | yes |
-| `coal-valley` | Coal Valley | 1.55 | 1 | 650 | 0.6 | 90 | 700 | 0.045 | 16 | yes |
-| `sun-belt` | Sun Belt | 1.7 | 1.8 | 380 | 1.5 | 80 | 700 | 0.05 | 20 | yes |
+| id | name | PUE | WUE | water stress | wind | sun | river | fuel price | k€/MW/tick | growth | market MW | enabled |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `paris-basin` | Paris Basin | 1.6 | 1 | 0.5 | 1 | 0.9 | 1 | 1 | 720 | 0.07 | 18 | yes |
+| `nordic-fjord` | Nordic Fjord | 1.25 | 0.3 | 0.2 | 1.3 | 0.6 | 1.5 | 1.1 | 620 | 0.06 | 14 | yes |
+| `coal-valley` | Coal Valley | 1.55 | 1 | 0.6 | 0.9 | 0.9 | 0.8 | 0.75 | 700 | 0.075 | 18 | yes |
+| `sun-belt` | Sun Belt | 1.7 | 1.8 | 1.5 | 0.7 | 1.7 | 0.35 | 0.9 | 700 | 0.08 | 22 | yes |
+
+## Buildings
+
+Built on map plots (8 land plots + 1 river spot). There is no grid: halls run only on power from your plants.
+
+| id | kind | placement | cost | IT MW | nameplate MW | capacity factor | resource | €/MWh | gCO2e/kWh | water m³/MWh | effects | confidence |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `datacenter-hall` | datacenter | land | 1500 | 2 | — | — | — | — | — | — | — | illustrative |
+| `gas-plant` | plant (gas) | land | 1000 | — | 6 | 1 | — | 70 | 490 | 0.6 | — | approx |
+| `coal-plant` | plant (coal) | land | 1400 | — | 10 | 1 | — | 40 | 820 | 1.9 | envDebtPerTick +0.6 | approx |
+| `biomass-plant` | plant (biomass) | land | 1500 | — | 5 | 1 | — | 60 | 230 | 1.5 | envDebtPerTick +0.3 | approx |
+| `wind-farm` | plant (wind) | land | 1800 | — | 9 | 0.33 | wind | 8 | 11 | 0 | — | approx |
+| `solar-farm` | plant (solar) | land | 1200 | — | 12 | 0.16 | solar | 5 | 48 | 0 | — | approx |
+| `dam` | plant (hydro) | river | 3500 | — | 14 | 0.45 | river | 5 | 24 | 0 | envDebt +6, envDebtPerTick +0.15 | approx |
 
 ## Upgrades
 
 Family is **hidden from players** until the end screen. Slice = part of the first playable.
 
-| id | family | cost | effects | S / R | delayed | location overrides | slice | confidence |
-|---|---|---|---|---|---|---|---|---|
-| `hot-aisle-containment` | good | 120 | pue -0.08 | 1 / 0 | — | — | ✓ | approx |
-| `raise-temp-setpoint` | tradeoff | 0 | pue -0.06, failureRate +0.01 | 1 / 0 | — | — |  | high |
-| `free-cooling` | good | 700 | pue -0.25, wue -0.1 | 3 / 0 | — | nordic-fjord, sun-belt | ✓ | approx |
-| `evaporative-cooling` | trap | 250 | pue -0.22, wue +1 | 0 / 0 | — | sun-belt, nordic-fjord |  | approx |
-| `liquid-cooling` | good | 1600 | pue -0.3, wue -0.5, failureRate +0.01, cashPerTick -10 | 4 / 1 | — | — |  | illustrative |
-| `renewable-ppa` | good | 300 | renewableShare +0.6, cashPerTick -35 | 2 / 3 | — | coal-valley, sun-belt, paris-basin | ✓ | approx |
-| `cheap-fossil-contract` | trap | 0 | energyPricePct -0.15, carbonIntensity +300, envDebtPerTick +0.3 | -3 / 0 | — | — |  | illustrative |
-| `onsite-solar` | good | 900 | renewableShare +0.12, cashPerTick +12 | 2 / 0 | — | sun-belt, nordic-fjord |  | illustrative |
-| `heat-reuse` | good | 900 | cashPerTick +15 | 6 / 2 | — | nordic-fjord |  | approx |
-| `energy-monitoring` | good | 150 | pue -0.04, failureRate -0.01, cashPerTick -5 | 0 / 5 | — | — | ✓ | high |
-| `extend-hardware-life` | tradeoff | 200 | hardwareLifespan +8, failureRate +0.01, pue +0.02 | 3 / 2 | — | — | ✓ | approx |
-| `refurb-circular` | good | 250 | eWasteFactor -0.6, cashPerTick -12 | 4 / 3 | — | — |  | approx |
-| `fast-refresh` | trap | 800 | hardwareLifespan -8, itEfficiency +0.12, growthRate +0.01, pricePct +0.05 | -3 / 0 | — | — |  | illustrative |
-| `overclock-and-cram` | trap | 0 | pricePct +0.12, failureRate +0.05, pue +0.05, hardwareLifespan -4 | -3 / -2 | — | — | ✓ | illustrative |
-| `gpu-hype-cluster` | trap | 1500 | growthRate +0.03, pricePct +0.1, pue +0.06, envDebtPerTick +0.8 | 0 / -6 | 70% +14t → ai-bubble | — | ✓ | approx |
-| `gas-turbines` | trap | 400 | growthRate +0.02, energyPricePct +0.1, envDebtPerTick +1.2 | -6 / -3 | +10t → permit-audit | — |  | illustrative |
-| `carbon-offsets-greenwash` | trap | 60 | cashPerTick +25, growthRate +0.005 | 0 / 3 | +8t → greenwash-scandal | — | ✓ | approx |
-| `frugal-ai-policy` | good | 100 | growthRate -0.004 | 0 / 8 | — | — | ✓ | high |
-| `model-right-sizing` | good | 450 | itEfficiency +0.15, cashPerTick -15 | 1 / 3 | — | — |  | high |
-| `staff-training` | good | 80 | failureRate -0.005 | 0 / 5 | — | — |  | high |
-| `sufficiency-pledge` | tradeoff | 0 | growthCap +0.015 | 4 / 10 | — | — |  | high |
-| `water-closed-loop` | good | 500 | wue -0.8, pue +0.04 | 2 / 0 | — | sun-belt |  | approx |
+| id | scope | family | cost | power MW | effects | S / R | delayed | location overrides | confidence |
+|---|---|---|---|---|---|---|---|---|---|
+| `hot-aisle-containment` | hall | good | 120 | — | pue -0.08 | 1 / 0 | — | — | approx |
+| `raise-temp-setpoint` | policy | tradeoff | 0 | — | pue -0.06, failureRate +0.01 | 1 / 0 | — | — | high |
+| `free-cooling` | hall | good | 700 | — | pue -0.25, wue -0.1 | 3 / 0 | — | nordic-fjord, sun-belt | approx |
+| `evaporative-cooling` | hall | trap | 250 | — | pue -0.22, wue +1 | 0 / 0 | — | sun-belt, nordic-fjord | approx |
+| `liquid-cooling` | hall | good | 1600 | 0.1 | pue -0.3, wue -0.5, failureRate +0.01, cashPerTick -10 | 4 / 1 | — | — | illustrative |
+| `heat-reuse` | hall | good | 900 | 0.1 | cashPerTick +15 | 6 / 2 | — | nordic-fjord | approx |
+| `energy-monitoring` | policy | good | 150 | — | pue -0.04, failureRate -0.01, cashPerTick -5 | 0 / 5 | — | — | high |
+| `extend-hardware-life` | hall | tradeoff | 200 | — | hardwareLifespan +8, failureRate +0.01, pue +0.02 | 3 / 2 | — | — | approx |
+| `refurb-circular` | policy | good | 250 | — | eWasteFactor -0.6, cashPerTick -12 | 4 / 3 | — | — | approx |
+| `fast-refresh` | policy | trap | 800 | — | hardwareLifespan -8, itEfficiency +0.12, growthRate +0.01, pricePct +0.05 | -3 / 0 | — | — | illustrative |
+| `overclock-and-cram` | hall | trap | 0 | 0.3 | pricePct +0.12, failureRate +0.05, pue +0.05, hardwareLifespan -4 | -3 / -2 | — | — | illustrative |
+| `gpu-hype-cluster` | hall | trap | 1500 | 0.5 | growthRate +0.03, pricePct +0.1, pue +0.06, envDebtPerTick +0.8 | 0 / -6 | 70% +14t → ai-bubble | — | approx |
+| `carbon-offsets-greenwash` | policy | trap | 60 | — | cashPerTick +25, growthRate +0.005 | 0 / 3 | +8t → greenwash-scandal | — | approx |
+| `frugal-ai-policy` | policy | good | 100 | — | growthRate -0.004 | 0 / 8 | — | — | high |
+| `model-right-sizing` | policy | good | 450 | — | itEfficiency +0.15, cashPerTick -15 | 1 / 3 | — | — | high |
+| `staff-training` | policy | good | 80 | — | failureRate -0.005 | 0 / 5 | — | — | high |
+| `sufficiency-pledge` | policy | tradeoff | 0 | — | growthCap +0.015 | 4 / 10 | — | — | high |
+| `water-closed-loop` | hall | good | 500 | 0.1 | wue -0.8, pue +0.04 | 2 / 0 | — | sun-belt | approx |
+| `coal-scrubbers` | plant (coal) | good | 600 | — | envDebtPerTick -0.4, costPct +0.1 | 2 / 2 | — | — | illustrative |
+| `cheap-lignite` | plant (coal) | trap | 0 | — | envDebtPerTick +0.5, costPct -0.3, carbonPct +0.15 | -3 / 0 | — | — | illustrative |
+| `carbon-capture` | plant (coal, gas) | tradeoff | 2500 | — | carbonPct -0.7, costPct +0.35, outputPct -0.2 | 4 / 0 | — | — | illustrative |
+| `gas-heat-recovery` | plant (gas) | good | 500 | — | outputPct +0.15 | 2 / 0 | — | — | illustrative |
+| `methane-leak-checks` | plant (gas) | good | 200 | — | carbonPct -0.12 | 0 / 2 | — | — | illustrative |
+| `certified-wood` | plant (biomass) | good | 300 | — | envDebtPerTick -0.25, costPct +0.25 | 0 / 3 | — | — | illustrative |
+| `imported-pellets` | plant (biomass) | trap | 0 | — | envDebtPerTick +0.5, costPct -0.3, carbonPct +0.4 | -2 / 0 | — | — | illustrative |
+| `bigger-rotors` | plant (wind) | good | 900 | — | outputPct +0.3 | 1 / 0 | — | — | illustrative |
+| `battery-storage` | plant (wind, solar) | good | 800 | — | variabilityPct -0.6, outputPct +0.05 | 1 / 0 | — | — | illustrative |
+| `solar-trackers` | plant (solar) | good | 600 | — | outputPct +0.25 | 1 / 0 | — | — | illustrative |
+| `fish-ladders` | plant (hydro) | good | 400 | — | envDebtPerTick -0.2, outputPct -0.05 | 0 / 4 | — | — | illustrative |
 
 ## Events
 
 | id | kind | when | choices | quiz | slice |
 |---|---|---|---|---|---|
-| `carbon-tax` | consequence | {"statGte":{"envDebt":30}} | `pay` (neutral): no effect<br>`lobby` (greedy): cash -250 · S 0 / R -10 · later: +8t —<br>`clean-contract` (responsible): renewableShare +0.3, cashPerTick -25 · S 2 / R 3 | q-carbon-grid | ✓ |
+| `carbon-tax` | consequence | {"statGte":{"envDebt":30}} | `pay` (neutral): no effect<br>`lobby` (greedy): cash -250 · S 0 / R -10 · later: +8t —<br>`phase-out` (responsible): S 1 / R 4 | q-carbon-grid | ✓ |
 | `permit-audit` | consequence | {"statGte":{"envDebt":45}} | `show-data` (responsible): S 0 / R 4<br>`fine` (neutral): cash -600 · S 0 / R -2<br>`hide` (greedy): cash -100 · S 0 / R -12 · later: 50% +6t public-scandal | q-frugal-first | ✓ |
-| `power-cap` | consequence | {"statGte":{"envDebt":65}} | `accept` (neutral): for 8 ticks: growthCap 0 · S 0 / R 2<br>`turbines` (greedy): cash -400, envDebt +10, envDebtPerTick +1.5 · S -4 / R -8<br>`demand-response` (responsible): for 8 ticks: growthCap 0, cashPerTick +30 · S 0 / R 5 | — |  |
+| `power-cap` | consequence | {"statGte":{"envDebt":65}} | `accept` (neutral): for 8 ticks: growthCap 0 · S 0 / R 2<br>`lobby` (greedy): cash -300, envDebt +6 · S 0 / R -8<br>`demand-response` (responsible): for 8 ticks: growthCap 0, cashPerTick +30 · S 0 / R 5 | — |  |
 | `local-opposition` | consequence | {"statGte":{"envDebt":85}} | `community` (responsible): cash -500, envDebt -10 · S 0 / R 6<br>`free-heat` (responsible): envDebt -15 · S 0 / R 8<br>`ignore` (greedy): demandPct -0.05 · for 6 ticks: growthCap 0 · S 0 / R -10 | — |  |
 | `public-scandal` | consequence | {"statGte":{"envDebt":110}} | `own-it` (responsible): demandPct -0.08, cash -400 · S 0 / R 4<br>`deny` (greedy): demandPct -0.08 · S 0 / R -15 · later: 50% +4t demandPct -0.12 | — |  |
 | `water-restriction` | consequence | {"locations":["sun-belt"],"statGte":{"wue":1.5},"minTick":6} | `throttle` (neutral): demandPct -0.15 · for 6 ticks: pue +0.1<br>`truck` (greedy): cash -300, envDebt +12 · S 0 / R -6<br>`closed-loop` (responsible): cash -700, wue -0.8, pue +0.04 · S 3 / R 4 | q-wue |  |
@@ -62,7 +83,7 @@ Family is **hidden from players** until the end screen. Slice = part of the firs
 | `ewaste-broker` | random | {"minTick":8} | `take-deal` (greedy): cash +150, envDebt +10 · S 0 / R -8 · later: 40% +6t demandPct -0.05<br>`certified` (responsible): cash -120 · S 2 / R 3 | q-ewaste |  |
 | `investor-pressure` | random | {"minTick":5} | `hypergrowth` (greedy): cash +500 · for 8 ticks: growthRate +0.03 · S 0 / R -4<br>`green-terms` (neutral): cash +300 · for 8 ticks: growthRate +0.01 · S 0 / R 1<br>`steady` (responsible): S 0 / R 4 | — |  |
 | `chip-shortage` | random | {"minTick":6} | `pay-up` (greedy): cash -400<br>`extend` (responsible): for 6 ticks: failureRate +0.02 · S 1 / R 2<br>`grey-market` (greedy): cash -150, envDebt +4 · S 0 / R -5 | q-lifecycle |  |
-| `coal-plant-closure` | random | {"locations":["coal-valley"],"minTick":12} | `welcome` (responsible): carbonIntensity -200, energyPricePct +0.05 · S 0 / R 2<br>`lobby` (greedy): energyPricePct -0.05, envDebt +8 · S 0 / R -10 | q-carbon-grid |  |
+| `fuel-price-spike` | random | {"minTick":8} | `pay` (neutral): for 8 ticks: energyPricePct +0.4<br>`dirtier` (greedy): envDebt +8 · for 8 ticks: energyPricePct +0.1 · S 0 / R -5<br>`hedge` (responsible): cash -400 | q-carbon-grid |  |
 
 ## Clients (workload intake)
 

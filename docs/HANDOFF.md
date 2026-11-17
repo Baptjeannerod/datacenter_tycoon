@@ -64,3 +64,22 @@
 **Gotchas:**
 - `vercel link` writes `.vercel/` and `.env.local` (with a short-lived token). Both are git-ignored; never commit them.
 - It is a static site: no serverless functions yet, so there are no runtime logs to scan.
+
+## 2026-11-17 13:25 · claude-opus (bootstrap agent) · build-on-plots (requested by the team)
+
+**Done (branch `agent/build-on-plots`):**
+- **Build on the map.** 8 land plots + 1 river spot. Tap an empty plot: ring menu with a datacenter hall or a plant (gas, coal, biomass, wind, solar; dam on the river spot only). Tap a built plot: ring of upgrades for that building. Campus-wide policies behind a **Policies** button. The bottom shop is gone. Time pauses while a ring is open.
+- **No grid.** `engine/power.ts`: plants deliver nameplate × capacity factor × location resource (wind / sun / river) on average, renewables swing each quarter, cheapest plants run first. Halls need `2 MW × PUE` of spare power to be built; power-hungry upgrades need spare power too. Short of power → the last halls go dark, lose revenue, and show a **red "!"** on the map.
+- **Content:** new `content/buildings.json` (7 buildings, IPCC life-cycle emission medians); upgrades now have `scope` (9 hall, 11 plant, 9 policies) and optional `powerMW` / `plantEffects`; locations have `resources` and `fuelPrice` instead of grid carbon and energy price. Schemas, validator and catalog updated.
+- **Engine:** hall upgrades are per hall (intensive effects like PUE averaged over halls); servers age per hall; start = 1 hall + 1 gas plant.
+- **Balance:** demand grows faster so land is scarce (energy density matters). `npm run sim` passes all rules in all four valleys (table in GAME_DESIGN §7). One rule relaxed: greedy must out-earn *virtuous* in the first half (in the Sun Belt solar beats coal even early).
+- 33 engine tests; checked in the browser at 1440×900 and 375×812 (ring, build flow, power gating, red "!").
+
+**Next:**
+- Playtest the new loop (GD-1): is the first minute clear? Is building a plant before a hall obvious enough? Maybe an onboarding hint: "Tap a plot".
+- Balanced now out-earns greedy everywhere over a full run (see GAME_DESIGN §11).
+- No demolish / replace action yet: a coal plant stays forever. A "Demolish" option in the plant ring would be a good next step.
+
+**Gotchas:**
+- CONTRACT CHANGE: `Location` lost `gridCarbon` / `energyPrice` (now `resources`, `fuelPrice`); `Balance` lost `capexPerMW` (now `landPlots`, `startBuildings`); `Upgrade` gained `scope`; `GameState` gained `plots` and `policies`; `Action` gained `build` and `buy.plot`; `TickReport` gained `supplyMW`, `needMW`, `unpoweredPlots`, `carbonIntensity`.
+- `shopUpgrades()` is gone: use `buildOptions`, `upgradeOptions`, `policyOptions` (each returns ok + reason).

@@ -18,7 +18,7 @@ A mobile-first browser game built in one day for **The SMIC Day** (Social Media 
 
 ## 2. The game in 30 seconds
 
-You run a datacenter for 10 years (40 quarters, about 4 minutes). You earn money by hosting workloads and reinvest it in upgrades. Clients knock with requests ("an LLM to write 10 million horoscopes a day?"): **accept, refuse, or propose a lighter alternative**. Events hit you: heatwaves, carbon taxes, audits, scandals. Every decision moves two scores:
+You run a datacenter campus for 10 years (40 quarters, about 4 minutes). Tap a plot on the map to build a datacenter hall or a power plant (gas, coal, biomass, wind, solar, or a dam on the river). **There is no grid**: your halls only run on the power you build, and a hall without power shows a red "!". Tap a built plot to upgrade it; campus-wide rules live behind **Policies**. Clients knock with requests ("an LLM to write 10 million horoscopes a day?"): **accept, refuse, or propose a lighter alternative**. Events hit you: heatwaves, carbon taxes, audits, scandals. Every decision moves two scores:
 
 | Score | What it measures |
 |---|---|
@@ -92,9 +92,9 @@ Add `?seed=123&loc=paris-basin` to the URL to open a challenge: same campus, sam
 ```
 engine/      Pure game simulation (no DOM, no Math.random, no clock). Unit-tested.
   types.ts   Shared contracts: content shapes, game state, actions.
-content/     ALL game data as JSON: balance, locations, upgrades, events, clients, quiz.
+content/     ALL game data as JSON: balance, locations, buildings (halls and plants), upgrades, events, clients, quiz.
   schema/    JSON Schemas mirroring engine/types.ts.
-ui/          React app: screens/ (start, game, end), components/ (cards, shop, icons), map/ (isometric campus), tokens.css.
+ui/          React app: screens/ (start, game, end), components/ (cards, ring menu, icons), map/ (isometric campus, clickable plots), tokens.css.
 scripts/     validate-content.ts, sim.ts (balance), catalog.ts (docs generator).
 dashboard/   /dashboard page (planned, DEV-7).
 api/         Analytics endpoint (planned, DEV-5).
@@ -115,7 +115,9 @@ Game designers and researchers contribute by editing `/content` only. Example up
   "family": "good",
   "category": "water",
   "themes": ["water"],
+  "scope": "hall",
   "cost": 500,
+  "powerMW": 0.1,
   "effects": { "wue": -0.8, "pue": 0.04 },
   "scoreDelta": { "sustainability": 2 },
   "contextModifiers": {
@@ -127,6 +129,7 @@ Game designers and researchers contribute by editing `/content` only. Example up
 }
 ```
 
+- `scope`: `hall` (installed on one hall), `plant` (on one plant of the listed `plantTypes`, using `plantEffects`) or `policy` (campus-wide, from the Policies button). `powerMW` = extra power it draws.
 - `family`: `good`, `trap` (looks profitable, hides a delayed bill) or `tradeoff`. Never shown to players before purchase.
 - `cost` is in k€ (500 = €500k). 1 tick = 1 quarter.
 - `effects`: one-off keys (`cash`, `demandPct`, `envDebt`) apply once; all others (`pue`, `wue`, `renewableShare`, `growthRate`, `growthCap`, `failureRate`, `cashPerTick`, `envDebtPerTick`, `pricePct`, `energyPricePct`, `itEfficiency`, `hardwareLifespan`, `eWasteFactor`, `carbonIntensity`) persist while owned.
@@ -145,7 +148,7 @@ npm run validate:content && npm run sim -- --runs 200 && npm run docs:catalog
 
 - **Sustainability** = 25 % PUE + 25 % carbon intensity + 15 % water (weighted by local stress) + 15 % lifecycle + 20 % absolute footprint, plus a small bonus from decisions.
 - **Responsibility** starts at 50, moves with decisions (diminishing returns near 0 and 100) and slowly drifts back to 50: trust must be maintained.
-- **Economy per quarter:** revenue from IT load minus energy, opex, carbon tax (once introduced), capex for growth and hardware refreshes. Demand grows toward a local market ceiling.
+- **Economy per quarter:** revenue from the load your halls can serve (capacity and power permitting) minus fuel and plant running costs, opex, carbon tax (once introduced) and server refreshes. Demand grows toward a local market ceiling; you build halls and plants to follow it.
 - **Environmental debt** (hidden) grows with carbon, water, e-waste and greedy choices; thresholds trigger bills (carbon tax, audit, power cap, protests, scandal) and client churn.
 - **Legacy score** = 1000 × √(profit × impact): balance beats extremes.
 

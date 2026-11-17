@@ -13,7 +13,8 @@
 ┌──────────────────────────────────────────────────────────────────────────────────┐
 │ /engine (pure TS, no DOM, no Math.random, no clock)                              │
 │   types.ts       contracts shared by everyone                                    │
-│   game.ts        createGame · step · applyAction · currentDecision · shopUpgrades │
+│   game.ts        createGame · step · applyAction · build/upgrade/policy options │
+│   power.ts       plant output, merit-order dispatch, power budget (no grid)       │
 │   derive.ts      stats from location + modifiers                                 │
 │   scoring.ts     scores, legacy, archetype, end-of-run summary                   │
 │   rng.ts         seeded PRNG (mulberry32), seedFromString for daily runs         │
@@ -81,9 +82,10 @@ if (s.status !== 'playing') console.log(summarize(s, content));            // le
 | `ui/useGame.ts` | Holds `GameState`, auto-advances one quarter every 2.6 s / speed, pauses on cards, keeps outcome and quiz feedback |
 | `ui/screens/GameScreen.tsx` | Top bar, title + controls, KPI cards, map card, side panel (decision or quarter report), shop |
 | `ui/screens/StartScreen.tsx`, `EndScreen.tsx` | Location picker; archetype, legacy, profit-vs-impact frontier (with scripted players as reference dots), gained/gave up, trap reveal, 1-10 rating, challenge link |
-| `ui/components/DecisionPanel.tsx`, `Shop.tsx` | Cards (bottom sheet on phones) and upgrade cards (effect chips; never the family or the hidden bill) |
-| `ui/map/layout.ts` | Isometric grid, river path, road, 8 hall plots, feature areas, `campusView(state)` = what to draw |
-| `ui/map/CampusMap.tsx` | The SVG campus: slab, river + bridge + waterfall, halls (fill with capacity), next-plot marker, upgrade features, haze/smoke with debt, drag + zoom |
+| `ui/components/DecisionPanel.tsx` | Cards (bottom sheet on phones) |
+| `ui/components/RingMenu.tsx` | Radial build / upgrade / policy menu around the tapped plot (effect chips; never the family or the hidden bill) |
+| `ui/map/layout.ts` | Isometric grid, river path, road, 8 land plots + the river spot, `campusView(state)` = what each plot shows |
+| `ui/map/CampusMap.tsx` | The SVG campus: clickable plots, halls and plants drawn per plot, dam + reservoir, red "!" on halls without power, haze/smoke with debt, drag + zoom, positions the ring menu |
 
 The map only reads state; it never changes the game. Adding a visual for a new upgrade = a flag in `campusView()` + a drawing in `CampusMap.tsx`.
 
