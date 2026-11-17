@@ -2,17 +2,21 @@
  * Scripted players for the headless balance simulation (scripts/sim.ts) and tests.
  * They are deliberately simple caricatures. If "balanced" stops beating "greedy"
  * and "virtuous" on legacy score, the numbers in /content need tuning.
+ *
+ * Each tick a strategy may take a few actions (build a plant or a hall, install
+ * an upgrade, adopt a policy) before time moves on.
  */
-import { resolveUpgrade } from './derive';
-import { applyAction, createGame, currentDecision, shopUpgrades, step, type PendingDecision } from './game';
+import { derive, getBuilding, getLocation } from './derive';
+import { applyAction, buildOptions, createGame, currentDecision, policyOptions, step, upgradeOptions, type PendingDecision } from './game';
+import { mwPerLoad, powerBudget } from './power';
 import { nextRandom } from './rng';
-import type { Choice, Content, GameState, Stance, Upgrade } from './types';
+import type { Action, Choice, Content, GameState, Stance } from './types';
 
 export interface Strategy {
   id: string;
   description: string;
-  /** Upgrade to buy now, or null to stop buying this tick. */
-  buy: (state: GameState, content: Content) => string | null;
+  /** Next thing to do this tick, or null to let time pass. */
+  plan: (state: GameState, content: Content) => Action | null;
   choose: (decision: Exclude<PendingDecision, { kind: 'quiz' }>, state: GameState, content: Content) => string;
   /** Probability of answering a quiz question correctly. */
   quizSkill: number;
@@ -26,25 +30,81 @@ const byStance = (choices: Choice[], order: Stance[]): Choice => {
   return choices[0];
 };
 
-const affordable = (state: GameState, content: Content, buffer: number) =>
-  shopUpgrades(state, content).filter((u) => u.cost <= state.cash - buffer);
+const freeLandPlots = (s: GameState, content: Content) => s.plots.map((p, i) => (p === null && i < content.balance.landPlots ? i : -1)).filter((i) => i >= 0);
 
-const cheapestFirst = (a: Upgrade, b: Upgrade) => a.cost - b.cost;
+interface BuildPrefs {
+  /** Plants to try, in order, when power runs short. */
+  plants: (s: GameState, content: Content) => string[];
+  /** Build a new hall when demand exceeds this share of capacity. */
+  hallAt: number;
+  /** Keep this many land plots for plants (0 = halls may take every plot). */
+  reservePlots: number;
+  /** Hall, plant and policy upgrades to install (in order), with a cash buffer. */
+  hallUpgrades: string[];
+  plantUpgrades: string[];
+  policies: string[];
+  buffer: number;
+}
+
+function makePlan(prefs: BuildPrefs) {
+  return (s: GameState, content: Content): Action | null => {
+    const d = derive(s, content);
+    const budget = powerBudget(s, content, d);
+    const free = freeLandPlots(s, content);
+    const hallNeed = 2 * mwPerLoad(d);
+    const wantHall = s.demandMW > s.capacityMW * prefs.hallAt && free.length > prefs.reservePlots;
+
+    // 1. Power first: if halls are short of power, or the next hall would be, build a plant.
+    if (budget.spareMW < 0 || (wantHall && budget.spareMW < hallNeed)) {
+      for (const id of prefs.plants(s, content)) {
+        const river = content.balance.landPlots;
+        const plot = getBuilding(content, id).placement === 'river' ? river : free.at(-1);
+        if (plot === undefined) continue;
+        const opt = buildOptions(s, content, plot).find((o) => o.item.id === id);
+        if (opt?.ok && s.cash - opt.item.cost >= prefs.buffer / 2) return { type: 'build', plot, buildingId: id };
+      }
+    }
+    // 2. Then capacity.
+    if (wantHall && free.length > 0) {
+      const opt = buildOptions(s, content, free[0]).find((o) => o.item.kind === 'datacenter');
+      if (opt?.ok) return { type: 'build', plot: free[0], buildingId: opt.item.id };
+    }
+    // 3. Upgrades and policies.
+    for (const id of prefs.policies) {
+      const o = policyOptions(s, content).find((x) => x.item.id === id);
+      if (o?.ok && s.cash - o.item.cost >= prefs.buffer) return { type: 'buy', upgradeId: id };
+    }
+    for (let plot = 0; plot < s.plots.length; plot++) {
+      const p = s.plots[plot];
+      if (!p) continue;
+      const list = getBuilding(content, p.building).kind === 'datacenter' ? prefs.hallUpgrades : prefs.plantUpgrades;
+      for (const id of list) {
+        const o = upgradeOptions(s, content, plot).find((x) => x.item.id === id);
+        if (o?.ok && s.cash - o.item.cost >= prefs.buffer) return { type: 'buy', upgradeId: id, plot };
+      }
+    }
+    return null;
+  };
+}
+
+const bestRenewables = (s: GameState, content: Content) => {
+  const r = getLocation(content, s.locationId).resources;
+  return r.solar * 12 * 0.16 > r.wind * 9 * 0.33 ? ['solar-farm', 'wind-farm'] : ['wind-farm', 'solar-farm'];
+};
 
 export const greedy: Strategy = {
   id: 'greedy',
-  description: 'Maximise short-term profit: every shortcut, every client, every hype.',
+  description: 'Maximise short-term profit: coal, every client, every shortcut.',
   quizSkill: 0.4,
-  buy(state, content) {
-    const options = affordable(state, content, 200).filter((u) => {
-      const e = resolveUpgrade(u, state.locationId).effects;
-      if (u.family === 'trap') return true;
-      // Rational greed: take green upgrades only if they make money and never slow growth.
-      const savesEnergy = (e.pue ?? 0) < 0 || (e.itEfficiency ?? 0) > 0;
-      return (e.growthRate ?? 0) >= 0 && e.growthCap === undefined && (e.cashPerTick ?? 0) >= 0 && savesEnergy && (e.wue ?? 0) <= 0.5;
-    });
-    return options.sort(cheapestFirst)[0]?.id ?? null;
-  },
+  plan: makePlan({
+    plants: () => ['coal-plant', 'gas-plant'],
+    hallAt: 0.9,
+    reservePlots: 0,
+    hallUpgrades: ['hot-aisle-containment', 'overclock-and-cram', 'evaporative-cooling', 'gpu-hype-cluster'],
+    plantUpgrades: ['cheap-lignite', 'imported-pellets', 'gas-heat-recovery'],
+    policies: ['carbon-offsets-greenwash'],
+    buffer: 300,
+  }),
   choose(decision) {
     return byStance(decision.choices, ['greedy', 'neutral', 'responsible']).id;
   },
@@ -52,58 +112,43 @@ export const greedy: Strategy = {
 
 export const virtuous: Strategy = {
   id: 'virtuous',
-  description: 'Always the responsible option, every green upgrade, never a trap.',
+  description: 'Only wind and sun, every green upgrade, always the responsible option.',
   quizSkill: 0.9,
-  buy(state, content) {
-    const options = affordable(state, content, 100).filter((u) => {
-      if (u.family === 'trap') return false;
-      const sd = resolveUpgrade(u, state.locationId).scoreDelta;
-      return (sd.sustainability ?? 0) + (sd.responsibility ?? 0) > 0;
-    });
-    return options.sort(cheapestFirst)[0]?.id ?? null;
-  },
+  plan: makePlan({
+    plants: (s, content) => [...bestRenewables(s, content)],
+    hallAt: 0.95,
+    reservePlots: 1,
+    hallUpgrades: ['hot-aisle-containment', 'free-cooling', 'extend-hardware-life', 'water-closed-loop', 'heat-reuse'],
+    plantUpgrades: ['battery-storage', 'bigger-rotors', 'solar-trackers', 'fish-ladders'],
+    policies: ['staff-training', 'frugal-ai-policy', 'energy-monitoring', 'refurb-circular', 'sufficiency-pledge', 'model-right-sizing'],
+    buffer: 100,
+  }),
   choose(decision) {
     return byStance(decision.choices, ['responsible', 'neutral', 'greedy']).id;
   },
 };
 
-/** Green where it pays or matters most, refuses the worst clients, rides some growth. */
-const BALANCED_PRIORITY = [
-  'energy-monitoring',
-  'hot-aisle-containment',
-  'staff-training',
-  'frugal-ai-policy',
-  'free-cooling',
-  'extend-hardware-life',
-  'refurb-circular',
-  'renewable-ppa',
-  'water-closed-loop',
-  'heat-reuse',
-  'onsite-solar',
-  'model-right-sizing',
-];
-
+/** Clean where it pays, gas as backup, frugal with clients, keeps growing. */
 export const balanced: Strategy = {
   id: 'balanced',
-  description: 'Green where it pays or matters, frugal with clients, keeps growing.',
+  description: 'River and wind or sun first, gas as backup, green where it pays.',
   quizSkill: 0.75,
-  buy(state, content) {
-    const shop = affordable(state, content, 300);
-    for (const id of BALANCED_PRIORITY) {
-      const up = shop.find((u) => u.id === id);
-      if (!up) continue;
-      // Skip water fixes where water is not scarce, and PPAs where the grid is already clean.
-      const loc = content.locations.find((l) => l.id === state.locationId);
-      if (id === 'water-closed-loop' && (loc?.waterStress ?? 0) < 1) continue;
-      if (id === 'renewable-ppa' && (loc?.gridCarbon ?? 0) < 100) continue;
-      return up.id;
-    }
-    return null;
-  },
+  plan: makePlan({
+    plants: (s, content) => {
+      const loc = getLocation(content, s.locationId);
+      const dam = loc.resources.river >= 0.8 ? ['dam'] : [];
+      return [...dam, ...bestRenewables(s, content).slice(0, 1), 'gas-plant'];
+    },
+    hallAt: 0.9,
+    reservePlots: 0,
+    hallUpgrades: ['hot-aisle-containment', 'free-cooling', 'extend-hardware-life'],
+    plantUpgrades: ['methane-leak-checks', 'gas-heat-recovery', 'fish-ladders', 'battery-storage'],
+    policies: ['energy-monitoring', 'staff-training', 'frugal-ai-policy'],
+    buffer: 400,
+  }),
   choose(decision, state) {
     const choices = decision.choices;
     if (decision.kind === 'client') {
-      // Host what is useful or partly useful as asked; redirect pure hype; refuse the indefensible.
       const need = decision.client.aiNeed;
       const accept = choices.find((c) => c.id === 'accept');
       const alt = choices.find((c) => c.id === 'alternative');
@@ -112,7 +157,6 @@ export const balanced: Strategy = {
       if (accept && accept.stance !== 'greedy') return accept.id;
       return byStance(choices, ['responsible', 'neutral', 'greedy']).id;
     }
-    // Events: the pragmatic middle option, unless the responsible one is cheap.
     const responsible = choices.find((c) => c.stance === 'responsible');
     const cost = -(responsible?.effects?.cash ?? 0);
     const capsGrowth = Boolean(responsible?.temporary?.effects.growthCap !== undefined || responsible?.effects?.growthCap !== undefined);
@@ -123,9 +167,9 @@ export const balanced: Strategy = {
 
 export const idle: Strategy = {
   id: 'idle',
-  description: 'Never buys anything, always picks the first option. Baseline.',
+  description: 'Never builds or buys anything, always picks the first option. Baseline.',
   quizSkill: 0.5,
-  buy: () => null,
+  plan: () => null,
   choose: (decision) => decision.choices[0].id,
 };
 
@@ -138,12 +182,17 @@ export function randomStrategy(seed: number): Strategy {
   };
   return {
     id: 'random',
-    description: 'Random choices and random purchases. Checks robustness, not skill.',
+    description: 'Random choices, random builds and purchases. Checks robustness, not skill.',
     quizSkill: 0.5,
-    buy(state, content) {
-      if (rand() > 0.3) return null;
-      const options = affordable(state, content, 0);
-      return options.length ? options[Math.floor(rand() * options.length)].id : null;
+    plan(s, content) {
+      if (rand() > 0.35) return null;
+      const plot = Math.floor(rand() * s.plots.length);
+      if (!s.plots[plot]) {
+        const opts = buildOptions(s, content, plot).filter((o) => o.ok);
+        return opts.length ? { type: 'build', plot, buildingId: opts[Math.floor(rand() * opts.length)].item.id } : null;
+      }
+      const opts = upgradeOptions(s, content, plot).filter((o) => o.ok);
+      return opts.length ? { type: 'buy', upgradeId: opts[Math.floor(rand() * opts.length)].item.id, plot } : null;
     },
     choose(decision) {
       return decision.choices[Math.floor(rand() * decision.choices.length)].id;
@@ -171,10 +220,10 @@ export function playRun(strategy: Strategy, seed: number, locationId: string, co
       }
       continue;
     }
-    for (let buys = 0; buys < 3; buys++) {
-      const id = strategy.buy(s, content);
-      if (!id) break;
-      const next = applyAction(s, { type: 'buy', upgradeId: id }, content);
+    for (let actions = 0; actions < 4; actions++) {
+      const action = strategy.plan(s, content);
+      if (!action) break;
+      const next = applyAction(s, action, content);
       if (next === s) break;
       s = next;
     }

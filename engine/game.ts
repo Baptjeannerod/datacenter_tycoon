@@ -3,17 +3,22 @@
  * No DOM, no Math.random, no Date. The UI and the balance sim both drive this.
  *
  *   const s0 = createGame({ seed: 42, locationId: 'paris-basin' }, content);
- *   let s = step(s0, content);                         // advance one quarter
- *   s = applyAction(s, { type: 'buy', upgradeId: 'free-cooling' }, content);
- *   const d = currentDecision(s, content);             // pending card, if any
- *   s = applyAction(s, { type: 'choose', choiceId: d.choices[0].id }, content);
+ *   let s = step(s0, content);                                            // one quarter
+ *   s = applyAction(s, { type: 'build', plot: 2, buildingId: 'wind-farm' }, content);
+ *   s = applyAction(s, { type: 'buy', upgradeId: 'free-cooling', plot: 0 }, content);   // on the hall on plot 0
+ *   s = applyAction(s, { type: 'buy', upgradeId: 'staff-training' }, content);          // a policy
+ *   const d = currentDecision(s, content);                                // pending card, if any
+ *
+ * Power: there is no grid. Halls only run on power from plants you built (engine/power.ts).
  */
 import { checkCondition } from './conditions';
-import { clamp, derive, getLocation, getUpgrade, persistentPart, resolveUpgrade } from './derive';
+import { clamp, derive, getBuilding, getLocation, getUpgrade, persistentPart, resolveUpgrade } from './derive';
+import { dispatch, mwPerLoad, plantInfos, powerBudget, upgradeDrawMW } from './power';
 import { nextRandom } from './rng';
 import { computeScores } from './scoring';
 import type {
   Action,
+  Building,
   Choice,
   Client,
   Content,
@@ -38,10 +43,21 @@ export interface NewGameOptions {
   locationId: string;
 }
 
+export const plotCount = (content: Content) => content.balance.landPlots + 1;
+export const riverPlot = (content: Content) => content.balance.landPlots;
+export const plotPlacement = (content: Content, plot: number): 'land' | 'river' => (plot === riverPlot(content) ? 'river' : 'land');
+
+const hallMW = (content: Content, state: GameState) =>
+  state.plots.reduce((a, p) => {
+    if (!p) return a;
+    const b = getBuilding(content, p.building);
+    return a + (b.kind === 'datacenter' ? (b.itMW ?? 0) : 0);
+  }, 0);
+
 export function createGame(opts: NewGameOptions, content: Content): GameState {
   const loc = getLocation(content, opts.locationId);
   const b = content.balance;
-  return {
+  const s: GameState = {
     version: 1,
     seed: opts.seed >>> 0,
     rng: opts.seed >>> 0,
@@ -50,11 +66,13 @@ export function createGame(opts: NewGameOptions, content: Content): GameState {
     locationId: loc.id,
     cash: loc.startCash,
     demandMW: loc.startDemandMW,
-    capacityMW: loc.startDemandMW,
+    capacityMW: 0,
     hardwareAge: 0,
     envDebt: 0,
     responsibility: 50,
     sustainabilityBonus: 0,
+    plots: Array.from({ length: plotCount(content) }, () => null),
+    policies: [],
     owned: [],
     modifiers: [],
     scheduled: [],
@@ -67,8 +85,17 @@ export function createGame(opts: NewGameOptions, content: Content): GameState {
     baselineEnergyMWh: loc.startDemandMW * b.hoursPerTick * loc.basePue,
     totals: { revenue: 0, energyMWh: 0, co2T: 0, waterM3: 0, eWasteT: 0, outages: 0, carbonTax: 0 },
     history: [],
-    log: [{ tick: 0, kind: 'info', text: `You open a ${loc.startDemandMW} MW datacenter in ${loc.name}.` }],
+    log: [],
   };
+  for (const sb of b.startBuildings) {
+    const building = getBuilding(content, sb.building);
+    s.plots[sb.plot] = { building: building.id, upgrades: [], builtTick: 0 };
+    const persistent = persistentPart(building.effects ?? {});
+    if (Object.keys(persistent).length) s.modifiers.push({ source: `plot:${sb.plot}:building`, effects: persistent });
+  }
+  s.capacityMW = hallMW(content, s);
+  s.log.push({ tick: 0, kind: 'info', text: `You open a small campus in ${loc.name}: one datacenter hall and the plant that powers it. No grid here: every MW comes from what you build.` });
+  return s;
 }
 
 // ---------------------------------------------------------------------------
@@ -96,23 +123,88 @@ export function readStat(state: GameState, content: Content, key: StatKey): numb
 
 const reader = (state: GameState, content: Content) => (key: StatKey) => readStat(state, content, key);
 
-/** Upgrades the player can see in the shop right now (affordable or not). */
-export function shopUpgrades(state: GameState, content: Content): Upgrade[] {
-  const takenGroups = new Set(
-    state.owned.map((id) => getUpgrade(content, id).exclusiveGroup).filter((g): g is string => Boolean(g)),
-  );
-  return content.upgrades.filter(
-    (u) =>
-      !state.owned.includes(u.id) &&
-      !(u.exclusiveGroup && takenGroups.has(u.exclusiveGroup)) &&
-      checkCondition(u.requires, state, reader(state, content)),
-  );
+export interface Option<T> {
+  item: T;
+  ok: boolean;
+  /** Why it can't be done right now (money, power, a pending card…). */
+  reason?: string;
+  /** Already installed here. */
+  installed?: boolean;
+  /** Spare power it needs, MW. */
+  needMW?: number;
 }
 
-export function canBuy(state: GameState, content: Content, upgradeId: string): boolean {
-  if (state.status !== 'playing' || state.queue.length > 0) return false;
-  const up = shopUpgrades(state, content).find((u) => u.id === upgradeId);
-  return Boolean(up && state.cash >= up.cost);
+const fmtK = (k: number) => (k >= 1000 ? `€${(k / 1000).toFixed(1)}M` : `€${Math.round(k)}k`);
+
+function blocked(state: GameState): string | undefined {
+  if (state.status !== 'playing') return 'The run is over';
+  if (state.queue.length > 0) return 'Answer the open card first';
+  return undefined;
+}
+
+/** What can be built on an empty plot. */
+export function buildOptions(state: GameState, content: Content, plot: number): Option<Building>[] {
+  if (state.plots[plot]) return [];
+  const placement = plotPlacement(content, plot);
+  const d = derive(state, content);
+  const spare = powerBudget(state, content, d).spareMW;
+  return content.buildings
+    .filter((b) => b.placement === placement && checkCondition(b.requires, state, reader(state, content)))
+    .map((b) => {
+      const needMW = b.kind === 'datacenter' ? (b.itMW ?? 0) * mwPerLoad(d) : 0;
+      const reason = blocked(state) ?? (state.cash < b.cost ? `Needs ${fmtK(b.cost)}` : needMW > spare + 1e-9 ? `Needs ${needMW.toFixed(1)} MW spare power` : undefined);
+      return { item: b, ok: !reason, reason, needMW };
+    });
+}
+
+/** Upgrades for the building on a plot (hall or plant). */
+export function upgradeOptions(state: GameState, content: Content, plot: number): Option<Upgrade>[] {
+  const p = state.plots[plot];
+  if (!p) return [];
+  const b = getBuilding(content, p.building);
+  const spare = powerBudget(state, content).spareMW;
+  const groups = new Set(p.upgrades.map((id) => getUpgrade(content, id).exclusiveGroup).filter(Boolean));
+  return content.upgrades
+    .filter((u) => (b.kind === 'datacenter' ? u.scope === 'hall' : u.scope === 'plant' && b.plantType !== undefined && Boolean(u.plantTypes?.includes(b.plantType))))
+    .filter((u) => checkCondition(u.requires, state, reader(state, content)))
+    .map((u) => {
+      const installed = p.upgrades.includes(u.id);
+      const needMW = u.powerMW ?? 0;
+      const reason = installed
+        ? 'Installed'
+        : (blocked(state) ??
+          (u.exclusiveGroup && groups.has(u.exclusiveGroup)
+            ? 'One per building'
+            : state.cash < u.cost
+              ? `Needs ${fmtK(u.cost)}`
+              : needMW > spare + 1e-9
+                ? `Needs ${needMW.toFixed(1)} MW spare power`
+                : undefined));
+      return { item: u, ok: !reason, reason, installed, needMW };
+    });
+}
+
+/** Campus-wide policies. */
+export function policyOptions(state: GameState, content: Content): Option<Upgrade>[] {
+  const spare = powerBudget(state, content).spareMW;
+  const groups = new Set(state.policies.map((id) => getUpgrade(content, id).exclusiveGroup).filter(Boolean));
+  return content.upgrades
+    .filter((u) => u.scope === 'policy' && checkCondition(u.requires, state, reader(state, content)))
+    .map((u) => {
+      const installed = state.policies.includes(u.id);
+      const needMW = u.powerMW ?? 0;
+      const reason = installed
+        ? 'Active'
+        : (blocked(state) ??
+          (u.exclusiveGroup && groups.has(u.exclusiveGroup)
+            ? 'Exclusive with another policy'
+            : state.cash < u.cost
+              ? `Needs ${fmtK(u.cost)}`
+              : needMW > spare + 1e-9
+                ? `Needs ${needMW.toFixed(1)} MW spare power`
+                : undefined));
+      return { item: u, ok: !reason, reason, installed, needMW };
+    });
 }
 
 export type PendingDecision =
@@ -155,23 +247,19 @@ function roll(s: GameState): number {
   return r.value;
 }
 
-function applyEffects(s: GameState, effects: Effects | undefined, source: string, temporary?: TemporaryEffect) {
+function applyEffects(s: GameState, effects: Effects | undefined, source: string, temporary?: TemporaryEffect, scope?: 'hall') {
   if (effects) {
     if (effects.cash) s.cash += effects.cash;
     if (effects.demandPct) s.demandMW = Math.max(0.1, s.demandMW * (1 + effects.demandPct));
     if (effects.envDebt) s.envDebt = Math.max(0, s.envDebt + effects.envDebt);
     const persistent = persistentPart(effects);
-    if (Object.keys(persistent).length > 0) s.modifiers.push({ source, effects: persistent });
+    if (Object.keys(persistent).length > 0) s.modifiers.push({ source, effects: persistent, ...(scope ? { scope } : {}) });
   }
   if (temporary) {
     if (temporary.effects.cash) s.cash += temporary.effects.cash;
     if (temporary.effects.demandPct) s.demandMW = Math.max(0.1, s.demandMW * (1 + temporary.effects.demandPct));
     if (temporary.effects.envDebt) s.envDebt = Math.max(0, s.envDebt + temporary.effects.envDebt);
-    s.modifiers.push({
-      source: `${source}:temporary`,
-      effects: persistentPart(temporary.effects),
-      expiresAt: s.tick + temporary.durationTicks,
-    });
+    s.modifiers.push({ source: `${source}:temporary`, effects: persistentPart(temporary.effects), expiresAt: s.tick + temporary.durationTicks });
   }
 }
 
@@ -193,6 +281,16 @@ function applyScore(s: GameState, delta: ScoreDelta | undefined, content: Conten
 
 function schedule(s: GameState, delayed: DelayedEffect[] | undefined, source: string) {
   for (const d of delayed ?? []) s.scheduled.push({ ...d, dueTick: s.tick + d.afterTicks, source });
+}
+
+function addFlags(s: GameState, flags: string[] | undefined) {
+  for (const f of flags ?? []) if (!s.flags.includes(f)) s.flags.push(f);
+}
+
+function refreshOwned(s: GameState) {
+  const all = new Set<string>(s.policies);
+  for (const p of s.plots) for (const id of p?.upgrades ?? []) all.add(id);
+  s.owned = [...all];
 }
 
 function enqueueEvent(s: GameState, content: Content, eventId: string, front = false): boolean {
@@ -224,7 +322,7 @@ function runScheduled(s: GameState, content: Content) {
     if (!checkCondition(d.if, s, reader(s, content))) continue;
     applyEffects(s, d.effects, `${d.source}:delayed`);
     applyScore(s, d.scoreDelta, content);
-    for (const f of d.setFlags ?? []) if (!s.flags.includes(f)) s.flags.push(f);
+    addFlags(s, d.setFlags);
     if (d.message) log(s, 'debt', d.message);
     if (d.triggerEvent) enqueueEvent(s, content, d.triggerEvent);
   }
@@ -232,10 +330,7 @@ function runScheduled(s: GameState, content: Content) {
 
 function scheduleDecisions(s: GameState, content: Content) {
   const read = reader(s, content);
-  const eligible = (e: GameEvent) =>
-    (e.repeatable || !s.firedEvents.includes(e.id)) &&
-    !s.queue.some((q) => q.id === e.id) &&
-    checkCondition(e.when, s, read);
+  const eligible = (e: GameEvent) => (e.repeatable || !s.firedEvents.includes(e.id)) && !s.queue.some((q) => q.id === e.id) && checkCondition(e.when, s, read);
 
   // 1. Bills come due: consequence and milestone events fire as soon as their condition holds.
   const due = content.events.find((e) => e.kind !== 'random' && e.when !== undefined && eligible(e));
@@ -271,16 +366,22 @@ function maybeQueueQuiz(s: GameState, content: Content, quizId: string | undefin
   s.queue.unshift({ kind: 'quiz', id: quizId });
 }
 
+function removeUpgradeEverywhere(s: GameState, id: string) {
+  s.policies = s.policies.filter((p) => p !== id);
+  s.plots.forEach((p) => {
+    if (p) p.upgrades = p.upgrades.filter((u) => u !== id);
+  });
+  s.modifiers = s.modifiers.filter((m) => m.source !== `policy:${id}` && !m.source.endsWith(`:${id}`));
+  refreshOwned(s);
+}
+
 function applyChoice(s: GameState, content: Content, choice: Choice, source: string) {
   applyEffects(s, choice.effects, source, choice.temporary);
   applyScore(s, choice.scoreDelta, content);
   schedule(s, choice.delayed, source);
-  for (const f of choice.setFlags ?? []) if (!s.flags.includes(f)) s.flags.push(f);
+  addFlags(s, choice.setFlags);
   if (choice.clearFlags) s.flags = s.flags.filter((f) => !choice.clearFlags?.includes(f));
-  for (const id of choice.removeUpgrades ?? []) {
-    s.owned = s.owned.filter((o) => o !== id);
-    s.modifiers = s.modifiers.filter((m) => m.source !== `upgrade:${id}`);
-  }
+  for (const id of choice.removeUpgrades ?? []) removeUpgradeEverywhere(s, id);
   const stanceKind: LogKind = choice.stance === 'responsible' ? 'good' : choice.stance === 'greedy' ? 'bad' : 'info';
   log(s, stanceKind, choice.outcome);
 }
@@ -297,31 +398,34 @@ export function step(state: GameState, content: Content): GameState {
   const loc = getLocation(content, s.locationId);
   const d = derive(s, content);
 
-  // Growth: demand compounds but slows as it nears the market size (logistic);
-  // capacity follows it up (and has to be paid for).
+  // Demand: grows toward the local market size (logistic), and leaves providers with a bad footprint.
   const growth = d.growthRate > 0 ? d.growthRate * Math.max(0, 1 - s.demandMW / loc.marketMW) : d.growthRate;
   s.demandMW = Math.max(0.1, s.demandMW * (1 + growth));
-  // Debt-driven churn: clients leave providers with a bad footprint.
   const churn = clamp((s.envDebt - b.debtChurnStart) * b.debtChurnPerPoint, 0, b.maxDebtChurn);
   if (churn > 0) s.demandMW = Math.max(0.1, s.demandMW * (1 - churn));
-  let capex = 0;
-  if (s.demandMW > s.capacityMW) {
-    capex = (s.demandMW - s.capacityMW) * b.capexPerMW;
-    s.capacityMW = s.demandMW;
-  }
 
-  // Hardware ages; at end of life the whole fleet is refreshed (cost + e-waste + embodied carbon).
-  s.hardwareAge += 1;
+  // Hardware ages hall by hall; at end of life a hall's servers are replaced (cost + e-waste + embodied carbon).
   let refreshCost = 0;
   let eWasteT = 0;
   let embodiedCo2 = 0;
-  if (s.hardwareAge >= d.hardwareLifespan) {
-    refreshCost = s.capacityMW * b.refreshCostPerMW;
-    eWasteT = s.capacityMW * b.eWastePerMW * d.eWasteMultiplier;
-    embodiedCo2 = s.capacityMW * b.embodiedCarbonPerMW;
-    s.hardwareAge = 0;
-    log(s, 'info', `Server fleet refreshed: ${Math.round(eWasteT)} t of e-waste, ${Math.round(refreshCost)}k€.`);
-  }
+  let refreshed = 0;
+  const ages: number[] = [];
+  s.plots.forEach((p) => {
+    if (!p) return;
+    const bld = getBuilding(content, p.building);
+    if (bld.kind !== 'datacenter') return;
+    if (s.tick + 1 - p.builtTick >= d.hardwareLifespan) {
+      const mw = bld.itMW ?? 0;
+      refreshCost += mw * b.refreshCostPerMW;
+      eWasteT += mw * b.eWastePerMW * d.eWasteMultiplier;
+      embodiedCo2 += mw * b.embodiedCarbonPerMW;
+      p.builtTick = s.tick + 1;
+      refreshed += 1;
+    }
+    ages.push(s.tick + 1 - p.builtTick);
+  });
+  s.hardwareAge = ages.length ? ages.reduce((a, x) => a + x, 0) / ages.length : 0;
+  if (refreshed > 0) log(s, 'info', `Servers replaced in ${refreshed} hall${refreshed > 1 ? 's' : ''}: ${Math.round(eWasteT)} t of e-waste, ${fmtK(refreshCost)}.`);
 
   // Outages.
   const outage = roll(s) < d.failureRate;
@@ -331,34 +435,47 @@ export function step(state: GameState, content: Content): GameState {
     log(s, 'outage', 'Outage! Clients lost service and some of them left.');
   }
 
+  // Power: what the plants deliver this quarter (renewables swing), what the halls can run.
+  const plants = plantInfos(s, content, d);
+  const available = plants.map((p) => Math.max(0, p.avgMW * (1 + (p.variability > 0 ? p.variability * (2 * roll(s) - 1) : 0))));
+  const supply = available.reduce((a, x) => a + x, 0);
+  const draw = upgradeDrawMW(s, content);
+  const perLoad = mwPerLoad(d);
+  const maxLoadByPower = Math.max(0, (supply - draw) / perLoad);
+  const servable = Math.min(s.demandMW, s.capacityMW);
+  const loadMW = Math.min(servable, maxLoadByPower);
+  const facilityMW = Math.min(supply, loadMW * perLoad + draw);
+
+  // Which halls are dark: those the power cannot run at full capacity (last built first).
+  const hallPlots = s.plots.map((p, i) => (p && getBuilding(content, p.building).kind === 'datacenter' ? i : -1)).filter((i) => i >= 0);
+  const unpoweredPlots: number[] = [];
+  if (maxLoadByPower < s.capacityMW - 1e-6 && hallPlots.length > 0) {
+    const perHall = s.capacityMW / hallPlots.length;
+    const dark = Math.min(hallPlots.length, Math.ceil((s.capacityMW - maxLoadByPower) / perHall - 1e-9));
+    unpoweredPlots.push(...hallPlots.slice(hallPlots.length - dark));
+  }
+  if (loadMW < servable - 0.05) log(s, 'bad', `Brownout: not enough power. ${Math.round((1 - loadMW / servable) * 100)}% of client load could not run.`);
+
   // Money and physics.
-  const loadMW = Math.min(s.demandMW, s.capacityMW);
   const revenue = loadMW * loc.pricePerMW * d.priceMultiplier * (outage ? 1 - b.outageRevenueLoss : 1);
-  const itEnergyMWh = loadMW * b.hoursPerTick * (1 - d.itEfficiency);
-  const energyMWh = itEnergyMWh * d.pue;
-  const energyCost = (energyMWh * loc.energyPrice * d.energyPriceMultiplier) / 1000;
-  const co2T = (energyMWh * d.effectiveCarbon) / 1000 + embodiedCo2;
-  const waterM3 = itEnergyMWh * d.wue;
+  const production = dispatch(plants, available, facilityMW);
+  const H = b.hoursPerTick;
+  const itEnergyMWh = loadMW * (1 - d.itEfficiency) * H;
+  const energyMWh = facilityMW * H;
+  const energyCost = production.reduce((a, mw, i) => a + (mw * H * plants[i].costPerMWh) / 1000, 0) + plants.reduce((a, p) => a + p.fixedCost, 0);
+  const plantCo2 = production.reduce((a, mw, i) => a + (mw * H * plants[i].carbonPerMWh) / 1000, 0);
+  const co2T = plantCo2 + embodiedCo2;
+  const waterM3 = itEnergyMWh * d.wue + production.reduce((a, mw, i) => a + mw * H * plants[i].waterPerMWh, 0);
   const opex = b.fixedOpexPerTick + s.capacityMW * b.maintenancePerMW;
   const carbonTax = (co2T * d.carbonPrice) / 1000;
-  const net = revenue - energyCost - opex - carbonTax + d.cashPerTick - capex - refreshCost;
+  const net = revenue - energyCost - opex - carbonTax + d.cashPerTick - refreshCost;
   s.cash += net;
 
   // Environmental debt: the hidden bill.
   const debtBefore = s.envDebt;
-  s.envDebt = Math.max(
-    0,
-    s.envDebt +
-      co2T / b.carbonDebtDivisor +
-      (waterM3 * loc.waterStress) / b.waterDebtDivisor +
-      eWasteT * b.eWasteDebtPerT +
-      d.envDebtPerTick -
-      b.envDebtDecay,
-  );
+  s.envDebt = Math.max(0, s.envDebt + co2T / b.carbonDebtDivisor + (waterM3 * loc.waterStress) / b.waterDebtDivisor + eWasteT * b.eWasteDebtPerT + d.envDebtPerTick - b.envDebtDecay);
   for (const threshold of [25, 50, 75]) {
-    if (debtBefore < threshold && s.envDebt >= threshold) {
-      log(s, 'debt', 'Your environmental debt is growing. Someone will send the bill.');
-    }
+    if (debtBefore < threshold && s.envDebt >= threshold) log(s, 'debt', 'Your environmental debt is growing. Someone will send the bill.');
   }
 
   s.totals.revenue += revenue;
@@ -374,17 +491,15 @@ export function step(state: GameState, content: Content): GameState {
   s.tick += 1;
   runScheduled(s, content);
 
-  const reportTick = s.tick;
-  // Scores are computed after the tick, against this tick's energy.
-  const provisional = {
-    tick: reportTick,
+  const report = {
+    tick: s.tick,
     demandMW: s.demandMW,
     loadMW,
     revenue,
     energyCost,
     opex,
     carbonTax,
-    capex: capex + refreshCost,
+    capex: refreshCost,
     net,
     cash: s.cash,
     energyMWh,
@@ -392,14 +507,18 @@ export function step(state: GameState, content: Content): GameState {
     waterM3,
     eWasteT,
     outage,
+    supplyMW: supply,
+    needMW: s.capacityMW * perLoad + draw,
+    unpoweredPlots,
+    carbonIntensity: energyMWh > 0 ? (plantCo2 * 1000) / energyMWh : 0,
     sustainability: 0,
     responsibility: 0,
     envDebt: s.envDebt,
   };
-  s.history.push(provisional);
+  s.history.push(report);
   const scores = computeScores(s, content);
-  provisional.sustainability = scores.sustainability;
-  provisional.responsibility = scores.responsibility;
+  report.sustainability = scores.sustainability;
+  report.responsibility = scores.responsibility;
 
   if (s.cash < b.bankruptcyAt) {
     s.status = 'bankrupt';
@@ -418,24 +537,51 @@ export function step(state: GameState, content: Content): GameState {
   return s;
 }
 
+function build(s: GameState, content: Content, plot: number, buildingId: string): boolean {
+  const opt = buildOptions(s, content, plot).find((o) => o.item.id === buildingId);
+  if (!opt?.ok) return false;
+  const bld = opt.item;
+  s.cash -= bld.cost;
+  s.plots[plot] = { building: bld.id, upgrades: [], builtTick: s.tick };
+  s.capacityMW = hallMW(content, s);
+  applyEffects(s, bld.effects, `plot:${plot}:building`);
+  applyScore(s, bld.scoreDelta, content);
+  schedule(s, bld.delayed, `plot:${plot}:building`);
+  addFlags(s, bld.setFlags);
+  s.decisions.push(`build:${bld.id}`);
+  log(s, bld.kind === 'datacenter' ? 'info' : (bld.carbonPerMWh ?? 0) > 300 ? 'bad' : 'good', `Built ${bld.name}. ${bld.whyItMatters}`);
+  return true;
+}
+
+function buy(s: GameState, content: Content, upgradeId: string, plot?: number): boolean {
+  const up = getUpgrade(content, upgradeId);
+  const opts = up.scope === 'policy' ? policyOptions(s, content) : plot === undefined ? [] : upgradeOptions(s, content, plot);
+  const opt = opts.find((o) => o.item.id === upgradeId);
+  if (!opt?.ok) return false;
+  const resolved = resolveUpgrade(up, s.locationId);
+  s.cash -= up.cost;
+  if (up.scope === 'policy') {
+    s.policies.push(up.id);
+    applyEffects(s, resolved.effects, `policy:${up.id}`);
+  } else {
+    s.plots[plot!]!.upgrades.push(up.id);
+    applyEffects(s, resolved.effects, `plot:${plot}:${up.id}`, undefined, up.scope === 'hall' ? 'hall' : undefined);
+  }
+  refreshOwned(s);
+  applyScore(s, resolved.scoreDelta, content);
+  schedule(s, up.delayed, `upgrade:${up.id}`);
+  addFlags(s, up.setFlags);
+  s.decisions.push(`upgrade:${up.id}`);
+  log(s, up.family === 'good' ? 'good' : up.family === 'trap' ? 'bad' : 'info', `Installed ${up.name}. ${up.whyItMatters}`);
+  return true;
+}
+
 export function applyAction(state: GameState, action: Action, content: Content): GameState {
   if (state.status !== 'playing') return state;
   const s = structuredClone(state);
 
-  if (action.type === 'buy') {
-    if (!canBuy(s, content, action.upgradeId)) return state;
-    const up = getUpgrade(content, action.upgradeId);
-    const resolved = resolveUpgrade(up, s.locationId);
-    s.cash -= up.cost;
-    s.owned.push(up.id);
-    s.decisions.push(`upgrade:${up.id}`);
-    applyEffects(s, resolved.effects, `upgrade:${up.id}`);
-    applyScore(s, resolved.scoreDelta, content);
-    schedule(s, up.delayed, `upgrade:${up.id}`);
-    for (const f of up.setFlags ?? []) if (!s.flags.includes(f)) s.flags.push(f);
-    log(s, up.family === 'good' ? 'good' : up.family === 'trap' ? 'bad' : 'info', `Bought ${up.name}. ${up.whyItMatters}`);
-    return s;
-  }
+  if (action.type === 'build') return build(s, content, action.plot, action.buildingId) ? s : state;
+  if (action.type === 'buy') return buy(s, content, action.upgradeId, action.plot) ? s : state;
 
   const pending = currentDecision(s, content);
   if (!pending) return state;
@@ -449,7 +595,6 @@ export function applyAction(state: GameState, action: Action, content: Content):
     return s;
   }
 
-  // action.type === 'choose'
   if (pending.kind === 'quiz') return state;
   const choice = pending.choices.find((c) => c.id === action.choiceId);
   if (!choice) return state;
@@ -466,4 +611,11 @@ export function applyAction(state: GameState, action: Action, content: Content):
     maybeQueueQuiz(s, content, pending.client.quizId);
   }
   return s;
+}
+
+/** True if this upgrade can be bought right now (on `plot` for hall and plant upgrades). */
+export function canBuy(state: GameState, content: Content, upgradeId: string, plot?: number): boolean {
+  const up = getUpgrade(content, upgradeId);
+  const opts = up.scope === 'policy' ? policyOptions(state, content) : plot === undefined ? [] : upgradeOptions(state, content, plot);
+  return Boolean(opts.find((o) => o.item.id === upgradeId)?.ok);
 }
