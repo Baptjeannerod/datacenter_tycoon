@@ -3,28 +3,13 @@
  * Desktop: KPIs on top, map ~2/3 width on the left, decision card on the right, shop below.
  * Phone: everything stacks; the decision card becomes a bottom sheet over the map.
  */
-import {
-  buildOptions,
-  demolishOption,
-  derive,
-  getBuilding,
-  getLocation,
-  policyOptions,
-  powerBudget,
-  resolveUpgrade,
-  riverPlot,
-  upgradeOptions,
-  type Building,
-  type GameState,
-  type Option,
-  type Upgrade,
-} from '../../engine';
+import { derive, getLocation, powerBudget, type GameState } from '../../engine';
 import { useEffect } from 'react';
 import { DecisionPanel } from '../components/DecisionPanel';
 import { OnboardingTip, useOnboarding } from '../components/Onboarding';
-import { CategoryIcon, Icon } from '../components/Icons';
-import { BuildingIcon, RingMenu, type RingItem } from '../components/RingMenu';
-import { DEBT_LABEL, effectChips, money, num, quarterLabel } from '../format';
+import { Icon } from '../components/Icons';
+import { ringFor } from '../components/rings';
+import { DEBT_LABEL, money, num, quarterLabel } from '../format';
 import { CampusMap } from '../map/CampusMap';
 import { campusView, HALL_PLOTS } from '../map/layout';
 import { content, type GameController, type Speed } from '../useGame';
@@ -172,97 +157,6 @@ function QuarterReport({ state }: { state: GameState }) {
         ))}
       </ul>
     </section>
-  );
-}
-
-const SHORT: Record<string, string> = {
-  'datacenter-hall': 'Hall',
-  'gas-plant': 'Gas',
-  'coal-plant': 'Coal',
-  'biomass-plant': 'Biomass',
-  'wind-farm': 'Wind',
-  'solar-farm': 'Solar',
-  dam: 'Dam',
-};
-
-const pctChip = (v: number | undefined, label: string, goodWhenUp: boolean) =>
-  v ? [{ text: `${label} ${v > 0 ? '+' : '−'}${Math.round(Math.abs(v) * 100)}%`, tone: (v > 0) === goodWhenUp ? ('up' as const) : ('down' as const) }] : [];
-
-function buildingItem(state: GameState, o: Option<Building>): RingItem {
-  const b = o.item;
-  const loc = getLocation(content, state.locationId);
-  const chips: RingItem['chips'] = [];
-  if (b.kind === 'datacenter') {
-    chips.push({ text: `+${b.itMW} MW of servers`, tone: 'up' }, { text: `Needs ${num(o.needMW ?? 0, 1)} MW power`, tone: 'info' });
-  } else {
-    const avg = (b.nameplateMW ?? 0) * (b.capacityFactor ?? 1) * (b.resource ? loc.resources[b.resource] : 1);
-    chips.push({ text: `~${num(avg, 1)} MW here`, tone: 'up' });
-    chips.push({ text: `${b.carbonPerMWh} gCO₂/kWh`, tone: (b.carbonPerMWh ?? 0) > 150 ? 'down' : 'up' });
-    chips.push({ text: `€${Math.round((b.costPerMWh ?? 0) * (b.fuel ? loc.fuelPrice : 1))}/MWh`, tone: 'info' });
-    if (b.variability) chips.push({ text: `Varies ±${Math.round(b.variability * 100)}%`, tone: 'down' });
-  }
-  return { id: b.id, label: SHORT[b.id] ?? b.name, name: b.name, pitch: b.pitch, cost: b.cost, icon: <BuildingIcon kind={b.kind === 'datacenter' ? 'hall' : (b.plantType ?? 'gas')} />, ok: o.ok, reason: o.reason, chips };
-}
-
-function upgradeItem(state: GameState, o: Option<Upgrade>): RingItem {
-  const u = o.item;
-  const r = resolveUpgrade(u, state.locationId);
-  const pe = u.plantEffects ?? {};
-  const chips: RingItem['chips'] = [
-    ...effectChips(r.effects),
-    ...pctChip(pe.outputPct, 'Output', true),
-    ...pctChip(pe.carbonPct, 'CO₂', false),
-    ...pctChip(pe.costPct, 'Fuel cost', false),
-    ...(pe.variabilityPct ? [{ text: 'Steadier output', tone: 'up' as const }] : []),
-    ...(u.powerMW ? [{ text: `Draws +${u.powerMW} MW`, tone: 'down' as const }] : []),
-  ];
-  return { id: u.id, label: u.name, name: u.name, pitch: u.pitch, cost: u.cost, icon: <CategoryIcon category={u.category} />, ok: o.ok, reason: o.reason, installed: o.installed, chips, note: r.note };
-}
-
-/** Ring item id for "tear this building down" (never a real upgrade id). */
-const DEMOLISH = '__demolish';
-
-function ringFor(game: GameController, plot: number) {
-  const state = game.state!;
-  if (plot < 0) {
-    const items = policyOptions(state, content).map((o) => upgradeItem(state, o));
-    return <RingMenu title="Campus policies" subtitle="Rules for the whole campus" items={items} verb="Adopt" onConfirm={(id) => game.act({ type: 'buy', upgradeId: id })} onClose={() => game.setMenu(null)} />;
-  }
-  const p = state.plots[plot];
-  if (!p) {
-    const items = buildOptions(state, content, plot).map((o) => buildingItem(state, o));
-    const river = plot === riverPlot(content);
-    return (
-      <RingMenu
-        title={river ? 'River spot' : 'Empty plot'}
-        subtitle={river ? 'Only a dam fits here' : 'Build a hall, or the power to run one'}
-        items={items}
-        verb="Build"
-        onConfirm={(id) => game.act({ type: 'build', plot, buildingId: id })}
-        onClose={() => game.setMenu(null)}
-      />
-    );
-  }
-  const b = getBuilding(content, p.building);
-  const items = upgradeOptions(state, content, plot).map((o) => upgradeItem(state, o));
-  const demo = demolishOption(state, content, plot);
-  if (demo) {
-    const chips: RingItem['chips'] = [{ text: 'No refund', tone: 'down' }];
-    if (b.kind === 'datacenter') chips.push({ text: `−${b.itMW} MW of servers`, tone: 'down' });
-    else chips.push({ text: 'Its power is lost', tone: 'down' });
-    if (p.upgrades.length) chips.push({ text: `${p.upgrades.length} upgrade${p.upgrades.length > 1 ? 's' : ''} removed`, tone: 'info' });
-    items.push({ id: DEMOLISH, label: 'Demolish', name: `Demolish ${b.kind === 'datacenter' ? 'this hall' : b.name}`, pitch: 'Free the plot. Nothing is refunded.', cost: demo.cost, icon: <BuildingIcon kind="demolish" />, ok: demo.ok, reason: demo.reason, chips, verb: 'Demolish', danger: true });
-  }
-  const hallNo = state.plots.slice(0, plot + 1).filter((x) => x && getBuilding(content, x.building).kind === 'datacenter').length;
-  return (
-    <RingMenu
-      title={b.kind === 'datacenter' ? `Hall ${String(hallNo).padStart(2, '0')}` : b.name}
-      subtitle={`${p.upgrades.length} upgrade${p.upgrades.length === 1 ? '' : 's'} installed${b.kind === 'datacenter' ? ' · applies to this hall' : ''}`}
-      items={items}
-      verb="Install"
-      onConfirm={(id) => game.act(id === DEMOLISH ? { type: 'demolish', plot } : { type: 'buy', upgradeId: id, plot })}
-      onClose={() => game.setMenu(null)}
-    />
   );
 }
 

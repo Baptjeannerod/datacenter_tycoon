@@ -197,3 +197,15 @@
 - Virtuous money dropped (Sun Belt €44M → €19M) with pricier renewables; still well above the 20 % rule (€11M) and never bankrupt.
 - New events' effect sizes are game values (`illustrative`); the facts their quiz questions teach are `high`.
 - `built-*` flags are set on build and never cleared, so after the new **Demolish** a player who tore down their coal plant can still get `coal-protest` (and `drought-cooling` after removing all steam plants). Fix needs the engine to clear a building's `setFlags` on demolish, or a "has building of type" condition (dev engine).
+## 2026-11-17 15:35 · claude-agent (S3) · ring menu layout + demolish to replace
+
+**Done:**
+- `ui/components/RingMenu.tsx` redone: the centre shows only the plot's name; details (pitch, chips, price, reason, confirm) go in a card beside the ring, on the side with room (the ring slides over if neither side fits). Radius grows with the option count (`ringRadius(n)`: option boxes 80×72 never overlap, centres ≥ 84 px apart). Labels clamp to 2 lines, price is a badge on the icon, × sits at the wheel's corner outside the circle, Esc closes. Phone: the card docks along the bottom of the map and the ring shrinks above it.
+- Styles moved to `ui/components/ring.css` (imported by RingMenu); all `.ring*` rules and the `pop` keyframes removed from `ui/styles.css`.
+- `ringFor()` and the ring helpers moved from `GameScreen.tsx` to `ui/components/rings.tsx`.
+- Demolish to replace: confirm reads "Demolish · €Xk, then pick what to build"; `useGame.act()` keeps the menu open on the freed plot; the ring then asks "What do you build instead?".
+- Tested with Playwright in Chromium and WebKit (Safari's engine) at 1280×800, 1440×900, 1728×1117 and 390×844: no overlap between options, centre, ×, card; everything inside the map.
+
+**Gotchas:**
+- Engine bug (fixed separately in PR 50, branch `agent/engine-spare-power-fix`): `buildOptions` blocks *every* building when power is short, because plants have `needMW = 0` and the test is `needMW > spare` with `spare < 0` ("Needs 0.0 MW spare power"). So after demolishing your only plant you cannot build a new one. Fix: `needMW > 0 && needMW > spare + 1e-9` in `engine/game.ts` (same pattern in `upgradeOptions` / `policyOptions`).
+- `CampusMap` still passes `--ring-r` and clamps the anchor with its own R; RingMenu ignores `--ring-r` and does its own fitting inside `.campus`.
