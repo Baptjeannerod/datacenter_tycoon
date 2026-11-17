@@ -72,7 +72,7 @@ ul, ol { margin: 0; padding: 0; }
 .trend { margin-left: auto; font-family: var(--font-mono); font-size: var(--fs-sm); font-weight: 600; }
 .trend.down { color: #b23a30; }
 .bar { height: 8px; background: var(--c-surface); border: 1px solid var(--c-ink); }
-.bar > div { height: 100%; background: var(--c-ink); transition: width var(--dur) var(--ease); }
+.bar > div { width: 100%; height: 100%; background: var(--c-ink); transform-origin: left center; transition: transform var(--dur) var(--ease); }
 
 /* Board: map + side */
 .board { display: grid; gap: var(--sp-4); }

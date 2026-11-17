@@ -55,7 +55,7 @@ export function TopBar({ status, onHelp, onQuit }: { status?: string; onHelp: ()
 function Bar({ value }: { value: number }) {
   return (
     <div className="bar" aria-hidden="true">
-      <div style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+      <div style={{ transform: `scaleX(${Math.max(0, Math.min(100, value)) / 100})` }} />
     </div>
   );
 }
