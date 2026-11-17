@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { summarize } from '../engine';
 import { dailyRun, isDailyRun, saveDailyBest, type DailyRun } from './daily';
+import { trackVisit } from './analytics';
 import { EndScreen } from './screens/EndScreen';
 import { GameScreen } from './screens/GameScreen';
 import { StartScreen } from './screens/StartScreen';
@@ -70,6 +71,7 @@ export function App() {
   useEffect(() => {
     if (ended && daily && isDailyRun(daily, ended.seed, ended.locationId)) saveDailyBest(daily.date, summarize(ended, content).legacy);
   }, [ended, daily]);
+  useEffect(trackVisit, []);
   const openHelp = () => {
     game.setPaused(true);
     setHelp(true);
