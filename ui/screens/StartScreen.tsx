@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
-import { createGame, derive } from '../../engine';
+import { useMemo, useState } from 'react';
+import { createGame, derive, getLocation } from '../../engine';
+import { dailyBest, dailyRun } from '../daily';
 import { CampusMap } from '../map/CampusMap';
 import { campusView } from '../map/layout';
 import { content } from '../useGame';
@@ -12,8 +13,20 @@ const DIFFICULTY: Record<string, string> = {
   'sun-belt': 'Thirsty',
 };
 
-export function StartScreen({ onStart, onHelp, challenge }: { onStart: (locationId: string, seed?: number) => void; onHelp: () => void; challenge: { seed: number; loc: string } | null }) {
+export function StartScreen({
+  onStart,
+  onDaily,
+  onHelp,
+  challenge,
+}: {
+  onStart: (locationId: string, seed?: number) => void;
+  onDaily: () => void;
+  onHelp: () => void;
+  challenge: { seed: number; loc: string } | null;
+}) {
   const locations = content.locations.filter((l) => l.enabled);
+  const [daily] = useState(() => dailyRun(content));
+  const best = dailyBest(daily.date);
   const preview = useMemo(() => {
     const s = createGame({ seed: 7, locationId: 'paris-basin' }, content);
     return campusView(s, content, locations[0], derive(s, content).wue);
@@ -32,6 +45,22 @@ export function StartScreen({ onStart, onHelp, challenge }: { onStart: (location
               <li>No grid: build your own power plants. Coal is cheap, wind needs land.</li>
               <li>4 minutes. No sign-up. Beat your friends&rsquo; legacy score.</li>
             </ul>
+            <div className="daily">
+              <span className="eyebrow">Daily run · {daily.date}</span>
+              <p>
+                Same campus and same luck for everyone today, in <strong>{getLocation(content, daily.locationId).name}</strong>.{' '}
+                {best !== null ? (
+                  <>
+                    Your best today: <strong className="mono">{best}</strong>.
+                  </>
+                ) : (
+                  'No score yet today.'
+                )}
+              </p>
+              <button className="btn primary" onClick={onDaily}>
+                Daily run
+              </button>
+            </div>
             {challenge && (
               <div className="challenge">
                 <span className="eyebrow">You were challenged</span>

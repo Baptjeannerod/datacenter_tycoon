@@ -35,7 +35,7 @@ The source is the AFNOR Spec "General framework for frugal AI" (CGDD / SRI / Eco
 
 ## 3. Core loop and session
 
-**Build on the map (since 17 Nov, 13:00).** The campus has 8 land plots and 1 river spot. Tap an empty plot: a ring menu offers a **datacenter hall** (2 MW of servers) or a **power plant** (gas, coal, biomass, wind, solar; the dam only on the river spot). Tap a built plot: a ring of upgrades for *that* building. Campus-wide rules (training, frugal-AI checklist, metering, "carbon neutral" badge…) live behind the **Policies** button. You start with 1 hall and 1 gas plant.
+**Build on the map (since 17 Nov, 13:00).** The campus has 8 land plots and 1 river spot. Tap an empty plot: a ring menu offers a **datacenter hall** (2 MW of servers) or a **power plant** (gas, coal, biomass, wind, solar; the dam only on the river spot). Tap a built plot: a ring of upgrades for *that* building, plus **Demolish**: the building, its upgrades and their persistent effects go; it costs `demolishCostPct` (10 %) of the building's price and nothing is refunded. Bills already scheduled (delayed effects) still arrive, and score deltas already earned stay: tearing down the coal plant does not erase its smoke. You cannot demolish your only hall. Campus-wide rules (training, frugal-AI checklist, metering, "carbon neutral" badge…) live behind the **Policies** button. You start with 1 hall and 1 gas plant.
 
 **There is no grid.** Every MW your halls use comes from plants you built. A hall needs `2 MW × PUE` of spare power to be built; upgrades that draw power (GPUs, overclocking, pumps) need spare power too. If supply drops below need (a calm, cloudy quarter), the last halls go dark, lose their revenue and show a **red "!"** on the map.
 

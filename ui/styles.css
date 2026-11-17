@@ -234,6 +234,7 @@ ul, ol { margin: 0; padding: 0; }
 .hero-points li::before { content: ''; display: inline-block; width: 9px; height: 9px; background: var(--c-lime-strong); border: 1px solid var(--c-ink); margin-right: 10px; }
 .hero-map .campus { height: clamp(260px, 42vh, 460px); border: var(--border); }
 .hero-map .zoom { display: none; }
+.daily { border: var(--border); background: var(--c-lavender); padding: 14px; display: grid; gap: 8px; justify-items: start; }
 .challenge { border: var(--border); background: var(--c-amber); padding: 14px; display: grid; gap: 8px; justify-items: start; }
 .section-title { font-size: clamp(1.2rem, 3.5vw, 1.6rem); margin-bottom: var(--sp-3); }
 .locations { display: grid; gap: var(--sp-3); grid-template-columns: 1fr; }
