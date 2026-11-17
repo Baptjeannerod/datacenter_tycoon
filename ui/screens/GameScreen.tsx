@@ -19,7 +19,9 @@ import {
   type Option,
   type Upgrade,
 } from '../../engine';
+import { useEffect } from 'react';
 import { DecisionPanel } from '../components/DecisionPanel';
+import { OnboardingTip, useOnboarding } from '../components/Onboarding';
 import { CategoryIcon, Icon } from '../components/Icons';
 import { BuildingIcon, RingMenu, type RingItem } from '../components/RingMenu';
 import { DEBT_LABEL, effectChips, money, num, quarterLabel } from '../format';
@@ -265,7 +267,13 @@ function ringFor(game: GameController, plot: number) {
 }
 
 export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () => void }) {
-  const { state, scores, decision, feedback } = game;
+  const { state, scores, decision, feedback, setHold } = game;
+  const tour = useOnboarding();
+  // Time stands still while a first-run hint is up.
+  useEffect(() => {
+    setHold(tour.tip >= 0);
+    return () => setHold(false);
+  }, [tour.tip, setHold]);
   if (!state || !scores) return null;
   const loc = getLocation(content, state.locationId);
   const d = derive(state, content);
@@ -311,7 +319,7 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
         <Kpis state={state} s={scores.sustainability} r={scores.responsibility} />
 
         <section className="board">
-          <div className="map-card">
+          <div className={`map-card${tour.tip === 0 ? ' tour-plots' : ''}`}>
             <div className="map-head">
               <span className="mono">YOUR CAMPUS</span>
               <span className={`status ${view.outage ? 'bad' : ''}`}>
@@ -321,7 +329,17 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
                 {view.plots.filter((p) => p.kind === 'empty').length} of {HALL_PLOTS.length} plots free · tap a plot to build or upgrade
               </span>
             </div>
-            <CampusMap view={view} seed={state.seed} selected={game.menu} onSelect={game.setMenu} ring={game.menu !== null ? ringFor(game, game.menu) : null} />
+            <CampusMap
+              view={view}
+              seed={state.seed}
+              selected={game.menu}
+              onSelect={(plot) => {
+                if (plot !== null) tour.tapped();
+                game.setMenu(plot);
+              }}
+              ring={game.menu !== null ? ringFor(game, game.menu) : null}
+              overlay={tour.tip >= 0 && game.menu === null && !sheetOpen ? <OnboardingTip tip={tour.tip} onNext={tour.next} onSkip={tour.skip} /> : null}
+            />
             <div className="map-stats">
               <div>
                 <Icon.energy />

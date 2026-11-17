@@ -97,6 +97,18 @@ ul, ol { margin: 0; padding: 0; }
 .map-stats strong { font-size: var(--fs-md); }
 .map-stats .per { display: none; color: #b8bdcc; }
 
+/* First-run hints (UX-2) */
+.tip { position: absolute; z-index: 6; bottom: 12px; left: 12px; right: 64px; margin: 0 auto; max-width: 340px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 10px; padding: 10px 12px; background: var(--c-surface); border: var(--border); box-shadow: 4px 4px 0 var(--c-ink); animation: tip-in var(--dur) var(--ease) both; }
+@keyframes tip-in { from { opacity: 0; } }
+.tip-icon { display: grid; place-items: center; width: 34px; height: 34px; }
+.tip-text { font-size: var(--fs-md); line-height: 1.25; }
+.tip-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; }
+.tip-dots { font-size: var(--fs-2xs); letter-spacing: 0.1em; margin-right: auto; }
+.tip-skip { background: none; border: 0; padding: 8px 4px; font: inherit; font-size: var(--fs-sm); text-decoration: underline; color: var(--c-text-muted); cursor: pointer; min-height: 44px; }
+.tip-next { min-width: 88px; }
+.tour-plots .plot-plus { animation: tour-blink 0.9s steps(2, jump-none) infinite; }
+@keyframes tour-blink { 50% { opacity: 0.35; } }
+
 /* Interactive plots and the ring menu */
 .campus.interactive .plot-hit { fill: transparent; cursor: pointer; }
 .campus.interactive .plot-hit:hover { fill: rgba(220, 236, 143, 0.45); }
@@ -283,7 +295,7 @@ ul, ol { margin: 0; padding: 0; }
 @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0.35; } }
 @keyframes flow { to { stroke-dashoffset: -32; } }
 @media (prefers-reduced-motion: reduce) {
-  .spin, .puff, .ripple, .blink, .flash, .flow, .fan, .sheet, .alert, .ring-item { animation: none !important; }
+  .spin, .puff, .ripple, .blink, .flash, .flow, .fan, .sheet, .alert, .ring-item, .tip, .tour-plots .plot-plus { animation: none !important; }
 }
 
 /* ---------- Small phones: compact header and scores ---------- */

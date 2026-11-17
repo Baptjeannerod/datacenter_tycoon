@@ -52,6 +52,8 @@ export function useGame() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   /** Plot whose ring menu is open (-1 = policies), or null. Time pauses while it is open. */
   const [menu, setMenu] = useState<number | null>(null);
+  /** Time held by the UI (onboarding hints), without showing the game as paused. */
+  const [hold, setHold] = useState(false);
 
   const decision = state ? currentDecision(state, content) : null;
   const hasDecision = decision !== null;
@@ -59,10 +61,10 @@ export function useGame() {
 
   // Auto-advance: one quarter every TICK_MS / speed, unless paused or a card is open.
   useEffect(() => {
-    if (!state || !playing || paused || hasDecision || feedback || menu !== null) return;
+    if (!state || !playing || paused || hold || hasDecision || feedback || menu !== null) return;
     const id = window.setTimeout(() => setState((s) => (s ? step(s, content) : s)), TICK_MS / speed);
     return () => window.clearTimeout(id);
-  }, [state, playing, paused, speed, hasDecision, feedback, menu]);
+  }, [state, playing, paused, hold, speed, hasDecision, feedback, menu]);
 
   // Outcome banners clear themselves; quiz explanations wait for "Continue".
   useEffect(() => {
@@ -142,7 +144,7 @@ export function useGame() {
 
   const scores = useMemo(() => (state ? computeScores(state, content) : null), [state]);
 
-  return { state, decision, scores, paused, setPaused, speed, setSpeed, feedback, setFeedback, menu, setMenu, start, choose, answer, act, nextQuarter, quit };
+  return { state, decision, scores, paused, setPaused, speed, setSpeed, feedback, setFeedback, menu, setMenu, hold, setHold, start, choose, answer, act, nextQuarter, quit };
 }
 
 export type GameController = ReturnType<typeof useGame>;
