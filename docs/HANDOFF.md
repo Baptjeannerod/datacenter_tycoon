@@ -139,3 +139,21 @@
 **Gotchas:**
 - Phones that had the game open before a deploy keep the old bundle until reloaded: their events are not sent. Reload before testing.
 - Preview deployments are behind Vercel Authentication; use `vercel curl <url>/api/stats` to read them. Preview and Production share the same Redis database.
+
+## 2026-11-17 15:50 · claude-agent (S2) · bigger map
+
+**Done (branch `agent/s2-bigger-map`, only `ui/map/*` + this entry):**
+- World grid 16x12 → **24x18** (`ui/map/layout.ts`). The river meanders across the whole map (bridge on the main road, waterfall at the front edge), a main road (row 8) plus two side roads (columns 4 and 15), a 12-house village on the west bank, crop fields at the front, more trees. The backdrop art is scaled with the world (`BACKDROP_SCALE`).
+- **16 plot positions** (`PLOT_SLOTS`, 2x3 tiles). Only the first `content.balance.landPlots` are drawn and clickable; unused slots grow trees. The river spot (dam) is plot index `landPlots`, as in the engine. 0-7 = core campus around the bridge (plot 0 = start hall, plot 1 = start plant, side by side); 8-15 = expansion.
+- `campusView()` reads `landPlots` from content: `view.plots` has `landPlots` entries and `view.river` is the river spot index. `landPlotCount(content)` has a dev `console.assert` if the content asks for more plots than the map has.
+- Zoom 1 fits the **whole world** in a landscape panel (desktop); portrait panels (phones) fit the height and drag sideways as before. Zoom goes to 3x in 0.5 steps; +/− are disabled at the limits.
+- Hall labels are bigger (15 SVG units + halo) because the world is drawn at ~0.6x on a laptop panel.
+- Perf: the ground stays memoised; `Tree` and `House` are now `memo`. ~1.1k SVG nodes with 16 plots; no long task (>50 ms) while playing at 3x.
+- Tests: `ui/map/layout.test.ts` (positions ≥ landPlots, plots on the grid and off river/roads/village/fields/each other, room for the dam, campusView + plotCenter with landPlots 8 and 16).
+- Tested in the in-app browser (Chromium) at 1440x900 and 1280x800 with landPlots = 8 (main) and 16 (local edit, not committed): ring opens on every plot and the river spot, zoom + drag work, building on an expansion plot works. 375x812 still works (drag to explore). **Not tested in Safari** (no Safari automation here).
+
+**Next / gotchas:**
+- `plotCenter` moved to `layout.ts` (still re-exported from `CampusMap.tsx`) and now takes the river index: `plotCenter(i, view.river)`.
+- `HALL_PLOTS` is kept but **deprecated**: it is the slots for the bundled content's `landPlots`, only so GameScreen's "N of M plots free" keeps compiling. Owner of GameScreen (S4/S5): switch it to `view.plots.length` and drop the import.
+- On a ~520 px tall map panel the ring around front-row and back-row plots is clamped inside the panel (existing rule in `CampusMap`, offset up to ~55 px from the plot). A taller map panel (S4) or zooming in removes it.
+- To move a plot or add decor, edit `PLOT_SLOTS` / `AREAS` / `HOUSES` in `layout.ts`; the test tells you if it lands on the river, a road or another plot.
