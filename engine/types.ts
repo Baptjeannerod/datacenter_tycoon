@@ -430,6 +430,10 @@ export interface Balance {
   minPue: number;
   /** Demolition fee as a share of the building's price. No refund of the price or its upgrades. */
   demolishCostPct: number;
+  /** Sustainability tax applies while last quarter's Sustainability is below this score (e.g. 50). */
+  sustainabilityTaxThreshold: number;
+  /** Share of revenue taxed at Sustainability 0 (e.g. 0.42). Tax = revenue × maxPct × (threshold − score) / threshold. */
+  sustainabilityTaxMaxPct: number;
 }
 
 export interface Content {
@@ -474,6 +478,8 @@ export interface TickReport {
   energyCost: number;
   opex: number;
   carbonTax: number;
+  /** Sustainability tax paid this quarter, k€ (0 when last quarter's Sustainability was at or above the threshold). */
+  sustainabilityTax: number;
   capex: number;
   net: number;
   cash: number;
@@ -556,6 +562,7 @@ export interface GameState {
     eWasteT: number;
     outages: number;
     carbonTax: number;
+    sustainabilityTax: number;
   };
   history: TickReport[];
   log: LogEntry[];

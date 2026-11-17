@@ -1,5 +1,5 @@
 {
-  "maxTicks": 40,
+  "maxTicks": 20,
   "hoursPerTick": 2190,
   "landPlots": 8,
   "startBuildings": [
@@ -17,9 +17,9 @@
   "refreshCostPerMW": 500,
   "eWastePerMW": 8,
   "embodiedCarbonPerMW": 300,
-  "baseHardwareLifespan": 16,
+  "baseHardwareLifespan": 8,
   "baseFailureRate": 0.03,
-  "agingFailurePerTick": 0.01,
+  "agingFailurePerTick": 0.02,
   "outageRevenueLoss": 0.3,
   "outageChurn": 0.03,
   "carbonPriceWhenTaxed": 100,
@@ -30,13 +30,15 @@
   "debtChurnStart": 80,
   "debtChurnPerPoint": 0.0004,
   "maxDebtChurn": 0.03,
-  "responsibilityDrift": 0.02,
-  "sustainabilityBonusCap": 15,
+  "responsibilityDrift": 0.04,
+  "sustainabilityBonusCap": 10,
   "bankruptcyAt": -1000,
-  "clientEvery": 5,
+  "clientEvery": 3,
   "randomEventChance": 0.25,
-  "maxQuizPerRun": 5,
-  "profitReference": 55000,
+  "maxQuizPerRun": 4,
+  "profitReference": 120000,
   "minPue": 1.05,
-  "demolishCostPct": 0.1
+  "demolishCostPct": 0.1,
+  "sustainabilityTaxThreshold": 50,
+  "sustainabilityTaxMaxPct": 0.42
 }
