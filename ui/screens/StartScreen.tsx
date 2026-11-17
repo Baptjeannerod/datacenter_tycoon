@@ -16,7 +16,7 @@ export function StartScreen({ onStart, onHelp, challenge }: { onStart: (location
   const locations = content.locations.filter((l) => l.enabled);
   const preview = useMemo(() => {
     const s = createGame({ seed: 7, locationId: 'paris-basin' }, content);
-    return campusView(s, locations[0], derive(s, content).wue);
+    return campusView(s, content, locations[0], derive(s, content).wue);
   }, [locations]);
 
   return (
@@ -29,7 +29,7 @@ export function StartScreen({ onStart, onHelp, challenge }: { onStart: (location
             <p className="lead">Run a datacenter for 10 years. Get rich. Stay responsible. You can&rsquo;t max both.</p>
             <ul className="hero-points">
               <li>Host workloads, or ask if they really need AI.</li>
-              <li>Every upgrade has a trade-off. Some hide a bill.</li>
+              <li>No grid: build your own power plants. Coal is cheap, wind needs land.</li>
               <li>4 minutes. No sign-up. Beat your friends&rsquo; legacy score.</li>
             </ul>
             {challenge && (
@@ -59,7 +59,7 @@ export function StartScreen({ onStart, onHelp, challenge }: { onStart: (location
                 <span className="loc-tag">{l.tagline}</span>
                 <span className="muted small">{l.context}</span>
                 <span className="loc-stats mono">
-                  {l.gridCarbon} gCO₂/kWh · PUE {l.basePue} · water stress {l.waterStress}
+                  Wind ×{l.resources.wind} · Sun ×{l.resources.solar} · River ×{l.resources.river} · water stress {l.waterStress}
                 </span>
                 <span className="loc-go">Build here →</span>
               </button>

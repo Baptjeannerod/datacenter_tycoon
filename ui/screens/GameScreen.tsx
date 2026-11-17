@@ -3,11 +3,25 @@
  * Desktop: KPIs on top, map ~2/3 width on the left, decision card on the right, shop below.
  * Phone: everything stacks; the decision card becomes a bottom sheet over the map.
  */
-import { derive, getLocation, type GameState } from '../../engine';
+import {
+  buildOptions,
+  derive,
+  getBuilding,
+  getLocation,
+  policyOptions,
+  powerBudget,
+  resolveUpgrade,
+  riverPlot,
+  upgradeOptions,
+  type Building,
+  type GameState,
+  type Option,
+  type Upgrade,
+} from '../../engine';
 import { DecisionPanel } from '../components/DecisionPanel';
-import { Icon } from '../components/Icons';
-import { Shop } from '../components/Shop';
-import { DEBT_LABEL, money, num, quarterLabel } from '../format';
+import { CategoryIcon, Icon } from '../components/Icons';
+import { BuildingIcon, RingMenu, type RingItem } from '../components/RingMenu';
+import { DEBT_LABEL, effectChips, money, num, quarterLabel } from '../format';
 import { CampusMap } from '../map/CampusMap';
 import { campusView, HALL_PLOTS } from '../map/layout';
 import { content, type GameController, type Speed } from '../useGame';
@@ -70,7 +84,9 @@ function Kpis({ state, s, r }: { state: GameState; s: number; r: number }) {
   const last = state.history.at(-1);
   const prev = state.history.at(-2);
   const debt = DEBT_LABEL[state.envDebt >= 80 ? 3 : state.envDebt >= 40 ? 2 : state.envDebt >= 15 ? 1 : 0];
-  const view = campusView(state, loc, 0);
+  const d = derive(state, content);
+  const power = powerBudget(state, content, d);
+  const halls = campusView(state, content, loc, 0).halls;
   return (
     <section className="kpis" aria-label="Scores">
       <div className="kpi">
@@ -78,13 +94,13 @@ function Kpis({ state, s, r }: { state: GameState; s: number; r: number }) {
         <div className="kpi-value">{money(state.cash)}</div>
         <div className={`kpi-sub ${last && last.net < 0 ? 'neg' : 'pos'}`}>{last ? `${money(last.net, true)} last quarter` : 'Your first quarter starts now'}</div>
       </div>
-      <div className="kpi load">
-        <div className="eyebrow">IT load</div>
+      <div className={`kpi load${power.spareMW < 0 ? ' short' : ''}`}>
+        <div className="eyebrow">Power</div>
         <div className="kpi-value">
-          {num(state.demandMW, 1)} <small>MW</small>
+          {num(power.supplyMW, 1)} <small>/ {num(power.needMW, 1)} MW needed</small>
         </div>
         <div className="kpi-sub">
-          {view.halls} of {HALL_PLOTS.length} halls · market {loc.marketMW} MW
+          {power.spareMW < 0 ? `Short by ${num(-power.spareMW, 1)} MW: halls go dark` : `${num(power.spareMW, 1)} MW spare`} · {halls} hall{halls === 1 ? '' : 's'} · demand {num(state.demandMW, 1)} MW
         </div>
       </div>
       <div className="kpi lime">
@@ -156,12 +172,92 @@ function QuarterReport({ state }: { state: GameState }) {
   );
 }
 
+const SHORT: Record<string, string> = {
+  'datacenter-hall': 'Hall',
+  'gas-plant': 'Gas',
+  'coal-plant': 'Coal',
+  'biomass-plant': 'Biomass',
+  'wind-farm': 'Wind',
+  'solar-farm': 'Solar',
+  dam: 'Dam',
+};
+
+const pctChip = (v: number | undefined, label: string, goodWhenUp: boolean) =>
+  v ? [{ text: `${label} ${v > 0 ? '+' : '−'}${Math.round(Math.abs(v) * 100)}%`, tone: (v > 0) === goodWhenUp ? ('up' as const) : ('down' as const) }] : [];
+
+function buildingItem(state: GameState, o: Option<Building>): RingItem {
+  const b = o.item;
+  const loc = getLocation(content, state.locationId);
+  const chips: RingItem['chips'] = [];
+  if (b.kind === 'datacenter') {
+    chips.push({ text: `+${b.itMW} MW of servers`, tone: 'up' }, { text: `Needs ${num(o.needMW ?? 0, 1)} MW power`, tone: 'info' });
+  } else {
+    const avg = (b.nameplateMW ?? 0) * (b.capacityFactor ?? 1) * (b.resource ? loc.resources[b.resource] : 1);
+    chips.push({ text: `~${num(avg, 1)} MW here`, tone: 'up' });
+    chips.push({ text: `${b.carbonPerMWh} gCO₂/kWh`, tone: (b.carbonPerMWh ?? 0) > 150 ? 'down' : 'up' });
+    chips.push({ text: `€${Math.round((b.costPerMWh ?? 0) * (b.fuel ? loc.fuelPrice : 1))}/MWh`, tone: 'info' });
+    if (b.variability) chips.push({ text: `Varies ±${Math.round(b.variability * 100)}%`, tone: 'down' });
+  }
+  return { id: b.id, label: SHORT[b.id] ?? b.name, name: b.name, pitch: b.pitch, cost: b.cost, icon: <BuildingIcon kind={b.kind === 'datacenter' ? 'hall' : (b.plantType ?? 'gas')} />, ok: o.ok, reason: o.reason, chips };
+}
+
+function upgradeItem(state: GameState, o: Option<Upgrade>): RingItem {
+  const u = o.item;
+  const r = resolveUpgrade(u, state.locationId);
+  const pe = u.plantEffects ?? {};
+  const chips: RingItem['chips'] = [
+    ...effectChips(r.effects),
+    ...pctChip(pe.outputPct, 'Output', true),
+    ...pctChip(pe.carbonPct, 'CO₂', false),
+    ...pctChip(pe.costPct, 'Fuel cost', false),
+    ...(pe.variabilityPct ? [{ text: 'Steadier output', tone: 'up' as const }] : []),
+    ...(u.powerMW ? [{ text: `Draws +${u.powerMW} MW`, tone: 'down' as const }] : []),
+  ];
+  return { id: u.id, label: u.name, name: u.name, pitch: u.pitch, cost: u.cost, icon: <CategoryIcon category={u.category} />, ok: o.ok, reason: o.reason, installed: o.installed, chips, note: r.note };
+}
+
+function ringFor(game: GameController, plot: number) {
+  const state = game.state!;
+  if (plot < 0) {
+    const items = policyOptions(state, content).map((o) => upgradeItem(state, o));
+    return <RingMenu title="Campus policies" subtitle="Rules for the whole campus" items={items} verb="Adopt" onConfirm={(id) => game.act({ type: 'buy', upgradeId: id })} onClose={() => game.setMenu(null)} />;
+  }
+  const p = state.plots[plot];
+  if (!p) {
+    const items = buildOptions(state, content, plot).map((o) => buildingItem(state, o));
+    const river = plot === riverPlot(content);
+    return (
+      <RingMenu
+        title={river ? 'River spot' : 'Empty plot'}
+        subtitle={river ? 'Only a dam fits here' : 'Build a hall, or the power to run one'}
+        items={items}
+        verb="Build"
+        onConfirm={(id) => game.act({ type: 'build', plot, buildingId: id })}
+        onClose={() => game.setMenu(null)}
+      />
+    );
+  }
+  const b = getBuilding(content, p.building);
+  const items = upgradeOptions(state, content, plot).map((o) => upgradeItem(state, o));
+  const hallNo = state.plots.slice(0, plot + 1).filter((x) => x && getBuilding(content, x.building).kind === 'datacenter').length;
+  return (
+    <RingMenu
+      title={b.kind === 'datacenter' ? `Hall ${String(hallNo).padStart(2, '0')}` : b.name}
+      subtitle={`${p.upgrades.length} upgrade${p.upgrades.length === 1 ? '' : 's'} installed${b.kind === 'datacenter' ? ' · applies to this hall' : ''}`}
+      items={items}
+      verb="Install"
+      onConfirm={(id) => game.act({ type: 'buy', upgradeId: id, plot })}
+      onClose={() => game.setMenu(null)}
+    />
+  );
+}
+
 export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () => void }) {
   const { state, scores, decision, feedback } = game;
   if (!state || !scores) return null;
   const loc = getLocation(content, state.locationId);
   const d = derive(state, content);
-  const view = campusView(state, loc, d.wue);
+  const view = campusView(state, content, loc, d.wue);
   const last = state.history.at(-1);
   const sheetOpen = Boolean(decision || feedback);
   const status = view.outage ? 'Outage' : 'All systems online';
@@ -191,6 +287,9 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
             <button className="btn square" aria-label="Change speed" onClick={() => game.setSpeed(((game.speed % 3) + 1) as Speed)}>
               {game.speed}×
             </button>
+            <button className="btn" onClick={() => game.setMenu(game.menu === -1 ? null : -1)}>
+              Policies
+            </button>
             <button className="btn primary" disabled={sheetOpen} onClick={game.nextQuarter}>
               Next quarter <Icon.arrow />
             </button>
@@ -207,11 +306,10 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
                 <span className="square" /> {status}
               </span>
               <span className="muted small">
-                {view.halls} / {HALL_PLOTS.length} halls built
-                {view.nextHallAtMW !== null && ` · next at ${num(view.nextHallAtMW, 1)} MW`}
+                {view.plots.filter((p) => p.kind === 'empty').length} of {HALL_PLOTS.length} plots free · tap a plot to build or upgrade
               </span>
             </div>
-            <CampusMap view={view} seed={state.seed} />
+            <CampusMap view={view} seed={state.seed} selected={game.menu} onSelect={game.setMenu} ring={game.menu !== null ? ringFor(game, game.menu) : null} />
             <div className="map-stats">
               <div>
                 <Icon.energy />
@@ -248,7 +346,6 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
           </aside>
         </section>
 
-        <Shop state={state} onBuy={game.buy} />
       </main>
       <footer className="footer">
         <span className="mono">BUILD A DATACENTER. TRY NOT TO WRECK THE PLANET.</span>
