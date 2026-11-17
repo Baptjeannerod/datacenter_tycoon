@@ -171,7 +171,7 @@
 **Next:**
 - S4 / whoever owns the end-screen copy: `EndScreen.tsx` still says **"Ten years later"**; with 20 quarters it is five years. I did not touch it (only the tax line is mine there).
 - If S1 changes `clientEvery` / `randomEventChance`, re-measure: cards are ~2/3 of a run's time.
-- **Integration bug, live on `main` since S1's merge (263a477), needs S2's map:** the river spot on the 8-plot map opens a land "Empty plot" ring (Hall, Gas, Coal…, no Dam), because the map still sends index 8 and the engine's river is index 16. Checked in the browser. Screenshot: `s5/merged-s1-river-spot-opens-land-ring.png` on branch `agent/s5-qa-screens`.
+- **Fixed by S2's PR 51 (checked 15:55: the river spot offers "Hydro dam").** Was: integration bug on `main` between S1's merge (263a477) and S2's map: the river spot on the 8-plot map opens a land "Empty plot" ring (Hall, Gas, Coal…, no Dam), because the map still sends index 8 and the engine's river is index 16. Checked in the browser. Screenshot: `s5/merged-s1-river-spot-opens-land-ring.png` on branch `agent/s5-qa-screens`.
 - QA 15:45 (Playwright, Chromium, full runs at 1440×900, S4 also at 1280×800, no console errors): S3 PR 48 passes, including demolish then build on the freed plot. S4 PR 46 fits one screen in game and on the end screen. Its start screen still scrolls 68 px at 1280×800, and the copy says "10 years" / "Ten years later". `main` + S3 + S4 + S5 merge with HANDOFF-only conflicts, and `npm run check` is green on the result.
 
 **Gotchas:**
