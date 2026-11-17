@@ -1,0 +1,380 @@
+[
+  {
+    "id": "astro-gpt",
+    "name": "AstroGPT",
+    "request": "We want a large language model to write a unique daily horoscope for each of our 10 million users.",
+    "aiNeed": "not-needed",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "greedy",
+        "hint": "+25 % load, steady money.",
+        "effects": {
+          "demandPct": 0.25,
+          "envDebtPerTick": 0.3
+        },
+        "scoreDelta": {
+          "responsibility": -5
+        },
+        "outcome": "10 million horoscopes a day. The stars did not see it coming."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "responsible",
+        "scoreDelta": {
+          "responsibility": 4
+        },
+        "outcome": "They will find another host. You keep your capacity for useful work."
+      },
+      {
+        "id": "alternative",
+        "label": "Propose templates + a tiny model",
+        "stance": "responsible",
+        "hint": "A sliver of the load, far less energy.",
+        "effects": {
+          "demandPct": 0.05
+        },
+        "scoreDelta": {
+          "responsibility": 7
+        },
+        "outcome": "They took it. Users can't tell the difference."
+      }
+    ],
+    "quizId": "q-frugal-first",
+    "source": "Game design",
+    "confidence": "illustrative",
+    "slice": true
+  },
+  {
+    "id": "hospital-imaging",
+    "name": "Regional hospital",
+    "request": "We need AI to pre-screen scans and flag urgent cases so radiologists see them first.",
+    "aiNeed": "needed",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "responsible",
+        "hint": "+10 % load at a public-sector price.",
+        "effects": {
+          "demandPct": 0.1,
+          "pricePct": -0.02
+        },
+        "scoreDelta": {
+          "responsibility": 5
+        },
+        "outcome": "Urgent cases get seen hours earlier."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "neutral",
+        "scoreDelta": {
+          "responsibility": -3
+        },
+        "outcome": "Frugal does not mean 'no AI ever'. This one was worth it."
+      },
+      {
+        "id": "alternative",
+        "label": "Suggest a smaller specialised model",
+        "stance": "responsible",
+        "effects": {
+          "demandPct": 0.06
+        },
+        "scoreDelta": {
+          "responsibility": 6
+        },
+        "outcome": "Same accuracy on their task, a fraction of the compute."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative",
+    "slice": true
+  },
+  {
+    "id": "crypto-farm",
+    "name": "HashMax Mining",
+    "request": "We want 3 MW for proof-of-work crypto mining. We pay top price, cash up front.",
+    "aiNeed": "not-ai",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "greedy",
+        "hint": "+50 % load, premium price.",
+        "effects": {
+          "demandPct": 0.5,
+          "pricePct": 0.03,
+          "envDebtPerTick": 1.2
+        },
+        "scoreDelta": {
+          "responsibility": -10
+        },
+        "outcome": "Your racks now burn power to solve puzzles."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "responsible",
+        "scoreDelta": {
+          "responsibility": 5
+        },
+        "outcome": "You turned down the easiest money of the year."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "bank-faq-bot",
+    "name": "Banque Horizon",
+    "request": "We want a generative AI chatbot to answer customer questions. 80 % of them are about 20 FAQ topics.",
+    "aiNeed": "partly",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "greedy",
+        "hint": "+12 % load.",
+        "effects": {
+          "demandPct": 0.12
+        },
+        "scoreDelta": {
+          "responsibility": -2
+        },
+        "outcome": "A giant model answers 'what are your opening hours?' a million times."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "neutral",
+        "scoreDelta": {
+          "responsibility": 1
+        },
+        "outcome": "They go elsewhere."
+      },
+      {
+        "id": "alternative",
+        "label": "Propose a searchable FAQ + small model for the rest",
+        "stance": "responsible",
+        "effects": {
+          "demandPct": 0.04
+        },
+        "scoreDelta": {
+          "responsibility": 6
+        },
+        "outcome": "Faster answers, a fraction of the compute."
+      }
+    ],
+    "quizId": "q-ai-alternative",
+    "source": "Game design",
+    "confidence": "illustrative",
+    "slice": true
+  },
+  {
+    "id": "autoplay-8k",
+    "name": "StreamNow",
+    "request": "We want 8K video previews that autoplay on every thumbnail.",
+    "aiNeed": "not-ai",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "greedy",
+        "hint": "+30 % load.",
+        "effects": {
+          "demandPct": 0.3,
+          "envDebtPerTick": 0.6
+        },
+        "scoreDelta": {
+          "responsibility": -6
+        },
+        "outcome": "Millions of videos nobody asked to watch."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "responsible",
+        "scoreDelta": {
+          "responsibility": 3
+        },
+        "outcome": "They find another host."
+      },
+      {
+        "id": "alternative",
+        "label": "Propose autoplay off + adaptive quality",
+        "stance": "responsible",
+        "effects": {
+          "demandPct": 0.1
+        },
+        "scoreDelta": {
+          "responsibility": 6
+        },
+        "outcome": "Users watch what they choose, at the quality their screen needs."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "climate-research",
+    "name": "Climate research lab",
+    "request": "We run regional climate simulations and need compute at a discount.",
+    "aiNeed": "not-ai",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "responsible",
+        "hint": "+12 % load, low price.",
+        "effects": {
+          "demandPct": 0.12,
+          "pricePct": -0.04
+        },
+        "scoreDelta": {
+          "responsibility": 6
+        },
+        "outcome": "Your servers help plan for floods and droughts."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "greedy",
+        "scoreDelta": {
+          "responsibility": -2
+        },
+        "outcome": "Margins over mission."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "deepfake-ads",
+    "name": "AdBlitz Agency",
+    "request": "We want to generate 1 million personalised AI video ads per day.",
+    "aiNeed": "not-needed",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "greedy",
+        "hint": "+30 % load, premium price.",
+        "effects": {
+          "demandPct": 0.3,
+          "pricePct": 0.04,
+          "envDebtPerTick": 0.8
+        },
+        "scoreDelta": {
+          "responsibility": -8
+        },
+        "outcome": "A million videos a day, most scrolled past in a second."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "responsible",
+        "scoreDelta": {
+          "responsibility": 4
+        },
+        "outcome": "Your GPUs stay free for something useful."
+      },
+      {
+        "id": "alternative",
+        "label": "Propose 10 variants instead of 1 million",
+        "stance": "responsible",
+        "effects": {
+          "demandPct": 0.06
+        },
+        "scoreDelta": {
+          "responsibility": 5
+        },
+        "outcome": "A/B testing 10 variants works about as well."
+      }
+    ],
+    "quizId": "q-dc-electricity",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "daily-retrain",
+    "name": "PredictaCorp",
+    "request": "We retrain our large model from scratch every day, just in case the data changed.",
+    "aiNeed": "partly",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "greedy",
+        "hint": "+20 % load.",
+        "effects": {
+          "demandPct": 0.2,
+          "envDebtPerTick": 0.4
+        },
+        "scoreDelta": {
+          "responsibility": -4
+        },
+        "outcome": "365 full retrainings a year."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "neutral",
+        "scoreDelta": {
+          "responsibility": 2
+        },
+        "outcome": "They find another host."
+      },
+      {
+        "id": "alternative",
+        "label": "Retrain only when drift is detected",
+        "stance": "responsible",
+        "effects": {
+          "demandPct": 0.05
+        },
+        "scoreDelta": {
+          "responsibility": 6
+        },
+        "outcome": "Four retrainings a year, same accuracy."
+      }
+    ],
+    "quizId": "q-retrain",
+    "source": "Game design; AFNOR Spec 2314 recommends defining criteria that justify retraining",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "smart-grid",
+    "name": "Regional grid operator",
+    "request": "We need a small forecasting model to balance wind and solar on the grid.",
+    "aiNeed": "needed",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept",
+        "stance": "responsible",
+        "hint": "+6 % load, and the grid gets greener.",
+        "effects": {
+          "demandPct": 0.06,
+          "envDebt": -3
+        },
+        "scoreDelta": {
+          "responsibility": 5
+        },
+        "outcome": "Less curtailed wind, fewer gas peakers."
+      },
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "stance": "neutral",
+        "scoreDelta": {
+          "responsibility": -3
+        },
+        "outcome": "Small client, big missed opportunity."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  }
+]

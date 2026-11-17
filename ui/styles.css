@@ -1,0 +1,29 @@
+@import './tokens.css';
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--c-bg); color: var(--c-text); font-family: var(--font-ui); font-size: var(--fs-md); -webkit-text-size-adjust: 100%; }
+body { min-height: 100dvh; }
+button { font: inherit; color: inherit; min-height: var(--tap); border-radius: var(--radius-sm); border: 1px solid var(--c-border); background: var(--c-surface-2); padding: var(--sp-2) var(--sp-3); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.primary { background: var(--c-sustainability); color: #06130c; border-color: transparent; font-weight: 700; }
+
+.app { max-width: 520px; margin: 0 auto; padding: var(--sp-4); padding-bottom: calc(var(--sp-8) + env(safe-area-inset-bottom)); display: grid; gap: var(--sp-4); }
+.banner { font-size: var(--fs-xs); color: var(--c-warning); border: 1px dashed var(--c-warning); border-radius: var(--radius-sm); padding: var(--sp-2) var(--sp-3); }
+.card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); padding: var(--sp-4); display: grid; gap: var(--sp-3); }
+.card h2, .card h3 { margin: 0; }
+.muted { color: var(--c-text-muted); font-size: var(--fs-sm); }
+.hud { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-2); }
+.stat { background: var(--c-surface-2); border-radius: var(--radius-sm); padding: var(--sp-2) var(--sp-3); }
+.stat b { display: block; font-family: var(--font-num); font-size: var(--fs-lg); }
+.stat.money b { color: var(--c-money); }
+.stat.sus b { color: var(--c-sustainability); }
+.stat.resp b { color: var(--c-responsibility); }
+.choices { display: grid; gap: var(--sp-2); }
+.choices button { text-align: left; }
+.shop { display: grid; gap: var(--sp-2); }
+.shop-item { display: grid; grid-template-columns: 1fr auto; gap: var(--sp-2); align-items: center; padding-top: var(--sp-2); border-top: 1px solid var(--c-border); }
+.shop-item:first-child { border-top: 0; padding-top: 0; }
+.log { font-size: var(--fs-sm); display: grid; gap: var(--sp-1); max-height: 180px; overflow: auto; }
+.log .bad, .log .outage { color: var(--c-danger); }
+.log .good { color: var(--c-good); }
+.log .debt { color: var(--c-warning); }

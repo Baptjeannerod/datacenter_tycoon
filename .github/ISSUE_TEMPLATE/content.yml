@@ -1,0 +1,23 @@
+name: Content idea (upgrade, event, client, quiz)
+description: Propose new game content, no code needed
+labels: [game-design]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [upgrade, event, client, quiz question, location]
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea in 2 sentences
+      description: For upgrades and choices, say what you gain now and what you pay later.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source and confidence
+      description: Link for any real-world number. Otherwise say "illustrative".

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "quiz.schema.json",
+  "title": "Quiz questions (content/quiz.json)",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "question", "answers", "correctIndex", "explanation", "themes", "source", "confidence"],
+    "properties": {
+      "id": { "type": "string", "pattern": "^q-[a-z0-9-]+$" },
+      "question": { "type": "string", "maxLength": 140 },
+      "answers": { "type": "array", "minItems": 2, "maxItems": 4, "items": { "type": "string", "maxLength": 90 } },
+      "correctIndex": { "type": "integer", "minimum": 0, "maximum": 3 },
+      "explanation": { "type": "string", "maxLength": 200 },
+      "themes": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/definitions/theme" } },
+      "source": { "type": "string", "minLength": 3 },
+      "confidence": { "$ref": "common.schema.json#/definitions/confidence" }
+    }
+  }
+}

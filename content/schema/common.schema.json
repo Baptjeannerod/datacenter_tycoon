@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "common.schema.json",
+  "title": "Shared definitions (mirror of engine/types.ts)",
+  "definitions": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "kebab-case, unique within its file" },
+    "confidence": { "enum": ["high", "approx", "illustrative"] },
+    "theme": {
+      "enum": ["question-the-need", "measure", "lifecycle", "efficiency", "energy-mix", "water", "rebound", "honest-communication", "governance", "skills"]
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cash": { "type": "number" },
+        "demandPct": { "type": "number", "minimum": -1, "maximum": 2 },
+        "envDebt": { "type": "number" },
+        "pue": { "type": "number", "minimum": -1, "maximum": 1 },
+        "wue": { "type": "number", "minimum": -3, "maximum": 3 },
+        "renewableShare": { "type": "number", "minimum": -1, "maximum": 1 },
+        "growthRate": { "type": "number", "minimum": -0.2, "maximum": 0.2 },
+        "growthCap": { "type": "number", "minimum": 0, "maximum": 0.2 },
+        "failureRate": { "type": "number", "minimum": -0.2, "maximum": 0.3 },
+        "cashPerTick": { "type": "number" },
+        "envDebtPerTick": { "type": "number" },
+        "pricePct": { "type": "number", "minimum": -0.5, "maximum": 0.5 },
+        "energyPricePct": { "type": "number", "minimum": -0.5, "maximum": 0.5 },
+        "itEfficiency": { "type": "number", "minimum": 0, "maximum": 0.6 },
+        "hardwareLifespan": { "type": "number", "minimum": -12, "maximum": 16 },
+        "eWasteFactor": { "type": "number", "minimum": -0.9, "maximum": 2 },
+        "carbonIntensity": { "type": "number", "minimum": -700, "maximum": 700 }
+      }
+    },
+    "scoreDelta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sustainability": { "type": "number", "minimum": -20, "maximum": 20 },
+        "responsibility": { "type": "number", "minimum": -20, "maximum": 20 }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "locations": { "type": "array", "items": { "$ref": "#/definitions/id" } },
+        "hasUpgrades": { "type": "array", "items": { "$ref": "#/definitions/id" } },
+        "lacksUpgrades": { "type": "array", "items": { "$ref": "#/definitions/id" } },
+        "flagsSet": { "type": "array", "items": { "type": "string" } },
+        "flagsUnset": { "type": "array", "items": { "type": "string" } },
+        "minTick": { "type": "integer", "minimum": 0 },
+        "maxTick": { "type": "integer", "minimum": 0 },
+        "statGte": { "$ref": "#/definitions/statMap" },
+        "statLte": { "$ref": "#/definitions/statMap" }
+      }
+    },
+    "statMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "envDebt": { "type": "number" },
+        "cash": { "type": "number" },
+        "demandMW": { "type": "number" },
+        "pue": { "type": "number" },
+        "wue": { "type": "number" },
+        "renewableShare": { "type": "number" },
+        "growthRate": { "type": "number" },
+        "failureRate": { "type": "number" },
+        "itEfficiency": { "type": "number" },
+        "sustainability": { "type": "number" },
+        "responsibility": { "type": "number" },
+        "hardwareAge": { "type": "number" }
+      }
+    },
+    "delayed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["afterTicks"],
+      "properties": {
+        "afterTicks": { "type": "integer", "minimum": 1, "maximum": 40 },
+        "chance": { "type": "number", "minimum": 0, "maximum": 1 },
+        "if": { "$ref": "#/definitions/condition" },
+        "effects": { "$ref": "#/definitions/effects" },
+        "scoreDelta": { "$ref": "#/definitions/scoreDelta" },
+        "triggerEvent": { "$ref": "#/definitions/id" },
+        "setFlags": { "type": "array", "items": { "type": "string" } },
+        "message": { "type": "string", "maxLength": 160 }
+      }
+    },
+    "choice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "stance", "outcome"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "label": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "stance": { "enum": ["responsible", "neutral", "greedy"] },
+        "hint": { "type": "string", "maxLength": 80 },
+        "requires": { "$ref": "#/definitions/condition" },
+        "effects": { "$ref": "#/definitions/effects" },
+        "temporary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["durationTicks", "effects"],
+          "properties": {
+            "durationTicks": { "type": "integer", "minimum": 1, "maximum": 40 },
+            "effects": { "$ref": "#/definitions/effects" }
+          }
+        },
+        "scoreDelta": { "$ref": "#/definitions/scoreDelta" },
+        "delayed": { "type": "array", "items": { "$ref": "#/definitions/delayed" } },
+        "setFlags": { "type": "array", "items": { "type": "string" } },
+        "clearFlags": { "type": "array", "items": { "type": "string" } },
+        "removeUpgrades": { "type": "array", "items": { "$ref": "#/definitions/id" } },
+        "outcome": { "type": "string", "minLength": 2, "maxLength": 160 }
+      }
+    }
+  }
+}

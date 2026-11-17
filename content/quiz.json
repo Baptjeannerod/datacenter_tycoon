@@ -1,0 +1,137 @@
+[
+  {
+    "id": "q-pue",
+    "question": "Your datacenter has a PUE of 1.5. What does that mean?",
+    "answers": [
+      "For every 1 kWh used by servers, 0.5 kWh more goes to cooling and power losses",
+      "Servers run at 150 % of their capacity",
+      "The site uses 1.5 litres of water per kWh",
+      "50 % of its energy is renewable"
+    ],
+    "correctIndex": 0,
+    "explanation": "PUE = total facility energy / IT energy. 1.0 would mean zero overhead.",
+    "themes": ["efficiency", "measure"],
+    "source": "The Green Grid PUE definition; ISO/IEC 30134-2",
+    "confidence": "high"
+  },
+  {
+    "id": "q-dc-electricity",
+    "question": "Roughly what share of the world's electricity did datacenters use in 2024?",
+    "answers": ["About 0.1 %", "About 1.5 %", "About 10 %", "About 25 %"],
+    "correctIndex": 1,
+    "explanation": "Around 415 TWh, about 1.5 %. Small today, but the IEA expects it to roughly double by 2030, driven by AI.",
+    "themes": ["energy-mix"],
+    "source": "IEA, Energy and AI (2025)",
+    "confidence": "approx"
+  },
+  {
+    "id": "q-rebound",
+    "question": "Your servers become 2x more efficient, prices drop, and demand triples. What happens to total energy use?",
+    "answers": ["It halves", "It stays the same", "It rises by 50 %", "It drops to zero"],
+    "correctIndex": 2,
+    "explanation": "3x the demand at half the energy each = 1.5x the energy. That's the rebound effect.",
+    "themes": ["rebound"],
+    "source": "Rebound effect / Jevons paradox (arithmetic example); cited in AFNOR Spec 2314",
+    "confidence": "high"
+  },
+  {
+    "id": "q-frugal-first",
+    "question": "According to the AFNOR frugal-AI framework, what is the first step of a frugal AI project?",
+    "answers": [
+      "Buy the most efficient GPUs",
+      "Question the need: is AI really required?",
+      "Offset the emissions",
+      "Train the biggest model once, then reuse it"
+    ],
+    "correctIndex": 1,
+    "explanation": "Step 1 is to question the need; step 2 is to look at all solutions, including non-AI ones.",
+    "themes": ["question-the-need"],
+    "source": "AFNOR Spec 2314, General framework for frugal AI (CGDD/SRI/Ecolab), 'How to reduce the impact?'",
+    "confidence": "high"
+  },
+  {
+    "id": "q-greenwashing",
+    "question": "Which claim is most likely to be greenwashing?",
+    "answers": [
+      "\"Carbon neutral thanks to offsets\"",
+      "\"Measured PUE of 1.3 in 2025, audited by a third party\"",
+      "\"We publish our water use every year\"",
+      "\"Our servers stay in service for 6 years\""
+    ],
+    "correctIndex": 0,
+    "explanation": "Offsets don't remove your own emissions. The EU now bans product neutrality claims based on offsetting.",
+    "themes": ["honest-communication"],
+    "source": "Directive (EU) 2024/825; AFNOR Spec 2314 (how to communicate)",
+    "confidence": "approx"
+  },
+  {
+    "id": "q-wue",
+    "question": "What does WUE measure in a datacenter?",
+    "answers": ["Litres of water used per kWh of IT energy", "Wasted energy per user", "Watts per user", "Weekly uptime"],
+    "correctIndex": 0,
+    "explanation": "Water Usage Effectiveness. Evaporative cooling can lower PUE but raise WUE: a trade-off.",
+    "themes": ["water", "measure"],
+    "source": "The Green Grid WUE definition; ISO/IEC 30134-9",
+    "confidence": "high"
+  },
+  {
+    "id": "q-ewaste",
+    "question": "Globally, what share of e-waste was documented as properly collected and recycled in 2022?",
+    "answers": ["About 5 %", "About 22 %", "About 60 %", "About 90 %"],
+    "correctIndex": 1,
+    "explanation": "About 22 % of 62 million tonnes. The rest was not documented as properly handled.",
+    "themes": ["lifecycle"],
+    "source": "Global E-waste Monitor 2024 (UNITAR/ITU)",
+    "confidence": "approx"
+  },
+  {
+    "id": "q-lifecycle",
+    "question": "For a typical smartphone or laptop, which phase causes most of its carbon footprint?",
+    "answers": ["Manufacturing", "Charging it", "Shipping it to the store", "Recycling it"],
+    "correctIndex": 0,
+    "explanation": "Making devices dominates their footprint. Keeping them longer is one of the most effective actions.",
+    "themes": ["lifecycle"],
+    "source": "ADEME-Arcep 2022, environmental footprint of digital in France",
+    "confidence": "approx"
+  },
+  {
+    "id": "q-carbon-grid",
+    "question": "Same server, same workload. Where does it emit the least CO2?",
+    "answers": ["On a coal-heavy grid", "On a gas-heavy grid", "On a hydro or nuclear-heavy grid", "It's the same everywhere"],
+    "correctIndex": 2,
+    "explanation": "Grid carbon intensity varies more than tenfold between countries. Where you compute matters.",
+    "themes": ["energy-mix"],
+    "source": "Ember / IEA country grid intensity data (order of magnitude)",
+    "confidence": "high"
+  },
+  {
+    "id": "q-eed",
+    "question": "In the EU, which datacenters must report their energy and water figures?",
+    "answers": ["None, it's voluntary", "Those with at least 500 kW of IT power", "Only hyperscalers above 100 MW", "Only public-sector datacenters"],
+    "correctIndex": 1,
+    "explanation": "The Energy Efficiency Directive requires datacenters of 500 kW IT power or more to report key indicators each year.",
+    "themes": ["measure", "governance"],
+    "source": "Energy Efficiency Directive (EU) 2023/1791, Art. 12; Delegated Regulation (EU) 2024/1364",
+    "confidence": "approx"
+  },
+  {
+    "id": "q-ai-alternative",
+    "question": "A bank wants an AI chatbot to answer its 20 most common questions. What's the most frugal option?",
+    "answers": ["The largest LLM available", "A searchable FAQ or decision tree", "Train a custom LLM from scratch", "Two LLMs for redundancy"],
+    "correctIndex": 1,
+    "explanation": "If a simpler, non-AI tool meets the need, it's the frugal choice. AI is for what simpler tools can't do.",
+    "themes": ["question-the-need"],
+    "source": "AFNOR Spec 2314: consider alternatives to AI",
+    "confidence": "high"
+  },
+  {
+    "id": "q-retrain",
+    "question": "When should a model be retrained, according to frugal-AI best practice?",
+    "answers": ["Every day, just in case", "When defined criteria, like data drift, justify it", "Never", "Whenever a new GPU comes out"],
+    "correctIndex": 1,
+    "explanation": "Define criteria that justify retraining instead of retraining by default.",
+    "themes": ["question-the-need", "governance"],
+    "source": "AFNOR Spec 2314: 'Defining criteria justifying retraining model'",
+    "confidence": "high"
+  }
+]

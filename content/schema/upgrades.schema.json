@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "upgrades.schema.json",
+  "title": "Upgrades (content/upgrades.json)",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "name", "pitch", "family", "category", "themes", "cost", "effects", "scoreDelta", "whyItMatters", "source", "confidence"],
+    "properties": {
+      "id": { "$ref": "common.schema.json#/definitions/id" },
+      "name": { "type": "string", "minLength": 2, "maxLength": 40 },
+      "pitch": { "type": "string", "maxLength": 100 },
+      "family": { "enum": ["good", "trap", "tradeoff"] },
+      "category": { "enum": ["cooling", "energy", "hardware", "ai", "governance", "communication", "water"] },
+      "themes": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/definitions/theme" } },
+      "cost": { "type": "number", "minimum": 0 },
+      "effects": { "$ref": "common.schema.json#/definitions/effects" },
+      "scoreDelta": { "$ref": "common.schema.json#/definitions/scoreDelta" },
+      "delayed": { "type": "array", "items": { "$ref": "common.schema.json#/definitions/delayed" } },
+      "contextModifiers": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "effects": { "$ref": "common.schema.json#/definitions/effects" },
+            "scoreDelta": { "$ref": "common.schema.json#/definitions/scoreDelta" },
+            "note": { "type": "string", "maxLength": 120 }
+          }
+        }
+      },
+      "exclusiveGroup": { "type": "string" },
+      "requires": { "$ref": "common.schema.json#/definitions/condition" },
+      "setFlags": { "type": "array", "items": { "type": "string" } },
+      "whyItMatters": { "type": "string", "minLength": 10, "maxLength": 200 },
+      "source": { "type": "string", "minLength": 3 },
+      "confidence": { "$ref": "common.schema.json#/definitions/confidence" },
+      "slice": { "type": "boolean" }
+    }
+  }
+}

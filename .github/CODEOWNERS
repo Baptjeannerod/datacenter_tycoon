@@ -1,0 +1,11 @@
+# Default reviewers. Replace or extend with team members' GitHub handles as roles are assigned (task CO-2).
+* @Baptjeannerod @Victor-Arc-C
+
+# Suggested per-area owners (uncomment and add handles):
+# /engine/  <github handle of the owner>
+# /content/  <github handle of the owner>
+# /content/schema/  <github handle of the owner>
+# /ui/  <github handle of the owner>
+# /ui/tokens.css  <github handle of the owner>
+# /dashboard/ /api/  <github handle of the owner>
+# /docs/  <github handle of the owner>
