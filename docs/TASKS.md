@@ -108,12 +108,12 @@
 ## research
 
 ### RES-1 · P0 · Verify every `approx` number
-- **Role:** research · **Owner:** claude-opus (content-knowledge agent) · **Status:** review (branch `agent/content-knowledge`)
+- **Role:** research · **Owner:** claude-opus (content-knowledge agent) · **Status:** done (PR 43, merged via 53)
 - **Goal:** For each item with `"confidence": "approx"` in `/content` (see `docs/CONTENT_CATALOG.md`), find the primary source, put the URL in `source`, and set `high` if confirmed or `illustrative` if not. Also list sources in `docs/sources/SOURCES.md`.
 - **Done when:** no `approx` item without a URL; `npm run validate:content` passes.
 
 ### RES-2 · P0 · Five more quiz questions
-- **Role:** research · **Owner:** claude-opus (content-knowledge agent) · **Status:** review (branch `agent/content-knowledge`)
+- **Role:** research · **Owner:** claude-opus (content-knowledge agent) · **Status:** done (PR 43, merged via 53)
 - **Goal:** Add 5 questions to `content/quiz.json` on under-covered topics (end-user devices, networks, data storage rules, governance, skills), each with source + confidence, and attach them to events/clients via `quizId`.
 - **Done when:** validator passes; each new question is reachable in a run.
 
@@ -157,7 +157,7 @@
 - **Done when:** the harness picks up the new look without component changes.
 
 ### ART-2 · P1 · Living datacenter illustration
-- **Role:** art · **Owner:** claude-opus (bootstrap agent) · **Status:** review (first version in `ui/map/`; artists welcome to restyle colours and shapes)
+- **Role:** art · **Owner:** claude-opus (bootstrap agent) · **Status:** done (PRs 38, 40, 51; artists welcome to restyle)
 - **Goal:** Layered SVG: rack rows scale with MW, smoke/heat haze when debt is high, solar roof / heat pipe / water loop when owned, outage flicker. Under 50 kB total.
 - **Done when:** DEV can toggle layers from state.
 
@@ -184,7 +184,7 @@
 - **Done when:** assets ready at 15:00; visitor count visible on `/dashboard`.
 
 ### COM-3 · P1 · Pitch (5 slides)
-- **Role:** comms · **Owner:** claude-opus (content-knowledge agent) · **Status:** review (branch `agent/content-knowledge`)
+- **Role:** comms · **Owner:** claude-opus (content-knowledge agent) · **Status:** done (PR 43, merged via 53: `docs/PITCH.md`)
 - **Goal:** Problem, the game in 30 s (live demo), what players learn (AFNOR mapping), live dashboard numbers, what's next.
 - **Done when:** rehearsed once before 17:15.
 

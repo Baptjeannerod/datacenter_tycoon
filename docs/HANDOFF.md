@@ -266,3 +266,11 @@
 **Gotchas:**
 - CONTRACT CHANGE: `Balance` gained optional `firstClientTick` (schema updated; the engine queues a client at that tick as well as every `clientEvery`). New types `Badge`, `BadgeRule`, `BadgeSummaryKey`, `BadgeTotalKey` in `engine/types.ts`; `engine/index.ts` exports `earnedBadges`, `ruleHolds`, `matchDecision`, `loadBadges`. Badges are not part of `Content`.
 - The carbon tax now hits everyone in year 3, including a player with only the starting gas plant.
+
+## 2026-11-17 16:15 · claude-opus (central) · cleanup
+
+**Done:** Every PR is merged and live (last: #54, which integrates #52 on top of S1-S5). Closed the issues whose work was already merged: #14, #15, #17, #18 (GD, via #52), #28 (ART-2, living map), #33 (COM-3, `docs/PITCH.md`). TASKS.md: RES-1, RES-2, COM-3, ART-2 set to done.
+
+**Still open, all optional or past their time:** DEV-11 save/resume, DEV-12 bundle + footprint badge, RES-3 learn-more page, RES-4 the game's own footprint, UX-1 (mobile wireframes, moot: Mac-first), UX-3 juice, UX-4 accessibility, ART-1/3/4 art, COM-1/COM-2 comms, CO-1 protect `main` (repo admin), CO-2..4 (coordination, past), #44 `plantOutputPct` effect.
+
+**Gotchas:** the dashboard shows "17%" as "171" (the pixel font draws "%" badly); the live analytics include today's test runs (kept on purpose).
