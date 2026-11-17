@@ -3,7 +3,7 @@
  * pauses on every card, and keeps short-lived feedback (choice outcome, quiz answer).
  * All game rules stay in /engine; this hook only sequences them for the screen.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   applyAction,
   computeScores,
@@ -15,11 +15,13 @@ import {
   nextRandom,
   seedFromString,
   step,
+  summarize,
   type Content,
   type GameState,
   type QuizQuestion,
   type Stance,
 } from '../engine';
+import { track } from './analytics';
 
 export const content: Content = loadContent();
 
@@ -52,6 +54,8 @@ export function useGame() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   /** Plot whose ring menu is open (-1 = policies), or null. Time pauses while it is open. */
   const [menu, setMenu] = useState<number | null>(null);
+  /** Last run whose run_end was sent, so a finished run is reported once. */
+  const reported = useRef<GameState | null>(null);
 
   const decision = state ? currentDecision(state, content) : null;
   const hasDecision = decision !== null;
@@ -76,7 +80,29 @@ export function useGame() {
     setState(createGame({ seed: s, locationId }, content));
     setFeedback(null);
     setPaused(false);
+    track('run_start', { seed: s, locationId });
   }, []);
+
+  // Report the end of a run once (status leaves "playing").
+  const ended = state && state.status !== 'playing' ? state : null;
+  useEffect(() => {
+    if (!ended || reported.current === ended) return;
+    reported.current = ended;
+    const sum = summarize(ended, content);
+    track('run_end', {
+      seed: sum.seed,
+      locationId: sum.locationId,
+      status: sum.status,
+      legacy: sum.legacy,
+      sustainability: sum.finalSustainability,
+      responsibility: sum.finalResponsibility,
+      impact: sum.impact,
+      profitNorm: sum.profitNorm,
+      archetype: sum.archetype,
+      quizCorrect: sum.quizCorrect,
+      quizAnswered: sum.quizAnswered,
+    });
+  }, [ended]);
 
   const choose = useCallback(
     (choiceId: string) => {
@@ -87,6 +113,8 @@ export function useGame() {
       const next = applyAction(state, { type: 'choose', choiceId }, content);
       const after = computeScores(next, content);
       setState(next);
+      const decisionId = decision.kind === 'event' ? decision.event.id : decision.client.id;
+      track('decision', { action: 'choose', kind: decision.kind, id: decisionId, choiceId });
       setFeedback({
         kind: 'outcome',
         title: decision.kind === 'event' ? decision.event.title : decision.client.name,
@@ -104,6 +132,8 @@ export function useGame() {
       if (!state || decision?.kind !== 'quiz') return;
       const q = decision.question;
       setState(applyAction(state, { type: 'answer', answerIndex: originalIndex }, content));
+      track('decision', { action: 'answer', id: q.id });
+      track('quiz_answer', { id: q.id, correct: originalIndex === q.correctIndex });
       setFeedback({ kind: 'quiz', question: q, order: answerOrder(q, state.seed), chosen: originalIndex, correct: originalIndex === q.correctIndex });
     },
     [state, decision],
@@ -121,6 +151,8 @@ export function useGame() {
       const dirty = action.type === 'build' && (getBuilding(content, action.buildingId).carbonPerMWh ?? 0) > 300;
       setState(next);
       setMenu(null);
+      if (action.type === 'build') track('decision', { action: 'build', id: action.buildingId });
+      else track('decision', { action: 'buy', id: action.upgradeId, family: getUpgrade(content, action.upgradeId).family });
       setFeedback({
         kind: 'outcome',
         title: action.type === 'build' ? 'Built' : 'Installed',

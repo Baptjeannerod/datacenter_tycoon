@@ -96,8 +96,8 @@ content/     ALL game data as JSON: balance, locations, buildings (halls and pla
   schema/    JSON Schemas mirroring engine/types.ts.
 ui/          React app: screens/ (start, game, end), components/ (cards, ring menu, icons), map/ (isometric campus, clickable plots), tokens.css.
 scripts/     validate-content.ts, sim.ts (balance), catalog.ts (docs generator).
-dashboard/   /dashboard page (planned, DEV-7).
-api/         Analytics endpoint (planned, DEV-5).
+dashboard/   /dashboard page: live stats (DEV-7).
+api/         Analytics endpoints: POST /api/event, GET /api/stats (DEV-5).
 assets/      Art, icons (keep light, SVG first).
 docs/        GAME_DESIGN, ARCHITECTURE, TASKS, HANDOFF, CONTENT_CATALOG (generated), sources/.
 .github/     CI, issue and PR templates, CODEOWNERS.
@@ -176,8 +176,8 @@ Several people and several AI agents work in parallel. **Read [AGENTS.md](AGENTS
 - [x] Balance simulation passing (`npm run sim`)
 - [x] Playable vertical slice: start screen, living isometric campus map (river, 8 hall plots), HUD, decision cards, quiz, shop, end screen with frontier, 1-10 rating (stored locally), challenge link
 - [x] CI, templates, agent docs
-- [ ] Rating sent to the backend (DEV-6)
-- [ ] Analytics + dashboard (DEV-5, DEV-7)
+- [ ] Rating sent to the backend (DEV-6): code in PR, live once Upstash Redis is connected on Vercel
+- [ ] Analytics + dashboard (DEV-5, DEV-7): code in PR (`/api`, `/dashboard/`), live once Upstash Redis is connected on Vercel
 - [ ] Share image card + daily runs (DEV-8, DEV-9); the challenge link already works
 - [x] Deployed on Vercel: https://datacenter-tycoon-plum.vercel.app (manual `vercel deploy --prod` for now; auto-deploy on push not set up yet)
 

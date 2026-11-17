@@ -3,6 +3,7 @@
  * URL params: ?seed=123&loc=paris-basin starts a challenge run (same campus, same luck).
  */
 import { useEffect, useRef, useState } from 'react';
+import { trackVisit } from './analytics';
 import { EndScreen } from './screens/EndScreen';
 import { GameScreen } from './screens/GameScreen';
 import { StartScreen } from './screens/StartScreen';
@@ -54,6 +55,7 @@ export function App() {
   const game = useGame();
   const [help, setHelp] = useState(false);
   const [challenge] = useState(readChallenge);
+  useEffect(trackVisit, []);
   const openHelp = () => {
     game.setPaused(true);
     setHelp(true);

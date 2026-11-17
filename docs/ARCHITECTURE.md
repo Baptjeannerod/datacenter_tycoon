@@ -26,10 +26,10 @@
         │ screens, map,  │                 │ scripts/catalog  │  npm run docs:catalog
         │ useGame hook   │                 └──────────────────┘
         └───────┬────────┘
-                │ analytics events (TODO: DEV-5)
+                │ ui/analytics.ts track() (fire and forget)
         ┌───────▼────────┐        ┌──────────────────┐
-        │ /api (Vercel   │──────► │ storage (TBD,    │ ◄──── /dashboard page (TODO: DEV-7)
-        │ function, TODO)│        │ DEV-5 decides)   │
+        │ /api (Vercel   │──────► │ Upstash Redis    │ ◄──── /dashboard page (GET /api/stats, 30 s)
+        │ functions)     │        │ (memory if unset)│
         └────────────────┘        └──────────────────┘
 ```
 
@@ -41,7 +41,7 @@
 | Engine API | `engine/index.ts` exports | UI, sim, tests |
 | Game state | `GameState` in `engine/types.ts` | UI (rendering, save/resume), analytics |
 | Decision ids | `"upgrade:<id>"`, `"event:<id>:<choice>"`, `"client:<id>:<choice>"` in `state.decisions` | analytics, dashboard ("most chosen") |
-| Analytics events | to be defined in DEV-5 (`api/README.md`) | UI, API, dashboard |
+| Analytics events | `api/_lib/events.ts` (schema in `api/README.md`); stats shape `Stats` in `api/_lib/aggregate.ts` | UI (`ui/analytics.ts`), API, dashboard |
 
 Changing a contract: update the type, the schema, the validator if needed, run `npm run check`, and add a line to `docs/HANDOFF.md` starting with **CONTRACT CHANGE**.
 
@@ -70,7 +70,7 @@ if (s.status !== 'playing') console.log(summarize(s, content));            // le
 
 ## Front-end
 
-- Vite + React 19 + TypeScript, static build to `dist/`. No router yet: the dashboard is planned as a second Vite entry (`dashboard/index.html` → `/dashboard/`) so it stays static.
+- Vite + React 19 + TypeScript, static build to `dist/`. No router: the dashboard is a second Vite entry (`dashboard/index.html` → `/dashboard/`, listed in `build.rolldownOptions.input` in `vite.config.ts`) so it stays static.
 - Styling: plain CSS with **design tokens** in `ui/tokens.css` (palette from the team's campus template). No UI framework (frugal). One web font: Silkscreen (pixel display, headlines only) from Google Fonts; everything else uses system fonts.
 - **Performance budget**: initial JS ≤ 100 kB gzip, total page ≤ 300 kB, images as inline SVG. Today: 103 kB gzip JS (React ≈ 60 kB, engine + content the rest), 5 kB CSS. Swapping to Preact (`preact/compat` alias) would cut ~50 kB (task DEV-12).
 
@@ -89,12 +89,15 @@ if (s.status !== 'playing') console.log(summarize(s, content));            // le
 
 The map only reads state; it never changes the game. Adding a visual for a new upgrade = a flag in `campusView()` + a drawing in `CampusMap.tsx`.
 
-## Backend (to build: DEV-5, DEV-7)
+## Backend (DEV-5, DEV-7)
 
-- One serverless function on Vercel: `POST /api/event` (append an anonymous event) and `GET /api/stats` (aggregates for the dashboard).
-- Anonymous ids only: a random `sessionId` in `localStorage`, no cookies, no IP storage, no personal data.
-- Storage: pick one in DEV-5 via the Vercel Marketplace (a Redis or Postgres integration). Until it exists, the client should no-op gracefully and the dashboard can read a local mock.
-- Proposed events: `visit`, `run_start {seed, locationId}`, `decision {id}`, `quiz_answer {id, correct}`, `run_end {summary}`, `rating {value 1-10}`.
+- Two Vercel Node functions (Web `Request`/`Response` signature): `api/event.ts` → `POST /api/event` (record one anonymous event), `api/stats.ts` → `GET /api/stats` (aggregates for `/dashboard`). Event schema: `api/README.md`.
+- **No raw event log.** Each event is validated (`api/_lib/events.ts`: type whitelist, strict fields, ids `[a-z0-9_-]`, bounded numbers, 2 KB body max), then turned into a few counter writes by the pure `toOps()`; `buildStats()` turns the counters back into dashboard numbers (`api/_lib/aggregate.ts`, unit-tested in `aggregate.test.ts`).
+- **Storage: Upstash Redis** (Vercel Marketplace), via `@upstash/redis`, keys prefixed `dt:`. Reads `KV_REST_API_URL` / `KV_REST_API_TOKEN` or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`. Without them, an **in-memory store** is used (local dev; on Vercel it would be per-instance and lost, so production needs Redis). Chosen over Postgres: counters fit Redis hashes, no schema or migrations, free tier is plenty for one day.
+- Anonymous ids only: a random id in `localStorage` (`dt-session`), no cookies, no IP or headers stored, no personal data.
+- Client `ui/analytics.ts`: `track(type, payload)` uses `navigator.sendBeacon`, else `fetch(..., { keepalive: true })`; never awaits, never throws. Hooks: `visit` (App mount), `run_start` / `decision` / `quiz_answer` / `run_end` (`ui/useGame.ts`), `rating` (`EndScreen.tsx`, one per run: the store keeps the last value per session + seed).
+- Local dev: `vite.config.ts` has a dev-only plugin that serves `api/*.ts` from the Vite dev server, so `npm run dev` gives a working `/api` and `/dashboard/` with the memory store.
+- `/dashboard/`: refreshes every 30 s; if `/api/stats` fails before any live data arrived, it shows `dashboard/demo.ts` under a large "Demo data" banner.
 
 ## CI (`.github/workflows/ci.yml`)
 
