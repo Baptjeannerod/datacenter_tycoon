@@ -108,6 +108,7 @@ ul, ol { margin: 0; padding: 0; }
 .panel.lavender { background: var(--c-lavender); }
 .panel.amber { background: var(--c-amber); }
 .decision h3 { font-size: 1.3rem; }
+.decision h3.question { font-family: var(--font-ui); font-size: 1.15rem; font-weight: 800; line-height: 1.3; }
 .decision.consequence { background: #fff4e0; }
 .decision.outcome.responsible { background: #f3f8dc; }
 .decision.outcome.greedy { background: #fdeceb; }
