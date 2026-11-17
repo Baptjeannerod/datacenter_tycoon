@@ -64,7 +64,7 @@ From the dashboard (fill in live; say "so far today"): visitors · runs · avera
 
 **On screen:** three bullets.
 
-- **Physical consequences:** droughts and wind lulls that cut plant output (needs one engine effect, `plantOutputPct`), a "demolish your coal plant" action.
+- **Physical consequences:** droughts and wind lulls that actually cut plant output (needs one engine effect, `plantOutputPct`), and events that react to the plants you have *now*, not the ones you once built.
 - **Classroom mode:** one seed for the whole room, results on the projector, a debrief sheet mapped to the AFNOR steps.
 - **More "it depends":** real locations and grid data, and a footprint badge for the game itself (frugal: no heavy libraries, no AI calls at runtime).
 

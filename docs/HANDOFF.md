@@ -145,3 +145,4 @@
 **Gotchas:**
 - Virtuous money dropped (Sun Belt €44M → €19M) with pricier renewables; still well above the 20 % rule (€11M) and never bankrupt.
 - New events' effect sizes are game values (`illustrative`); the facts their quiz questions teach are `high`.
+- `built-*` flags are set on build and never cleared, so after the new **Demolish** a player who tore down their coal plant can still get `coal-protest` (and `drought-cooling` after removing all steam plants). Fix needs the engine to clear a building's `setFlags` on demolish, or a "has building of type" condition (dev engine).
