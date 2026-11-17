@@ -25,8 +25,13 @@ import { track } from './analytics';
 
 export const content: Content = loadContent();
 
-/** Real time per quarter at 1x speed. 40 quarters ≈ 100 s plus cards ≈ 3-5 min per run. */
-export const TICK_MS = 2600;
+/**
+ * Real time per quarter at 1x speed (2x and 3x divide it).
+ * Time stops while a card, an outcome banner or a ring menu is open, so a run is
+ * 20 quarters × 4 s = 80 s of ticking plus ~3-4 min of cards and building ≈ 5 min.
+ * Measured with a scripted player (7 s per card, 9 s per quiz + 5 s explanation): see HANDOFF.
+ */
+export const TICK_MS = 4000;
 
 export type Speed = 1 | 2 | 3;
 

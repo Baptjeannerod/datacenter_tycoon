@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { summarize } from '../engine';
 import { dailyRun, isDailyRun, saveDailyBest, type DailyRun } from './daily';
 import { trackVisit } from './analytics';
+import { taxRules } from './components/TaxBadge';
 import { EndScreen } from './screens/EndScreen';
 import { GameScreen } from './screens/GameScreen';
 import { StartScreen } from './screens/StartScreen';
@@ -32,16 +33,16 @@ function HowToPlay({ onClose }: { onClose: () => void }) {
       </h2>
       <ol>
         <li>
-          <strong>Time runs by itself.</strong> One quarter every few seconds, 40 quarters in a run (10 years). Pause or speed up anytime.
+          <strong>Time runs by itself.</strong> One quarter every few seconds, {content.balance.maxTicks} quarters in a run ({content.balance.maxTicks / 4} years, about 5 minutes). Pause or speed up anytime.
         </li>
         <li>
           <strong>Clients knock.</strong> Accept, refuse, or propose a lighter alternative. Does it really need AI?
         </li>
         <li>
-          <strong>Build on the map.</strong> Tap a plot to build a datacenter hall or a power plant. There is no grid: halls only run on the power you build (a red &ldquo;!&rdquo; means a hall has no power). Tap a building to upgrade it (or demolish it, for a fee); every upgrade has a trade-off you can see, some hide a bill you can&rsquo;t.
+          <strong>Build on the map.</strong> Tap a plot to build a datacenter hall or a power plant. There is no grid: halls only run on the power you build (a red &ldquo;!&rdquo; means a hall has no power). Tap a building to upgrade it; every upgrade has a trade-off you can see, some hide a bill you can&rsquo;t. Wrong building in the wrong place? Tap it and <strong>demolish</strong> it (for a fee, no refund) to build something else, for example wind instead of coal.
         </li>
         <li>
-          <strong>Watch two scores.</strong> Sustainability (what your campus does to the planet) and Responsibility (how you decide). Coal is cheap and compact, wind and sun are clean but need land.
+          <strong>Watch two scores.</strong> Sustainability (what your campus does to the planet) and Responsibility (how you decide). Coal is cheap and compact, wind and sun are clean but need land. If Sustainability drops below {taxRules(content.balance).threshold}, an <strong>eco-tax</strong> takes a share of your revenue every quarter: the lower the score, the bigger the bite.
         </li>
         <li>
           <strong>Your legacy</strong> = profit × impact. Pure greed and pure virtue both lose to a smart balance.

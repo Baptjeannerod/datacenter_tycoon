@@ -22,6 +22,7 @@ import {
 import { useEffect } from 'react';
 import { DecisionPanel } from '../components/DecisionPanel';
 import { OnboardingTip, useOnboarding } from '../components/Onboarding';
+import { reportTax, TaxBadge } from '../components/TaxBadge';
 import { CategoryIcon, Icon } from '../components/Icons';
 import { BuildingIcon, RingMenu, type RingItem } from '../components/RingMenu';
 import { DEBT_LABEL, effectChips, money, num, quarterLabel } from '../format';
@@ -112,6 +113,7 @@ function Kpis({ state, s, r }: { state: GameState; s: number; r: number }) {
           {Math.round(s)} <small>/ 100</small> <Trend v={prev ? s - prev.sustainability : 0} />
         </div>
         <Bar value={s} />
+        <TaxBadge score={s} balance={content.balance} />
       </div>
       <div className="kpi lavender">
         <div className="eyebrow">Responsibility</div>
@@ -149,6 +151,12 @@ function QuarterReport({ state }: { state: GameState }) {
             <>
               <dt>Carbon tax</dt>
               <dd>−{money(h.carbonTax)}</dd>
+            </>
+          )}
+          {reportTax(h) > 0 && (
+            <>
+              <dt>Sustainability tax</dt>
+              <dd>−{money(reportTax(h))}</dd>
             </>
           )}
           {h.capex > 0 && (

@@ -1,12 +1,15 @@
 /**
- * First-run hints (UX-2): three short bubbles over the map, skippable, shown once.
+ * First-run hints (UX-2): five short bubbles over the map, skippable, shown once.
  * Time is held while a bubble is up (GameScreen passes `hold` to useGame).
  * Tapping a plot during the first hint counts as doing it: the next hint shows when the ring closes.
  */
 import { useCallback, useState, type ReactNode } from 'react';
+import { content } from '../useGame';
 import { BuildingIcon } from './RingMenu';
+import { taxRules } from './TaxBadge';
 
-const KEY = 'dt-onboarded';
+/** Bumped when the hints change, so returning players see the new ones once. */
+const KEY = 'dt-onboarded-2';
 
 function seen(): boolean {
   try {
@@ -43,13 +46,29 @@ function Plus() {
   );
 }
 
+function Tax() {
+  return (
+    <svg viewBox="-15 -15 30 30" width="26" height="26" aria-hidden="true">
+      <circle r={13} fill="#dcec8f" stroke="#1d2232" strokeWidth={2} />
+      <path d="M-7 7L7 -7" stroke="#1d2232" strokeWidth={2.5} />
+      <circle cx={-5} cy={-5} r={2.6} fill="#e2574c" stroke="#1d2232" strokeWidth={1.5} />
+      <circle cx={5} cy={5} r={2.6} fill="#e2574c" stroke="#1d2232" strokeWidth={1.5} />
+    </svg>
+  );
+}
+
+const { maxTicks } = content.balance;
+const { threshold } = taxRules(content.balance);
+
 const TIPS: { text: string; icon: ReactNode }[] = [
-  { text: 'Tap a plot to build', icon: <Plus /> },
+  { text: `${maxTicks} quarters to play. Tap a plot to build`, icon: <Plus /> },
   { text: 'Halls need power: build a plant first', icon: <BuildingIcon kind="gas" /> },
   { text: 'A red ! means a hall has no power', icon: <RedBang /> },
+  { text: `Sustainability below ${threshold}? An eco-tax eats your revenue`, icon: <Tax /> },
+  { text: 'Wrong building? Tap it, demolish it, build again', icon: <BuildingIcon kind="demolish" /> },
 ];
 
-/** Hint index (0..2) or -1 when done. */
+/** Hint index (0..TIPS.length-1) or -1 when done. */
 export function useOnboarding() {
   const [tip, setTip] = useState(() => (seen() ? -1 : 0));
   const finish = useCallback(() => {
