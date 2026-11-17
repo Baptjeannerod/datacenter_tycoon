@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "copy.schema.json",
+  "title": "Player-facing copy (content/copy.json). Placeholders in {braces} are filled by the UI.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["brand", "start", "locations", "intro", "onboarding", "howToPlay", "game", "scores", "debt", "archetypes", "end"],
+  "definitions": {
+    "text": { "type": "string", "minLength": 1, "maxLength": 240 },
+    "strings": { "type": "object", "additionalProperties": { "$ref": "#/definitions/text" } },
+    "score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "tooltip"],
+      "properties": { "label": { "$ref": "#/definitions/text" }, "tooltip": { "$ref": "#/definitions/text" } }
+    },
+    "archetype": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "line", "share"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 24 },
+        "line": { "$ref": "#/definitions/text" },
+        "share": { "$ref": "#/definitions/text", "description": "Share text. Placeholders: {legacy}, {location}." }
+      }
+    }
+  },
+  "properties": {
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "tagline", "footer", "footerNote"],
+      "properties": {
+        "name": { "$ref": "#/definitions/text" },
+        "tagline": { "$ref": "#/definitions/text" },
+        "footer": { "$ref": "#/definitions/text" },
+        "footerNote": { "$ref": "#/definitions/text" }
+      }
+    },
+    "start": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["headline", "lead", "points", "pickTitle", "go", "dailyTitle", "dailyBody", "dailyBest", "dailyNone", "challengeTitle", "challengeBody", "challengeButton"],
+      "properties": {
+        "headline": { "$ref": "#/definitions/text" },
+        "lead": { "$ref": "#/definitions/text" },
+        "points": { "type": "array", "minItems": 1, "maxItems": 4, "items": { "$ref": "#/definitions/text" } },
+        "pickTitle": { "$ref": "#/definitions/text" },
+        "go": { "$ref": "#/definitions/text" },
+        "dailyTitle": { "$ref": "#/definitions/text" },
+        "dailyBody": { "$ref": "#/definitions/text", "description": "Placeholder: {location}." },
+        "dailyBest": { "$ref": "#/definitions/text", "description": "Placeholder: {best}." },
+        "dailyNone": { "$ref": "#/definitions/text" },
+        "challengeTitle": { "$ref": "#/definitions/text" },
+        "challengeBody": { "$ref": "#/definitions/text" },
+        "challengeButton": { "$ref": "#/definitions/text" }
+      }
+    },
+    "locations": {
+      "type": "object",
+      "description": "Keyed by location id (GD-4). Every enabled location needs an entry.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["difficulty", "level", "question", "answer"],
+        "properties": {
+          "difficulty": { "type": "string", "minLength": 1, "maxLength": 32 },
+          "level": { "type": "integer", "minimum": 1, "maximum": 3, "description": "1 = gentle, 3 = hard" },
+          "question": { "$ref": "#/definitions/text", "description": "Teaching card shown when a run starts." },
+          "answer": { "$ref": "#/definitions/text", "description": "Revealed on 'Why?'. Max ~25 words." }
+        }
+      }
+    },
+    "intro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eyebrow", "reveal", "start"],
+      "properties": { "eyebrow": { "$ref": "#/definitions/text" }, "reveal": { "$ref": "#/definitions/text" }, "start": { "$ref": "#/definitions/text" } }
+    },
+    "onboarding": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "icon"],
+        "properties": { "text": { "type": "string", "minLength": 1, "maxLength": 60 }, "icon": { "enum": ["plus", "plant", "alert"] } }
+      }
+    },
+    "howToPlay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "steps", "close"],
+      "properties": {
+        "title": { "$ref": "#/definitions/text" },
+        "close": { "$ref": "#/definitions/text" },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["lead", "text"],
+            "properties": { "lead": { "$ref": "#/definitions/text" }, "text": { "type": "string", "minLength": 1, "maxLength": 400 } }
+          }
+        }
+      }
+    },
+    "game": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subtitle", "headlines", "emptyReport", "tapForInfo"],
+      "properties": {
+        "subtitle": { "$ref": "#/definitions/text" },
+        "emptyReport": { "$ref": "#/definitions/text" },
+        "tapForInfo": { "$ref": "#/definitions/text" },
+        "headlines": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Sorted by maxHalls ascending; the first entry with halls <= maxHalls is shown.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["maxHalls", "text"],
+            "properties": { "maxHalls": { "type": "integer", "minimum": 0 }, "text": { "$ref": "#/definitions/text" } }
+          }
+        }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cash", "power", "sustainability", "responsibility", "envDebt", "legacy"],
+      "properties": {
+        "cash": { "$ref": "#/definitions/score" },
+        "power": { "$ref": "#/definitions/score" },
+        "sustainability": { "$ref": "#/definitions/score" },
+        "responsibility": { "$ref": "#/definitions/score" },
+        "envDebt": { "$ref": "#/definitions/score" },
+        "legacy": { "$ref": "#/definitions/score" }
+      }
+    },
+    "debt": {
+      "type": "array",
+      "minItems": 2,
+      "description": "Vague levels for the hidden environmental debt, sorted by min ascending. Never show the number.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["min", "label", "hint", "warnings"],
+        "properties": {
+          "min": { "type": "number", "minimum": 0 },
+          "label": { "type": "string", "minLength": 1, "maxLength": 12 },
+          "hint": { "$ref": "#/definitions/text" },
+          "warnings": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1, "maxLength": 90 } }
+        }
+      }
+    },
+    "archetypes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frugal-tycoon", "planet-burner", "cloud-monk", "lost-in-the-fog"],
+      "properties": {
+        "frugal-tycoon": { "$ref": "#/definitions/archetype" },
+        "planet-burner": { "$ref": "#/definitions/archetype" },
+        "cloud-monk": { "$ref": "#/definitions/archetype" },
+        "lost-in-the-fog": { "$ref": "#/definitions/archetype" }
+      }
+    },
+    "end": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenYears", "bankrupt", "legacyFormula", "gained", "gaveUp", "revealed", "nothingBought", "families", "badges", "noBadges", "rateTitle", "rateBody", "share", "shared", "replay", "otherValley"],
+      "properties": {
+        "families": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["good", "trap", "tradeoff"],
+          "properties": { "good": { "$ref": "#/definitions/text" }, "trap": { "$ref": "#/definitions/text" }, "tradeoff": { "$ref": "#/definitions/text" } }
+        }
+      },
+      "patternProperties": { "^(?!families$)": { "$ref": "#/definitions/text" } }
+    }
+  }
+}

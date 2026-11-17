@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badges.schema.json",
+  "title": "Badges (content/badges.json, mirror of Badge in engine/types.ts)",
+  "type": "array",
+  "minItems": 1,
+  "definitions": {
+    "patterns": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^(client|event|upgrade|build|demolish):[a-z0-9*:-]+$" } },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "netWorth": { "type": "number" }, "profitNorm": { "type": "number" }, "impact": { "type": "number" },
+        "finalSustainability": { "type": "number" }, "finalResponsibility": { "type": "number" }, "legacy": { "type": "number" },
+        "quizCorrect": { "type": "number" }, "quizAnswered": { "type": "number" }, "envDebt": { "type": "number" }, "ticksPlayed": { "type": "number" }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "revenue": { "type": "number" }, "energyMWh": { "type": "number" }, "co2T": { "type": "number" }, "waterM3": { "type": "number" },
+        "eWasteT": { "type": "number" }, "outages": { "type": "number" }, "carbonTax": { "type": "number" }
+      }
+    }
+  },
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "name", "description", "icon", "theme", "hidden", "rule"],
+    "properties": {
+      "id": { "$ref": "common.schema.json#/definitions/id" },
+      "name": { "type": "string", "minLength": 1, "maxLength": 28 },
+      "description": { "type": "string", "minLength": 1, "maxLength": 160 },
+      "icon": { "enum": ["cooling", "energy", "hardware", "ai", "governance", "communication", "water"] },
+      "theme": { "$ref": "common.schema.json#/definitions/theme" },
+      "hidden": { "type": "boolean" },
+      "rule": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "decisionsAny": { "$ref": "#/definitions/patterns" },
+          "decisionsAll": { "$ref": "#/definitions/patterns" },
+          "decisionsNone": { "$ref": "#/definitions/patterns" },
+          "countGte": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "integer", "minimum": 1 } },
+          "eventsFired": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/definitions/id" } },
+          "summaryGte": { "$ref": "#/definitions/summary" },
+          "summaryLte": { "$ref": "#/definitions/summary" },
+          "totalsGte": { "$ref": "#/definitions/totals" },
+          "totalsLte": { "$ref": "#/definitions/totals" },
+          "archetypes": { "type": "array", "minItems": 1, "items": { "enum": ["frugal-tycoon", "planet-burner", "cloud-monk", "lost-in-the-fog"] } },
+          "statuses": { "type": "array", "minItems": 1, "items": { "enum": ["playing", "ended", "bankrupt"] } },
+          "locations": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/definitions/id" } }
+        }
+      }
+    }
+  }
+}

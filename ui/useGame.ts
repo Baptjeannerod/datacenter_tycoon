@@ -25,7 +25,7 @@ import { track } from './analytics';
 
 export const content: Content = loadContent();
 
-/** Real time per quarter at 1x speed. 40 quarters ≈ 100 s plus cards ≈ 3-5 min per run. */
+/** Real time per quarter at 1x speed. 20 quarters ≈ 50 s plus cards ≈ 3-5 min per run. */
 export const TICK_MS = 2600;
 
 export type Speed = 1 | 2 | 3;

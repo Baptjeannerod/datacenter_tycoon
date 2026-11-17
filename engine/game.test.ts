@@ -392,3 +392,22 @@ describe('design rules (smoke version of npm run sim)', () => {
     expect(b).toBeGreaterThan(mean(virtuous));
   });
 });
+
+describe('first client (GD-1)', () => {
+  it('the first client knocks at firstClientTick, before the regular cadence', () => {
+    expect(content.balance.firstClientTick).toBeLessThan(content.balance.clientEvery);
+    for (const seed of [1, 2, 3, 4, 5]) {
+      let s = createGame({ seed, locationId: 'paris-basin' }, content);
+      let firstClientTick = -1;
+      for (let t = 0; t < content.balance.clientEvery && firstClientTick < 0; t++) {
+        s = step(s, content);
+        if (s.queue.some((q) => q.kind === 'client')) firstClientTick = s.tick;
+        while (currentDecision(s, content)) {
+          const d = currentDecision(s, content)!;
+          s = d.kind === 'quiz' ? applyAction(s, { type: 'answer', answerIndex: 0 }, content) : applyAction(s, { type: 'choose', choiceId: d.choices[0].id }, content);
+        }
+      }
+      expect(firstClientTick).toBe(content.balance.firstClientTick);
+    }
+  });
+});

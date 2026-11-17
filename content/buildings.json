@@ -44,7 +44,7 @@
     "cost": 1400,
     "nameplateMW": 10,
     "capacityFactor": 1,
-    "costPerMWh": 40,
+    "costPerMWh": 25,
     "fuel": true,
     "fixedCostPerTick": 50,
     "carbonPerMWh": 820,

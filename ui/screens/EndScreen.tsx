@@ -3,15 +3,18 @@
  * what you gave up, which of your upgrades were traps, a 1-10 rating and a challenge link.
  */
 import { useMemo, useState } from 'react';
-import { getLocation, summarize, type GameState } from '../../engine';
+import { earnedBadges, getLocation, loadBadges, summarize, type GameState } from '../../engine';
 import { balanced, greedy, playRun, virtuous } from '../../engine/strategies';
 import { track } from '../analytics';
+import { copy, fill } from '../copy';
 import { ARCHETYPES, money } from '../format';
+import { CategoryIcon } from '../components/Icons';
 import { shareResultCard } from '../share/share';
 import { content } from '../useGame';
 import { TopBar } from './GameScreen';
 
-const FAMILY_LABEL = { good: 'Good call', trap: 'Trap', tradeoff: 'Trade-off' } as const;
+const FAMILY_LABEL = copy.end.families;
+const BADGES = loadBadges();
 
 function Frontier({ you, refs }: { you: { p: number; i: number }; refs: { label: string; p: number; i: number }[] }) {
   const W = 320;
@@ -49,6 +52,7 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
   const sum = useMemo(() => summarize(state, content), [state]);
   const loc = getLocation(content, state.locationId);
   const arch = ARCHETYPES[sum.archetype];
+  const badges = useMemo(() => earnedBadges(state, sum, BADGES), [state, sum]);
   const [rating, setRating] = useState<number | null>(() => {
     try {
       const v = localStorage.getItem(`dt-rating-${state.seed}`);
@@ -80,7 +84,7 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
 
   const owned = state.owned.map((id) => content.upgrades.find((u) => u.id === id)!).filter(Boolean);
   const link = `${window.location.origin}${window.location.pathname}?seed=${state.seed}&loc=${state.locationId}`;
-  const shareText = `I scored ${sum.legacy} as a ${arch.title} in Datacenter Tycoon (${loc.name}). Same campus, same luck: can you beat me?`;
+  const shareText = fill(arch.share, { legacy: sum.legacy, location: loc.name });
 
   /** Share card image + challenge link (DEV-8): native share sheet, else download + copy. */
   const share = async () => {
@@ -108,23 +112,23 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
       <main className="end-main">
         <section className="end-hero">
           <div>
-            <div className="eyebrow">{state.status === 'bankrupt' ? `Bankrupt in year ${Math.floor(state.tick / 4) + 1}` : 'Ten years later'} · {loc.name}</div>
+            <div className="eyebrow">{state.status === 'bankrupt' ? fill(copy.end.bankrupt, { year: Math.floor(state.tick / 4) + 1 }) : copy.end.tenYears} · {loc.name}</div>
             <h1 className="pixel">{arch.title}</h1>
             <p className="lead">{arch.line}</p>
             <div className="legacy">
-              <span className="eyebrow">Legacy score</span>
+              <span className="eyebrow">{copy.scores.legacy.label}</span>
               <span className="pixel legacy-num">{sum.legacy}</span>
-              <span className="muted small">= 1000 × √(profit × impact). Balance beats extremes.</span>
+              <span className="muted small">{copy.end.legacyFormula}</span>
             </div>
             <div className="end-actions">
               <button className="btn primary" onClick={share}>
-                {copied ? 'Image saved · link copied!' : 'Share my result'}
+                {copied ? copy.end.shared : copy.end.share}
               </button>
               <button className="btn" onClick={onReplay}>
-                Play again
+                {copy.end.replay}
               </button>
               <button className="btn" onClick={onHome}>
-                Other valley
+                {copy.end.otherValley}
               </button>
             </div>
           </div>
@@ -139,7 +143,7 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
 
         <section className="end-grid">
           <div className="panel lime">
-            <div className="eyebrow">What you gained</div>
+            <div className="eyebrow">{copy.end.gained}</div>
             <ul className="ticks">
               {sum.gained.map((g) => (
                 <li key={g}>{g}</li>
@@ -147,7 +151,7 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
             </ul>
           </div>
           <div className="panel lavender">
-            <div className="eyebrow">What you gave up</div>
+            <div className="eyebrow">{copy.end.gaveUp}</div>
             <ul className="ticks">
               {sum.gaveUp.map((g) => (
                 <li key={g}>{g}</li>
@@ -155,9 +159,9 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
             </ul>
           </div>
           <div className="panel">
-            <div className="eyebrow">Your upgrades, revealed</div>
+            <div className="eyebrow">{copy.end.revealed}</div>
             {owned.length === 0 ? (
-              <p className="muted">You bought nothing. Doing nothing is a choice too.</p>
+              <p className="muted">{copy.end.nothingBought}</p>
             ) : (
               <ul className="reveal">
                 {owned.map((u) => (
@@ -169,9 +173,29 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
               </ul>
             )}
           </div>
+          <div className="panel">
+            <div className="eyebrow">{copy.end.badges}</div>
+            {badges.length === 0 ? (
+              <p className="muted">{copy.end.noBadges}</p>
+            ) : (
+              <ul className="badges">
+                {badges.map((b) => (
+                  <li key={b.id}>
+                    <span className="badge-icon" aria-hidden="true">
+                      <CategoryIcon category={b.icon} />
+                    </span>
+                    <span>
+                      <strong>{b.name}</strong>
+                      <span className="muted small"> {b.description}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <div className="panel amber">
-            <div className="eyebrow">How was it?</div>
-            <p>Rate the game from 1 to 10.</p>
+            <div className="eyebrow">{copy.end.rateTitle}</div>
+            <p>{copy.end.rateBody}</p>
             <div className="rating" role="group" aria-label="Rate from 1 to 10">
               {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
                 <button key={v} className={`btn rate ${rating === v ? 'on' : ''}`} aria-pressed={rating === v} onClick={() => rate(v)}>

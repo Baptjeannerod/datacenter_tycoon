@@ -69,6 +69,9 @@ ul, ol { margin: 0; padding: 0; }
 .kpi-sub { font-size: var(--fs-xs); color: var(--c-ink-2); }
 .kpi-sub.pos { color: #3c7a2b; }
 .kpi-sub.neg { color: #b23a30; }
+.kpi-label { background: none; border: 0; padding: 0; cursor: help; text-align: left; justify-self: start; }
+.kpi-label span { opacity: 0.6; }
+.kpi-tip { margin: 0; font-size: var(--fs-xs); line-height: 1.35; color: var(--c-ink); border-top: 1px dashed currentColor; padding-top: 6px; }
 .trend { margin-left: auto; font-family: var(--font-mono); font-size: var(--fs-sm); font-weight: 600; }
 .trend.down { color: #b23a30; }
 .bar { height: 8px; background: var(--c-surface); border: 1px solid var(--c-ink); }
@@ -349,3 +352,13 @@ ul, ol { margin: 0; padding: 0; }
   .end-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .rating { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
+
+/* Badges (GD-5) and difficulty dots (GD-4) */
+.badges { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.badges li { display: flex; gap: 10px; align-items: flex-start; }
+.badge-icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; background: var(--c-amber); border: var(--border); border-radius: 50%; }
+.badge-icon svg { width: 20px; height: 20px; }
+.difficulty { letter-spacing: 1px; }
+.tip.intro { grid-template-columns: 1fr; text-align: left; gap: 8px; max-width: 420px; }
+.intro-answer { margin: 0; font-size: var(--fs-sm); line-height: 1.4; }
+.tip.intro .tip-actions { justify-content: flex-end; }

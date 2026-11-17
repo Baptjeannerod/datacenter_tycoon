@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { summarize } from '../engine';
 import { dailyRun, isDailyRun, saveDailyBest, type DailyRun } from './daily';
 import { trackVisit } from './analytics';
+import { copy } from './copy';
 import { EndScreen } from './screens/EndScreen';
 import { GameScreen } from './screens/GameScreen';
 import { StartScreen } from './screens/StartScreen';
@@ -28,27 +29,17 @@ function HowToPlay({ onClose }: { onClose: () => void }) {
   return (
     <dialog ref={ref} className="modal" onClose={onClose} aria-labelledby="how-title">
       <h2 id="how-title" className="pixel">
-        How to play
+        {copy.howToPlay.title}
       </h2>
       <ol>
-        <li>
-          <strong>Time runs by itself.</strong> One quarter every few seconds, 40 quarters in a run (10 years). Pause or speed up anytime.
-        </li>
-        <li>
-          <strong>Clients knock.</strong> Accept, refuse, or propose a lighter alternative. Does it really need AI?
-        </li>
-        <li>
-          <strong>Build on the map.</strong> Tap a plot to build a datacenter hall or a power plant. There is no grid: halls only run on the power you build (a red &ldquo;!&rdquo; means a hall has no power). Tap a building to upgrade it (or demolish it, for a fee); every upgrade has a trade-off you can see, some hide a bill you can&rsquo;t.
-        </li>
-        <li>
-          <strong>Watch two scores.</strong> Sustainability (what your campus does to the planet) and Responsibility (how you decide). Coal is cheap and compact, wind and sun are clean but need land.
-        </li>
-        <li>
-          <strong>Your legacy</strong> = profit × impact. Pure greed and pure virtue both lose to a smart balance.
-        </li>
+        {copy.howToPlay.steps.map((st) => (
+          <li key={st.lead}>
+            <strong>{st.lead}</strong> {st.text}
+          </li>
+        ))}
       </ol>
       <button className="btn primary wide" onClick={() => ref.current?.close()}>
-        Got it
+        {copy.howToPlay.close}
       </button>
     </dialog>
   );

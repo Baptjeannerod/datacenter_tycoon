@@ -4,6 +4,7 @@
  * Tapping a plot during the first hint counts as doing it: the next hint shows when the ring closes.
  */
 import { useCallback, useState, type ReactNode } from 'react';
+import { copy } from '../copy';
 import { BuildingIcon } from './RingMenu';
 
 const KEY = 'dt-onboarded';
@@ -43,11 +44,14 @@ function Plus() {
   );
 }
 
-const TIPS: { text: string; icon: ReactNode }[] = [
-  { text: 'Tap a plot to build', icon: <Plus /> },
-  { text: 'Halls need power: build a plant first', icon: <BuildingIcon kind="gas" /> },
-  { text: 'A red ! means a hall has no power', icon: <RedBang /> },
-];
+const ICONS: Record<(typeof copy.onboarding)[number]['icon'], ReactNode> = {
+  plus: <Plus />,
+  plant: <BuildingIcon kind="gas" />,
+  alert: <RedBang />,
+};
+
+/** Texts from content/copy.json (GD-2). */
+const TIPS = copy.onboarding.map((t) => ({ text: t.text, icon: ICONS[t.icon] }));
 
 /** Hint index (0..2) or -1 when done. */
 export function useOnboarding() {

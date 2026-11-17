@@ -1,0 +1,95 @@
+[
+  {
+    "id": "not-a-casino",
+    "name": "Not a casino",
+    "description": "Refused the crypto farm. Not every megawatt is worth selling.",
+    "icon": "governance",
+    "theme": "question-the-need",
+    "hidden": false,
+    "rule": { "decisionsAny": ["client:crypto-farm:refuse"] }
+  },
+  {
+    "id": "does-it-need-ai",
+    "name": "Does it need AI?",
+    "description": "Proposed a lighter alternative to at least two clients.",
+    "icon": "ai",
+    "theme": "question-the-need",
+    "hidden": false,
+    "rule": { "countGte": { "client:*:alternative": 2 } }
+  },
+  {
+    "id": "measured-first",
+    "name": "Measured before claiming",
+    "description": "Installed metering, then answered an audit or a report with real data.",
+    "icon": "governance",
+    "theme": "measure",
+    "hidden": false,
+    "rule": {
+      "decisionsAll": ["upgrade:energy-monitoring"],
+      "decisionsAny": ["event:eu-reporting:send-data", "event:permit-audit:show-data"]
+    }
+  },
+  {
+    "id": "rebound-resisted",
+    "name": "Enough is enough",
+    "description": "Efficiency freed up capacity and you capped growth instead of filling it.",
+    "icon": "energy",
+    "theme": "rebound",
+    "hidden": false,
+    "rule": { "decisionsAny": ["event:rebound-surge:cap"] }
+  },
+  {
+    "id": "old-servers-new-tricks",
+    "name": "Old servers, new tricks",
+    "description": "Kept servers longer and bought refurbished. Most of a server's footprint is made before it is switched on.",
+    "icon": "hardware",
+    "theme": "lifecycle",
+    "hidden": false,
+    "rule": { "decisionsAll": ["upgrade:extend-hardware-life", "upgrade:refurb-circular"] }
+  },
+  {
+    "id": "fossil-exit",
+    "name": "Fossil exit",
+    "description": "Tore down your gas plant and never built coal or gas again.",
+    "icon": "energy",
+    "theme": "energy-mix",
+    "hidden": false,
+    "rule": { "decisionsAll": ["demolish:gas-plant"], "decisionsNone": ["build:coal-plant", "build:gas-plant"] }
+  },
+  {
+    "id": "owned-it",
+    "name": "Owned it",
+    "description": "When the scandal broke, you told the truth instead of denying it.",
+    "icon": "communication",
+    "theme": "honest-communication",
+    "hidden": true,
+    "rule": { "decisionsAny": ["event:public-scandal:own-it", "event:greenwash-scandal:withdraw"] }
+  },
+  {
+    "id": "quiz-master",
+    "name": "Knows the numbers",
+    "description": "Answered all 4 quiz questions of a run right.",
+    "icon": "governance",
+    "theme": "skills",
+    "hidden": false,
+    "rule": { "summaryGte": { "quizCorrect": 4 } }
+  },
+  {
+    "id": "best-of-both",
+    "name": "Best of both",
+    "description": "Frugal Tycoon with a legacy of 900 or more: rich and responsible, for real.",
+    "icon": "cooling",
+    "theme": "governance",
+    "hidden": false,
+    "rule": { "archetypes": ["frugal-tycoon"], "summaryGte": { "legacy": 900 }, "statuses": ["ended"] }
+  },
+  {
+    "id": "smoke-and-mirrors",
+    "name": "Smoke and mirrors",
+    "description": "Bought the 'carbon neutral' badge without measuring anything. The press noticed.",
+    "icon": "communication",
+    "theme": "honest-communication",
+    "hidden": true,
+    "rule": { "decisionsAll": ["upgrade:carbon-offsets-greenwash"], "decisionsNone": ["upgrade:energy-monitoring"], "eventsFired": ["greenwash-scandal"] }
+  }
+]

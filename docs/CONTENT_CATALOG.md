@@ -22,7 +22,7 @@ Built on map plots (8 land plots + 1 river spot). There is no grid: halls run on
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `datacenter-hall` | datacenter | land | 1500 | 2 | — | — | — | — | — | — | — | illustrative |
 | `gas-plant` | plant (gas) | land | 1000 | — | 6 | 1 | — | 70 | 490 | 0.6 | — | approx |
-| `coal-plant` | plant (coal) | land | 1400 | — | 10 | 1 | — | 40 | 820 | 1.9 | envDebtPerTick +0.6 | approx |
+| `coal-plant` | plant (coal) | land | 1400 | — | 10 | 1 | — | 25 | 820 | 1.9 | envDebtPerTick +0.6 | approx |
 | `biomass-plant` | plant (biomass) | land | 1500 | — | 5 | 1 | — | 60 | 230 | 1.5 | envDebtPerTick +0.3 | approx |
 | `wind-farm` | plant (wind) | land | 2520 | — | 9 | 0.33 | wind | 8 | 11 | 0 | — | approx |
 | `solar-farm` | plant (solar) | land | 1680 | — | 12 | 0.16 | solar | 5 | 48 | 0 | — | approx |
@@ -68,7 +68,7 @@ Family is **hidden from players** until the end screen. Slice = part of the firs
 
 | id | kind | when | choices | quiz | slice |
 |---|---|---|---|---|---|
-| `carbon-tax` | consequence | {"statGte":{"envDebt":30}} | `pay` (neutral): no effect<br>`lobby` (greedy): cash -250 · S 0 / R -10 · later: +4t —<br>`phase-out` (responsible): S 1 / R 4 | q-carbon-grid | ✓ |
+| `carbon-tax` | milestone | {"minTick":8} | `pay` (neutral): no effect<br>`lobby` (greedy): cash -250 · S 0 / R -10 · later: +4t —<br>`phase-out` (responsible): S 1 / R 4 | q-carbon-grid | ✓ |
 | `permit-audit` | consequence | {"statGte":{"envDebt":45}} | `show-data` (responsible): S 0 / R 4<br>`fine` (neutral): cash -600 · S 0 / R -2<br>`hide` (greedy): cash -100 · S 0 / R -12 · later: 50% +3t public-scandal | q-frugal-first | ✓ |
 | `power-cap` | consequence | {"statGte":{"envDebt":65}} | `accept` (neutral): for 4 ticks: growthCap 0 · S 0 / R 2<br>`lobby` (greedy): cash -300, envDebt +6 · S 0 / R -8<br>`demand-response` (responsible): for 4 ticks: growthCap 0, cashPerTick +30 · S 0 / R 5 | — |  |
 | `local-opposition` | consequence | {"statGte":{"envDebt":85}} | `community` (responsible): cash -500, envDebt -10 · S 0 / R 6<br>`free-heat` (responsible): envDebt -15 · S 0 / R 8<br>`ignore` (greedy): demandPct -0.05 · for 3 ticks: growthCap 0 · S 0 / R -10 | — |  |
@@ -76,7 +76,7 @@ Family is **hidden from players** until the end screen. Slice = part of the firs
 | `water-restriction` | consequence | {"locations":["sun-belt"],"statGte":{"wue":1.5},"minTick":3} | `throttle` (neutral): demandPct -0.15 · for 3 ticks: pue +0.1<br>`truck` (greedy): cash -300, envDebt +12 · S 0 / R -6<br>`closed-loop` (responsible): cash -700, wue -0.8, pue +0.04 · S 3 / R 4 | q-wue |  |
 | `greenwash-scandal` | consequence | triggered by a delayed effect | `withdraw` (responsible): demandPct -0.08 · S 0 / R -5<br>`double-down` (greedy): demandPct -0.12 · S 0 / R -15 | q-greenwashing | ✓ |
 | `ai-bubble` | consequence | triggered by a delayed effect | `absorb` (neutral): demandPct -0.2<br>`science` (responsible): demandPct -0.12, pricePct -0.05 · S 0 / R 5 | — |  |
-| `rebound-surge` | milestone | {"flagsSet":["efficiency-gain"],"minTick":2} | `ride` (greedy): demandPct +0.4 · for 4 ticks: growthRate +0.02 · S 0 / R -2<br>`price-up` (neutral): demandPct +0.15, pricePct +0.03<br>`cap` (responsible): for 4 ticks: growthCap +0.02 · S 5 / R 8 | q-rebound | ✓ |
+| `rebound-surge` | milestone | {"flagsSet":["efficiency-gain"],"minTick":4} | `ride` (greedy): demandPct +0.4 · for 4 ticks: growthRate +0.02 · S 0 / R -2<br>`price-up` (neutral): demandPct +0.15, pricePct +0.03<br>`cap` (responsible): for 4 ticks: growthCap +0.02 · S 5 / R 8 | q-rebound | ✓ |
 | `eu-reporting` | milestone | {"minTick":5} | `send-data` (responsible): S 0 / R 5<br>`consultants` (neutral): cash -200 · S 0 / R 1<br>`fudge` (greedy): envDebt +5 · S 0 / R -8 · later: 50% +4t permit-audit | q-eed | ✓ |
 | `heatwave` | random | {"minTick":2} | `throttle` (responsible): cash -150 · S 0 / R 2<br>`max-chillers` (neutral): for 1 ticks: pue +0.15<br>`spray` (greedy): envDebt +4 · for 1 ticks: wue +1 | q-pue | ✓ |
 | `cascade-failure` | random | {"statGte":{"failureRate":0.07}} | `repair` (neutral): cash -400<br>`degrade` (greedy): demandPct -0.1 · S 0 / R -3 | — |  |

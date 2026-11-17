@@ -94,7 +94,7 @@ To see the first-run hints again, clear the `dt-onboarded` key in localStorage (
 ```
 engine/      Pure game simulation (no DOM, no Math.random, no clock). Unit-tested.
   types.ts   Shared contracts: content shapes, game state, actions.
-content/     ALL game data as JSON: balance, locations, buildings (halls and plants), upgrades, events, clients, quiz.
+content/     ALL game data as JSON: balance, locations, buildings (halls and plants), upgrades, events, clients, quiz, badges, and player copy (copy.json: every UI text).
   schema/    JSON Schemas mirroring engine/types.ts.
 ui/          React app: screens/ (start, game, end), components/ (cards, ring menu, hints, icons), map/ (isometric campus, clickable plots), share/ (canvas share card), daily.ts, tokens.css.
 scripts/     validate-content.ts, sim.ts (balance), catalog.ts (docs generator).

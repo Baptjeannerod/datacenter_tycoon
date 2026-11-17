@@ -81,27 +81,27 @@
 ## game-design
 
 ### GD-1 · P0 · Playtest the harness and report
-- **Role:** game-design · **Owner:** _unclaimed_ · **Status:** todo
+- **Role:** game-design · **Owner:** claude-agent (game-design) · **Status:** done (automated persona runs + browser checks; report in `docs/playtests/GD-1-2026-11-17.md`; human checks left for the 16:30 cross-tests)
 - **Goal:** `npm run dev`, play 3 runs per location on a phone. Note: is it fun in 30 s? any obvious right answer? does the profit tension feel real? any confusing card? Write findings in `docs/HANDOFF.md`, open issues for fixes.
 - **Done when:** at least 8 runs logged with archetype and legacy.
 
 ### GD-2 · P0 · Player-facing copy file
-- **Role:** game-design · **Owner:** _unclaimed_ · **Status:** todo
+- **Role:** game-design · **Owner:** claude-agent (game-design) · **Status:** done (`content/copy.json` + schema, read by every screen)
 - **Goal:** Create `content/copy.json` (+ schema): 3-step onboarding, archetype titles and one-liners, score tooltips ("Sustainability = what your datacenter does to the planet, measured"), vague debt warnings ("The town is grumbling…").
 - **Done when:** DEV-1/DEV-4 read all player text from it; validated by `npm run validate:content`.
 
 ### GD-3 · P1 · Balance pass after playtests
-- **Role:** game-design · **Owner:** _unclaimed_ · **Status:** todo · **Depends on:** GD-1
+- **Role:** game-design · **Owner:** claude-agent (game-design) · **Status:** done (first pass; sim green; GAME_DESIGN §7 and §11 updated) · **Depends on:** GD-1
 - **Goal:** Adjust numbers in `/content` based on GD-1 and cross-tests; keep `npm run sim` green; update the results table in `docs/GAME_DESIGN.md` §7.
 - **Done when:** sim passes and the weaknesses in GAME_DESIGN §11 are addressed or explicitly accepted.
 
 ### GD-4 · P1 · Location picker and "it depends" card
-- **Role:** game-design · **Owner:** _unclaimed_ · **Status:** todo
+- **Role:** game-design · **Owner:** claude-agent (game-design) · **Status:** done (difficulty dots + labels, "Why?" card at run start, all 4 valleys ship; UX review still welcome)
 - **Goal:** Difficulty label per location, a one-line teaching card on start ("Here, renewables barely matter. Why?"), and which locations ship enabled.
 - **Done when:** copy is in `content/` and reviewed by UX.
 
 ### GD-5 · P2 · Badges and achievements
-- **Role:** game-design · **Owner:** _unclaimed_ · **Status:** todo
+- **Role:** game-design · **Owner:** claude-agent (game-design) · **Status:** done (10 badges in `content/badges.json`, evaluator `engine/badges.ts`, shown on the end screen)
 - **Goal:** 6-10 shareable badges based on `state.decisions` (e.g. "Refused the crypto farm", "Measured before claiming"). Spec as data in `content/`.
 - **Done when:** spec merged; DEV can implement from data alone.
 
