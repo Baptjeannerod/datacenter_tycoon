@@ -7,25 +7,117 @@
   "items": {
     "type": "object",
     "additionalProperties": false,
-    "required": ["id", "name", "tagline", "context", "basePue", "baseWue", "gridCarbon", "waterStress", "energyPrice", "pricePerMW", "baseGrowth", "startDemandMW", "marketMW", "startCash", "enabled", "source", "confidence"],
+    "required": [
+      "id",
+      "name",
+      "tagline",
+      "context",
+      "basePue",
+      "baseWue",
+      "waterStress",
+      "pricePerMW",
+      "baseGrowth",
+      "startDemandMW",
+      "marketMW",
+      "startCash",
+      "enabled",
+      "source",
+      "confidence",
+      "resources",
+      "fuelPrice"
+    ],
     "properties": {
-      "id": { "$ref": "common.schema.json#/definitions/id" },
-      "name": { "type": "string", "maxLength": 30 },
-      "tagline": { "type": "string", "maxLength": 80 },
-      "context": { "type": "string", "maxLength": 240 },
-      "basePue": { "type": "number", "minimum": 1, "maximum": 3 },
-      "baseWue": { "type": "number", "minimum": 0, "maximum": 5 },
-      "gridCarbon": { "type": "number", "minimum": 0, "maximum": 1200 },
-      "waterStress": { "type": "number", "minimum": 0, "maximum": 3 },
-      "energyPrice": { "type": "number", "minimum": 0 },
-      "pricePerMW": { "type": "number", "minimum": 0 },
-      "baseGrowth": { "type": "number", "minimum": 0, "maximum": 0.2 },
-      "startDemandMW": { "type": "number", "exclusiveMinimum": 0 },
-      "marketMW": { "type": "number", "exclusiveMinimum": 0 },
-      "startCash": { "type": "number" },
-      "enabled": { "type": "boolean" },
-      "source": { "type": "string", "minLength": 3 },
-      "confidence": { "$ref": "common.schema.json#/definitions/confidence" }
+      "id": {
+        "$ref": "common.schema.json#/definitions/id"
+      },
+      "name": {
+        "type": "string",
+        "maxLength": 30
+      },
+      "tagline": {
+        "type": "string",
+        "maxLength": 80
+      },
+      "context": {
+        "type": "string",
+        "maxLength": 240
+      },
+      "basePue": {
+        "type": "number",
+        "minimum": 1,
+        "maximum": 3
+      },
+      "baseWue": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 5
+      },
+      "waterStress": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 3
+      },
+      "pricePerMW": {
+        "type": "number",
+        "minimum": 0
+      },
+      "baseGrowth": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 0.2
+      },
+      "startDemandMW": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "marketMW": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "startCash": {
+        "type": "number"
+      },
+      "enabled": {
+        "type": "boolean"
+      },
+      "source": {
+        "type": "string",
+        "minLength": 3
+      },
+      "confidence": {
+        "$ref": "common.schema.json#/definitions/confidence"
+      },
+      "resources": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "wind",
+          "solar",
+          "river"
+        ],
+        "properties": {
+          "wind": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "solar": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "river": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3
+          }
+        }
+      },
+      "fuelPrice": {
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 5
+      }
     }
   }
 }

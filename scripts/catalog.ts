@@ -37,23 +37,35 @@ const lines: string[] = [
   '',
   '## Locations',
   '',
-  '| id | name | PUE | WUE | gCO2e/kWh | water stress | €/MWh | k€/MW/tick | growth | market MW | enabled |',
-  '|---|---|---|---|---|---|---|---|---|---|---|',
+  '| id | name | PUE | WUE | water stress | wind | sun | river | fuel price | k€/MW/tick | growth | market MW | enabled |',
+  '|---|---|---|---|---|---|---|---|---|---|---|---|---|',
   ...c.locations.map(
-    (l) => `| \`${l.id}\` | ${l.name} | ${l.basePue} | ${l.baseWue} | ${l.gridCarbon} | ${l.waterStress} | ${l.energyPrice} | ${l.pricePerMW} | ${l.baseGrowth} | ${l.marketMW} | ${l.enabled ? 'yes' : 'no'} |`,
+    (l) =>
+      `| \`${l.id}\` | ${l.name} | ${l.basePue} | ${l.baseWue} | ${l.waterStress} | ${l.resources.wind} | ${l.resources.solar} | ${l.resources.river} | ${l.fuelPrice} | ${l.pricePerMW} | ${l.baseGrowth} | ${l.marketMW} | ${l.enabled ? 'yes' : 'no'} |`,
+  ),
+  '',
+  '## Buildings',
+  '',
+  'Built on map plots (8 land plots + 1 river spot). There is no grid: halls run only on power from your plants.',
+  '',
+  '| id | kind | placement | cost | IT MW | nameplate MW | capacity factor | resource | €/MWh | gCO2e/kWh | water m³/MWh | effects | confidence |',
+  '|---|---|---|---|---|---|---|---|---|---|---|---|---|',
+  ...c.buildings.map(
+    (b) =>
+      `| \`${b.id}\` | ${b.kind}${b.plantType ? ` (${b.plantType})` : ''} | ${b.placement} | ${b.cost} | ${b.itMW ?? '—'} | ${b.nameplateMW ?? '—'} | ${b.capacityFactor ?? '—'} | ${b.resource ?? '—'} | ${b.costPerMWh ?? '—'} | ${b.carbonPerMWh ?? '—'} | ${b.waterPerMWh ?? '—'} | ${esc(fx(b.effects))} | ${b.confidence} |`,
   ),
   '',
   '## Upgrades',
   '',
   'Family is **hidden from players** until the end screen. Slice = part of the first playable.',
   '',
-  '| id | family | cost | effects | S / R | delayed | location overrides | slice | confidence |',
-  '|---|---|---|---|---|---|---|---|---|',
+  '| id | scope | family | cost | power MW | effects | S / R | delayed | location overrides | confidence |',
+  '|---|---|---|---|---|---|---|---|---|---|',
   ...c.upgrades.map(
     (u) =>
-      `| \`${u.id}\` | ${u.family} | ${u.cost} | ${esc(fx(u.effects))} | ${u.scoreDelta.sustainability ?? 0} / ${u.scoreDelta.responsibility ?? 0} | ${esc(
+      `| \`${u.id}\` | ${u.scope}${u.plantTypes ? ` (${u.plantTypes.join(', ')})` : ''} | ${u.family} | ${u.cost} | ${u.powerMW ?? '—'} | ${esc(fx({ ...u.effects, ...(u.plantEffects ?? {}) } as Effects))} | ${u.scoreDelta.sustainability ?? 0} / ${u.scoreDelta.responsibility ?? 0} | ${esc(
         (u.delayed ?? []).map((d) => `${d.chance !== undefined ? `${d.chance * 100}% ` : ''}+${d.afterTicks}t → ${d.triggerEvent ?? fx(d.effects)}`).join('; ') || '—',
-      )} | ${Object.keys(u.contextModifiers ?? {}).join(', ') || '—'} | ${u.slice ? '✓' : ''} | ${u.confidence} |`,
+      )} | ${Object.keys(u.contextModifiers ?? {}).join(', ') || '—'} | ${u.confidence} |`,
   ),
   '',
   '## Events',

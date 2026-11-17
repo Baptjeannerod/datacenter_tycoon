@@ -2,7 +2,7 @@
   {
     "id": "carbon-tax",
     "title": "Carbon gets a price",
-    "body": "Regulators now charge €100 for every tonne of CO2 you emit. Your cheap electricity just got a second bill.",
+    "body": "Regulators now charge €100 for every tonne of CO2 your plants emit. Cheap fossil power just got a second bill.",
     "kind": "consequence",
     "themes": [
       "energy-mix"
@@ -46,28 +46,18 @@
         ]
       },
       {
-        "id": "clean-contract",
-        "label": "Sign a clean power deal now",
+        "id": "phase-out",
+        "label": "Publish a fossil phase-out plan",
         "stance": "responsible",
-        "hint": "Cleaner power, small premium every quarter.",
-        "requires": {
-          "lacksUpgrades": [
-            "renewable-ppa",
-            "cheap-fossil-contract"
-          ]
-        },
-        "effects": {
-          "renewableShare": 0.3,
-          "cashPerTick": -25
-        },
-        "scoreDelta": {
-          "responsibility": 3,
-          "sustainability": 2
-        },
+        "hint": "The tax applies; your plan earns trust.",
         "setFlags": [
           "carbon-tax"
         ],
-        "outcome": "Your emissions, and your tax bill, drop."
+        "scoreDelta": {
+          "responsibility": 4,
+          "sustainability": 1
+        },
+        "outcome": "Every tonne now costs money, and you have a plan to emit fewer of them."
       }
     ],
     "quizId": "q-carbon-grid",
@@ -143,8 +133,8 @@
   },
   {
     "id": "power-cap",
-    "title": "The grid says no",
-    "body": "The local grid is saturated and neighbours complain about your appetite. No new megawatts for two years.",
+    "title": "Building permit freeze",
+    "body": "Noise, traffic, land: the region is saturated. No new client growth here for two years.",
     "kind": "consequence",
     "themes": [
       "energy-mix",
@@ -172,30 +162,23 @@
         "outcome": "Growth frozen for 2 years."
       },
       {
-        "id": "turbines",
-        "label": "Install gas turbines and keep growing",
+        "id": "lobby",
+        "label": "Lobby the mayor to lift it",
         "stance": "greedy",
-        "requires": {
-          "lacksUpgrades": [
-            "gas-turbines"
-          ]
-        },
         "effects": {
-          "cash": -400,
-          "envDebt": 10,
-          "envDebtPerTick": 1.5
+          "cash": -300,
+          "envDebt": 6
         },
         "scoreDelta": {
-          "responsibility": -8,
-          "sustainability": -4
+          "responsibility": -8
         },
-        "outcome": "Growth continues. So do the fumes."
+        "outcome": "The freeze is lifted for you. Neighbours are furious."
       },
       {
         "id": "demand-response",
-        "label": "Sign a demand-response deal",
+        "label": "Open your campus to the town",
         "stance": "responsible",
-        "hint": "Pause flexible jobs at peak times; the grid pays you.",
+        "hint": "Share heat, jobs and data; growth paused.",
         "temporary": {
           "durationTicks": 8,
           "effects": {
@@ -206,7 +189,7 @@
         "scoreDelta": {
           "responsibility": 5
         },
-        "outcome": "You help balance the grid and get paid for flexibility."
+        "outcome": "Growth pauses, but the town starts to see you as a neighbour."
       }
     ],
     "source": "Grid connection queues and moratoria on new datacenter connections have occurred in several regions (e.g. around Dublin and Amsterdam); details are game design",
@@ -891,46 +874,56 @@
     "confidence": "illustrative"
   },
   {
-    "id": "coal-plant-closure",
-    "title": "The coal plant is closing",
-    "body": "The region's biggest coal plant shuts down. Wind farms replace it, but power gets pricier.",
+    "id": "fuel-price-spike",
+    "title": "Fuel prices jump",
+    "body": "Gas, coal and wood prices jump 40 % for two years. Your fuel bill follows.",
     "kind": "random",
     "themes": [
       "energy-mix"
     ],
     "when": {
-      "locations": [
-        "coal-valley"
-      ],
-      "minTick": 12
+      "minTick": 8
     },
-    "weight": 2,
+    "weight": 1.5,
     "choices": [
       {
-        "id": "welcome",
-        "label": "Welcome it",
-        "stance": "responsible",
-        "effects": {
-          "carbonIntensity": -200,
-          "energyPricePct": 0.05
+        "id": "pay",
+        "label": "Pay the higher price",
+        "stance": "neutral",
+        "temporary": {
+          "durationTicks": 8,
+          "effects": {
+            "energyPricePct": 0.4
+          }
         },
-        "scoreDelta": {
-          "responsibility": 2
-        },
-        "outcome": "Your grid just got a lot cleaner."
+        "outcome": "Fuel costs 40 % more for two years."
       },
       {
-        "id": "lobby",
-        "label": "Lobby to keep it open for cheap power",
+        "id": "dirtier",
+        "label": "Switch to cheaper, dirtier fuel",
         "stance": "greedy",
+        "temporary": {
+          "durationTicks": 8,
+          "effects": {
+            "energyPricePct": 0.1
+          }
+        },
         "effects": {
-          "energyPricePct": -0.05,
           "envDebt": 8
         },
         "scoreDelta": {
-          "responsibility": -10
+          "responsibility": -5
         },
-        "outcome": "The plant gets 5 more years. You get cheap power and bad press."
+        "outcome": "The bill barely moves. The air gets worse."
+      },
+      {
+        "id": "hedge",
+        "label": "Lock a long-term fuel contract",
+        "stance": "responsible",
+        "effects": {
+          "cash": -400
+        },
+        "outcome": "You pay upfront and your fuel price stays put."
       }
     ],
     "quizId": "q-carbon-grid",

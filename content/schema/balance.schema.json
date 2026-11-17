@@ -5,41 +5,183 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "maxTicks", "hoursPerTick", "fixedOpexPerTick", "maintenancePerMW", "capexPerMW", "refreshCostPerMW", "eWastePerMW",
-    "embodiedCarbonPerMW", "baseHardwareLifespan", "baseFailureRate", "agingFailurePerTick", "outageRevenueLoss", "outageChurn",
-    "carbonPriceWhenTaxed", "carbonDebtDivisor", "waterDebtDivisor", "eWasteDebtPerT", "envDebtDecay", "debtChurnStart",
-    "debtChurnPerPoint", "maxDebtChurn", "responsibilityDrift", "sustainabilityBonusCap", "bankruptcyAt", "clientEvery",
-    "randomEventChance", "maxQuizPerRun", "profitReference", "minPue"
+    "maxTicks",
+    "hoursPerTick",
+    "fixedOpexPerTick",
+    "maintenancePerMW",
+    "refreshCostPerMW",
+    "eWastePerMW",
+    "embodiedCarbonPerMW",
+    "baseHardwareLifespan",
+    "baseFailureRate",
+    "agingFailurePerTick",
+    "outageRevenueLoss",
+    "outageChurn",
+    "carbonPriceWhenTaxed",
+    "carbonDebtDivisor",
+    "waterDebtDivisor",
+    "eWasteDebtPerT",
+    "envDebtDecay",
+    "debtChurnStart",
+    "debtChurnPerPoint",
+    "maxDebtChurn",
+    "responsibilityDrift",
+    "sustainabilityBonusCap",
+    "bankruptcyAt",
+    "clientEvery",
+    "randomEventChance",
+    "maxQuizPerRun",
+    "profitReference",
+    "minPue",
+    "landPlots",
+    "startBuildings"
   ],
   "properties": {
-    "maxTicks": { "type": "integer", "minimum": 8, "maximum": 80 },
-    "hoursPerTick": { "type": "number", "exclusiveMinimum": 0 },
-    "fixedOpexPerTick": { "type": "number", "minimum": 0 },
-    "maintenancePerMW": { "type": "number", "minimum": 0 },
-    "capexPerMW": { "type": "number", "minimum": 0 },
-    "refreshCostPerMW": { "type": "number", "minimum": 0 },
-    "eWastePerMW": { "type": "number", "minimum": 0 },
-    "embodiedCarbonPerMW": { "type": "number", "minimum": 0 },
-    "baseHardwareLifespan": { "type": "integer", "minimum": 4 },
-    "baseFailureRate": { "type": "number", "minimum": 0, "maximum": 0.5 },
-    "agingFailurePerTick": { "type": "number", "minimum": 0, "maximum": 0.2 },
-    "outageRevenueLoss": { "type": "number", "minimum": 0, "maximum": 1 },
-    "outageChurn": { "type": "number", "minimum": 0, "maximum": 1 },
-    "carbonPriceWhenTaxed": { "type": "number", "minimum": 0 },
-    "carbonDebtDivisor": { "type": "number", "exclusiveMinimum": 0 },
-    "waterDebtDivisor": { "type": "number", "exclusiveMinimum": 0 },
-    "eWasteDebtPerT": { "type": "number", "minimum": 0 },
-    "envDebtDecay": { "type": "number", "minimum": 0 },
-    "debtChurnStart": { "type": "number", "minimum": 0 },
-    "debtChurnPerPoint": { "type": "number", "minimum": 0 },
-    "maxDebtChurn": { "type": "number", "minimum": 0, "maximum": 0.5 },
-    "responsibilityDrift": { "type": "number", "minimum": 0, "maximum": 0.5 },
-    "sustainabilityBonusCap": { "type": "number", "minimum": 0, "maximum": 50 },
-    "bankruptcyAt": { "type": "number" },
-    "clientEvery": { "type": "integer", "minimum": 1 },
-    "randomEventChance": { "type": "number", "minimum": 0, "maximum": 1 },
-    "maxQuizPerRun": { "type": "integer", "minimum": 0, "maximum": 10 },
-    "profitReference": { "type": "number", "exclusiveMinimum": 0 },
-    "minPue": { "type": "number", "minimum": 1 }
+    "maxTicks": {
+      "type": "integer",
+      "minimum": 8,
+      "maximum": 80
+    },
+    "hoursPerTick": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "fixedOpexPerTick": {
+      "type": "number",
+      "minimum": 0
+    },
+    "maintenancePerMW": {
+      "type": "number",
+      "minimum": 0
+    },
+    "refreshCostPerMW": {
+      "type": "number",
+      "minimum": 0
+    },
+    "eWastePerMW": {
+      "type": "number",
+      "minimum": 0
+    },
+    "embodiedCarbonPerMW": {
+      "type": "number",
+      "minimum": 0
+    },
+    "baseHardwareLifespan": {
+      "type": "integer",
+      "minimum": 4
+    },
+    "baseFailureRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.5
+    },
+    "agingFailurePerTick": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.2
+    },
+    "outageRevenueLoss": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "outageChurn": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "carbonPriceWhenTaxed": {
+      "type": "number",
+      "minimum": 0
+    },
+    "carbonDebtDivisor": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "waterDebtDivisor": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "eWasteDebtPerT": {
+      "type": "number",
+      "minimum": 0
+    },
+    "envDebtDecay": {
+      "type": "number",
+      "minimum": 0
+    },
+    "debtChurnStart": {
+      "type": "number",
+      "minimum": 0
+    },
+    "debtChurnPerPoint": {
+      "type": "number",
+      "minimum": 0
+    },
+    "maxDebtChurn": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.5
+    },
+    "responsibilityDrift": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.5
+    },
+    "sustainabilityBonusCap": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 50
+    },
+    "bankruptcyAt": {
+      "type": "number"
+    },
+    "clientEvery": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "randomEventChance": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "maxQuizPerRun": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10
+    },
+    "profitReference": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "minPue": {
+      "type": "number",
+      "minimum": 1
+    },
+    "landPlots": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 16
+    },
+    "startBuildings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "plot",
+          "building"
+        ],
+        "properties": {
+          "plot": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "building": {
+            "$ref": "common.schema.json#/definitions/id"
+          }
+        }
+      }
+    }
   }
 }
