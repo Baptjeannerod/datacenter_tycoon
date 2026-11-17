@@ -41,7 +41,7 @@ export async function drawOgImage(): Promise<HTMLCanvasElement> {
   fit(ctx, 'PROFIT OR PLANET?', PIXEL, '700', 76, 40, leftW);
   ctx.fillText('PROFIT OR PLANET?', M, 220);
   ctx.font = `500 30px ${UI}`;
-  wrap(ctx, 'Run a datacenter for 10 years. Get rich. Stay responsible. You can’t max both.', leftW, 3).forEach((l, i) => ctx.fillText(l, M, 280 + i * 42));
+  wrap(ctx, 'Run a datacenter for 5 years. Get rich. Stay responsible. You can’t max both.', leftW, 3).forEach((l, i) => ctx.fillText(l, M, 280 + i * 42));
 
   // Tags.
   let x = M;

@@ -40,7 +40,9 @@
 | Content shapes | `engine/types.ts` + `content/schema/*.schema.json` | content authors, engine, validator, UI |
 | Engine API | `engine/index.ts` exports | UI, sim, tests |
 | Game state | `GameState` in `engine/types.ts` | UI (rendering, save/resume), analytics |
-| Decision ids | `"upgrade:<id>"`, `"event:<id>:<choice>"`, `"client:<id>:<choice>"` in `state.decisions` | analytics, dashboard ("most chosen") |
+| Decision ids | `"upgrade:<id>"`, `"event:<id>:<choice>"`, `"client:<id>:<choice>"`, `"build:<id>"`, `"demolish:<id>"` in `state.decisions` | analytics, dashboard ("most chosen"), badges |
+| Player copy | `content/copy.json` + `content/schema/copy.schema.json`, typed in `ui/copy.ts` | UI screens, share text |
+| Badges | `Badge` / `BadgeRule` in `engine/types.ts` + `content/schema/badges.schema.json`; `earnedBadges()` in `engine/badges.ts` | end screen, (later) analytics |
 | Analytics events | `api/_lib/events.ts` (schema in `api/README.md`); stats shape `Stats` in `api/_lib/aggregate.ts` | UI (`ui/analytics.ts`), API, dashboard |
 
 Changing a contract: update the type, the schema, the validator if needed, run `npm run check`, and add a line to `docs/HANDOFF.md` starting with **CONTRACT CHANGE**.

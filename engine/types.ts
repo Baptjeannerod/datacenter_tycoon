@@ -422,6 +422,8 @@ export interface Balance {
   bankruptcyAt: number;
   /** Ticks between two client intake requests. */
   clientEvery: number;
+  /** Extra client knock at this tick, so the first card of a run is a client (GD-1). Optional. */
+  firstClientTick?: number;
   /** Probability per tick of a random event when no decision is pending. */
   randomEventChance: number;
   maxQuizPerRun: number;
@@ -632,3 +634,50 @@ export type Action =
   | { type: 'demolish'; plot: number }
   | { type: 'choose'; choiceId: string }
   | { type: 'answer'; answerIndex: number };
+
+// ---------------------------------------------------------------------------
+// Badges (content/badges.json, GD-5). Evaluated once, at the end of a run.
+// ---------------------------------------------------------------------------
+
+/** Numeric RunSummary fields a badge can test. */
+export type BadgeSummaryKey = 'netWorth' | 'profitNorm' | 'impact' | 'finalSustainability' | 'finalResponsibility' | 'legacy' | 'quizCorrect' | 'quizAnswered' | 'envDebt' | 'ticksPlayed';
+/** Run totals a badge can test. */
+export type BadgeTotalKey = keyof GameState['totals'];
+
+/**
+ * Every field present must hold. Decision patterns match `GameState.decisions`
+ * entries ("client:<id>:<choice>", "event:<id>:<choice>", "upgrade:<id>",
+ * "build:<id>", "demolish:<id>"); `*` matches any run of characters.
+ */
+export interface BadgeRule {
+  /** At least one of these patterns was chosen. */
+  decisionsAny?: string[];
+  /** Every one of these patterns was chosen. */
+  decisionsAll?: string[];
+  /** None of these patterns was ever chosen. */
+  decisionsNone?: string[];
+  /** Pattern → minimum number of matching decisions. */
+  countGte?: Record<string, number>;
+  /** These events happened (and were answered). */
+  eventsFired?: string[];
+  summaryGte?: Partial<Record<BadgeSummaryKey, number>>;
+  summaryLte?: Partial<Record<BadgeSummaryKey, number>>;
+  totalsGte?: Partial<Record<BadgeTotalKey, number>>;
+  totalsLte?: Partial<Record<BadgeTotalKey, number>>;
+  archetypes?: Archetype[];
+  statuses?: RunStatus[];
+  locations?: string[];
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  /** How it was earned, one sentence, shown once earned (and on the badge list if not hidden). */
+  description: string;
+  /** Category icon to draw (ART-4 set). */
+  icon: UpgradeCategory;
+  theme: FrugalTheme;
+  /** Hidden badges are not listed until earned (surprises, and the ironic ones). */
+  hidden: boolean;
+  rule: BadgeRule;
+}

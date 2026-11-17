@@ -1,5 +1,6 @@
 /** Formatting helpers shared by the UI. Money in the engine is k€. */
 import type { Effects, Upgrade } from '../engine';
+import { copy } from './copy';
 
 export const money = (k: number, signed = false): string => {
   const sign = k < 0 ? '−' : signed ? '+' : '';
@@ -47,16 +48,5 @@ export const CATEGORY_LABEL: Record<Upgrade['category'], string> = {
   water: 'Water',
 };
 
-export const DEBT_LABEL = [
-  { label: 'Low', hint: 'Nature can absorb this.' },
-  { label: 'Rising', hint: 'Growth has a footprint.' },
-  { label: 'High', hint: 'Someone will send the bill.' },
-  { label: 'Critical', hint: 'The bills are arriving.' },
-] as const;
-
-export const ARCHETYPES = {
-  'frugal-tycoon': { title: 'Frugal Tycoon', line: 'Rich and responsible. You grew where it was worth it and said no where it was not.' },
-  'planet-burner': { title: 'Planet Burner', line: 'The money is real. So is the smoke. Somebody else is paying for your growth.' },
-  'cloud-monk': { title: 'Cloud Monk', line: 'Spotless footprint, thin wallet. Frugal is not the same as refusing everything.' },
-  'lost-in-the-fog': { title: 'Lost in the Fog', line: 'Neither rich nor responsible. The bills came, the clients left.' },
-} as const;
+/** Archetype titles and one-liners come from content/copy.json (GD-2). */
+export const ARCHETYPES = copy.archetypes;

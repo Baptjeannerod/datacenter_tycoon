@@ -3,15 +3,10 @@ import { createGame, derive, getLocation } from '../../engine';
 import { dailyBest, dailyRun } from '../daily';
 import { CampusMap } from '../map/CampusMap';
 import { campusView } from '../map/layout';
+import { copy, fill } from '../copy';
 import { content } from '../useGame';
 import { TopBar } from './GameScreen';
 
-const DIFFICULTY: Record<string, string> = {
-  'paris-basin': 'Classic',
-  'nordic-fjord': 'Easy to be green',
-  'coal-valley': 'Hard',
-  'sun-belt': 'Thirsty',
-};
 
 export function StartScreen({
   onStart,
@@ -38,35 +33,31 @@ export function StartScreen({
       <main className="start-main">
         <section className="hero">
           <div className="hero-copy">
-            <h1 className="pixel">Small campus. Big decisions.</h1>
-            <p className="lead">Run a datacenter for 10 years. Get rich. Stay responsible. You can&rsquo;t max both.</p>
+            <h1 className="pixel">{copy.start.headline}</h1>
+            <p className="lead">{copy.start.lead}</p>
             <ul className="hero-points">
-              <li>Host workloads, or ask if they really need AI.</li>
-              <li>No grid: build your own power plants. Coal is cheap, wind needs land.</li>
-              <li>4 minutes. No sign-up. Beat your friends&rsquo; legacy score.</li>
+              {copy.start.points.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
             </ul>
             <div className="daily">
-              <span className="eyebrow">Daily run · {daily.date}</span>
+              <span className="eyebrow">
+                {copy.start.dailyTitle} · {daily.date}
+              </span>
               <p>
-                Same campus and same luck for everyone today, in <strong>{getLocation(content, daily.locationId).name}</strong>.{' '}
-                {best !== null ? (
-                  <>
-                    Your best today: <strong className="mono">{best}</strong>.
-                  </>
-                ) : (
-                  'No score yet today.'
-                )}
+                {fill(copy.start.dailyBody, { location: getLocation(content, daily.locationId).name })}{' '}
+                <strong className="mono">{best !== null ? fill(copy.start.dailyBest, { best }) : copy.start.dailyNone}</strong>
               </p>
               <button className="btn primary" onClick={onDaily}>
-                Daily run
+                {copy.start.dailyTitle}
               </button>
             </div>
             {challenge && (
               <div className="challenge">
-                <span className="eyebrow">You were challenged</span>
-                <p>Same campus, same luck. Can you beat their legacy score?</p>
+                <span className="eyebrow">{copy.start.challengeTitle}</span>
+                <p>{copy.start.challengeBody}</p>
                 <button className="btn primary" onClick={() => onStart(challenge.loc, challenge.seed)}>
-                  Accept the challenge
+                  {copy.start.challengeButton}
                 </button>
               </div>
             )}
@@ -78,19 +69,25 @@ export function StartScreen({
 
         <section aria-labelledby="pick">
           <h2 id="pick" className="pixel section-title">
-            Pick your valley
+            {copy.start.pickTitle}
           </h2>
           <div className="locations">
             {locations.map((l) => (
               <button key={l.id} className={`location loc-${l.id}`} onClick={() => onStart(l.id)}>
-                <span className="eyebrow">{DIFFICULTY[l.id] ?? 'Location'}</span>
+                <span className="eyebrow">
+                  <span className="difficulty" aria-label={`Difficulty ${copy.locations[l.id]?.level ?? 2} of 3`}>
+                    {'●'.repeat(copy.locations[l.id]?.level ?? 2)}
+                    {'○'.repeat(3 - (copy.locations[l.id]?.level ?? 2))}
+                  </span>{' '}
+                  {copy.locations[l.id]?.difficulty ?? 'Location'}
+                </span>
                 <span className="pixel loc-name">{l.name}</span>
                 <span className="loc-tag">{l.tagline}</span>
                 <span className="muted small">{l.context}</span>
                 <span className="loc-stats mono">
                   Wind ×{l.resources.wind} · Sun ×{l.resources.solar} · River ×{l.resources.river} · water stress {l.waterStress}
                 </span>
-                <span className="loc-go">Build here →</span>
+                <span className="loc-go">{copy.start.go}</span>
               </button>
             ))}
           </div>

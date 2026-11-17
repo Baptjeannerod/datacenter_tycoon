@@ -359,8 +359,8 @@ function scheduleDecisions(s: GameState, content: Content) {
   }
   if (s.queue.length > 0) return;
 
-  // 2. A client knocks every `clientEvery` ticks.
-  if (s.tick % content.balance.clientEvery === 0) {
+  // 2. A client knocks every `clientEvery` ticks, and once early so the first card is a client (fun in 30 s).
+  if (s.tick % content.balance.clientEvery === 0 || s.tick === content.balance.firstClientTick) {
     const clients = content.clients.filter((c) => !s.seenClients.includes(c.id) && checkCondition(c.when, s, read));
     const client = pickWeighted(s, clients);
     if (client) {

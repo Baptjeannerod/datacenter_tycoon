@@ -216,7 +216,7 @@ export async function drawShareCard(d: CardData): Promise<HTMLCanvasElement> {
     ctx.font = `500 24px ${UI}`;
     ctx.fillText(sub, x + 28, sTop + 168);
   };
-  stat(M, C.lime, 'PROFIT', money(d.netWorth), `net worth after ${d.bankrupt ? 'the crash' : '10 years'}`);
+  stat(M, C.lime, 'PROFIT', money(d.netWorth), `net worth after ${d.bankrupt ? 'the crash' : '5 years'}`);
   stat(M + sw + 30, C.lavender, 'IMPACT', `${Math.round(d.impact)}/100`, 'planet + responsibility');
 
   // Challenge band.

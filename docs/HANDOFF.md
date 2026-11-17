@@ -250,3 +250,19 @@
 
 **Gotchas:**
 - The before/after screenshots are on branch `agent/s4-desktop-layout-screens` (images only, linked from the PR), so `main` stays light.
+## 2026-11-17 16:10 · claude-agent (game-design) · GD-1, GD-2, GD-3, GD-4, GD-5
+
+**Done (branch `game-design/GD-1-to-5`, rebased on PR 47's 20-quarter model):**
+- **GD-2** `content/copy.json` (+ `content/schema/copy.schema.json`, typed in `ui/copy.ts` with `fill()`, `debtLevel()`, `debtWarning()`, `headlineFor()`): start screen, how-to-play, onboarding hints, headlines, score tooltips (tap a KPI label), vague debt levels with rotating warnings ("The town is grumbling…"), archetype titles, one-liners and one share text per archetype (COM-1 can rewrite them there), end-screen labels. Texts say 5 years / 20 quarters. `ui/format.ts` `ARCHETYPES` reads it (dashboard unchanged). The validator checks the copy.
+- **GD-4** difficulty (1-3 dots + label) per valley on the start screen; an "it depends" card over the map when a run starts (question, answer on "Why?", time held). All 4 valleys ship; Paris is "Classic · start here". Paris tagline no longer says "nuclear-heavy".
+- **GD-5** 10 badges in `content/badges.json` (+ schema); pure evaluator `earnedBadges()` in `engine/badges.ts` with tests; listed on the end screen. Hidden badges show only once earned.
+- **GD-1** report `docs/playtests/GD-1-2026-11-17.md`: 12 persona runs with archetype and legacy, a plant-dominance sweep, browser checks. Not human phone tests.
+- **GD-3** balance pass on the 20-quarter model: carbon tax is a fixed year-3 milestone (tick 8) instead of envDebt ≥ 30 (coal never paid before); coal fuel €40 → €25/MWh; `carbonDebtDivisor` 2000 → 3000; `firstClientTick: 2`; rebound `minTick` 2 → 4; quiz badge needs 4/4. `npm run sim` green; GAME_DESIGN §3, §5-§8, §11, new §12 updated; catalog regenerated. Share card text "10 years" → "5 years" (the static `public/og.png` was not regenerated).
+
+**Next:**
+- Open the issues listed at the end of the playtest report (the agent session could not open issues). Most important: **in the Nordic Fjord, clean plants + greedy card answers beat balanced on legacy** (pre-existing on `main`, slightly wider now); add a min-maxer sim tripwire.
+- UX: review the valley card and KPI tooltips on a real phone (KPI sub-lines, incl. the debt warning, are hidden under 640 px; the tooltip still works).
+
+**Gotchas:**
+- CONTRACT CHANGE: `Balance` gained optional `firstClientTick` (schema updated; the engine queues a client at that tick as well as every `clientEvery`). New types `Badge`, `BadgeRule`, `BadgeSummaryKey`, `BadgeTotalKey` in `engine/types.ts`; `engine/index.ts` exports `earnedBadges`, `ruleHolds`, `matchDecision`, `loadBadges`. Badges are not part of `Content`.
+- The carbon tax now hits everyone in year 3, including a player with only the starting gas plant.

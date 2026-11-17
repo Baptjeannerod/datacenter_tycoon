@@ -12,7 +12,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
-import type { Choice, Condition, Content, DelayedEffect } from '../engine/types';
+import type { Badge, Choice, Condition, Content, DelayedEffect } from '../engine/types';
+import type { Copy } from '../ui/copy';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const contentDir = join(root, 'content');
@@ -26,6 +27,8 @@ const FILES = {
   events: 'events.json',
   clients: 'clients.json',
   quiz: 'quiz.json',
+  copy: 'copy.json',
+  badges: 'badges.json',
 } as const;
 
 const errors: string[] = [];
@@ -172,6 +175,42 @@ if (errors.length === 0) {
   }
   if (!c.locations.some((l) => l.enabled)) errors.push('locations.json: at least one location must be enabled');
 
+  // Player copy (GD-2) and location teaching cards (GD-4)
+  const copy = (data as { copy: Copy }).copy;
+  for (const id of Object.keys(copy.locations)) if (!ids.locations.has(id)) errors.push(`copy.json locations: "${id}" is not a location id`);
+  for (const l of c.locations) if (l.enabled && !copy.locations[l.id]) errors.push(`copy.json locations: enabled location "${l.id}" needs a difficulty and a teaching card`);
+  const ascending = (xs: number[]) => xs.every((x, i) => i === 0 || x > xs[i - 1]);
+  if (!ascending(copy.debt.map((d) => d.min)) || copy.debt[0].min !== 0) errors.push('copy.json debt: levels must start at min 0 and be sorted by min, ascending');
+  if (!ascending(copy.game.headlines.map((h) => h.maxHalls))) errors.push('copy.json game.headlines: sort by maxHalls, ascending');
+  if (copy.game.headlines.at(-1)!.maxHalls < c.balance.landPlots) errors.push(`copy.json game.headlines: the last maxHalls must be >= ${c.balance.landPlots} (every hall count needs a headline)`);
+  const words = (t: string) => t.split(/\s+/).length;
+  for (const [id, l] of Object.entries(copy.locations)) if (words(l.answer) > 30) warnings.push(`copy.json locations [${id}]: answer is ${words(l.answer)} words (keep cards under ~25)`);
+
+  // Badges (GD-5): every id a rule mentions must exist, or the badge can never be earned
+  const badges = (data as { badges: Badge[] }).badges;
+  const seenBadges = new Set<string>();
+  const choiceIds = (list: { id: string; choices: Choice[] }[], id: string) => list.find((x) => x.id === id)?.choices.map((ch) => ch.id);
+  const checkPattern = (where: string, pattern: string) => {
+    const [kind, id, choice] = pattern.split(':');
+    if (id === '*') return;
+    const known = { client: ids.clients, event: ids.events, upgrade: ids.upgrades, build: ids.buildings, demolish: ids.buildings }[kind as 'client'];
+    if (!known?.has(id)) return errors.push(`${where}: "${pattern}" names an unknown ${kind} "${id}"`);
+    if ((kind === 'client' || kind === 'event') && choice && choice !== '*') {
+      const choices = kind === 'client' ? choiceIds(c.clients, id) : choiceIds(c.events, id);
+      if (!choices?.includes(choice)) errors.push(`${where}: "${pattern}": ${kind} "${id}" has no choice "${choice}"`);
+    }
+  };
+  for (const b of badges) {
+    const where = `badges.json [${b.id}]`;
+    if (seenBadges.has(b.id)) errors.push(`badges.json: duplicate id "${b.id}"`);
+    seenBadges.add(b.id);
+    const r = b.rule;
+    for (const p of [...(r.decisionsAny ?? []), ...(r.decisionsAll ?? []), ...(r.decisionsNone ?? []), ...Object.keys(r.countGte ?? {})]) checkPattern(where, p);
+    for (const id of r.eventsFired ?? []) if (!ids.events.has(id)) errors.push(`${where}: eventsFired "${id}" does not exist in events.json`);
+    for (const id of r.locations ?? []) if (!ids.locations.has(id)) errors.push(`${where}: unknown location "${id}"`);
+    for (const p of r.decisionsAll ?? []) if (r.decisionsNone?.includes(p)) errors.push(`${where}: "${p}" is both required and forbidden`);
+  }
+
   // ---- 3. Content coverage (the brief asks for these minimums) -------------
   const fam = (f: string) => c.upgrades.filter((u) => u.family === f).length;
   if (c.upgrades.length < 15) warnings.push(`only ${c.upgrades.length} upgrades (target 15+)`);
@@ -181,7 +220,7 @@ if (errors.length === 0) {
   const unsourced = [...c.upgrades, ...c.events, ...c.quiz, ...c.locations, ...c.clients, ...c.buildings].filter((x) => x.confidence !== 'illustrative' && /^game design$/i.test(x.source));
   for (const x of unsourced) errors.push(`[${x.id}]: confidence "${x.confidence}" but source is just "game design" (cite a real source or mark it illustrative)`);
 
-  const counts = `${c.locations.length} locations, ${c.buildings.length} buildings, ${c.upgrades.length} upgrades (${fam('good')} good / ${fam('trap')} trap / ${fam('tradeoff')} tradeoff), ${c.events.length} events, ${c.clients.length} clients, ${c.quiz.length} quiz questions`;
+  const counts = `${c.locations.length} locations, ${c.buildings.length} buildings, ${c.upgrades.length} upgrades (${fam('good')} good / ${fam('trap')} trap / ${fam('tradeoff')} tradeoff), ${c.events.length} events, ${c.clients.length} clients, ${c.quiz.length} quiz questions, ${badges.length} badges, player copy`;
   if (errors.length === 0) console.log(`✓ Content valid: ${counts}`);
 }
 

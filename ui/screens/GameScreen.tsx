@@ -4,25 +4,18 @@
  * Phone: everything stacks; the decision card becomes a bottom sheet over the map.
  */
 import { derive, getLocation, powerBudget, type GameState } from '../../engine';
-import { useEffect } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { DecisionPanel } from '../components/DecisionPanel';
 import { OnboardingTip, useOnboarding } from '../components/Onboarding';
 import { Icon } from '../components/Icons';
 import { ringFor } from '../components/rings';
-import { DEBT_LABEL, money, num, quarterLabel } from '../format';
+import { copy, debtLevel, debtWarning, headlineFor } from '../copy';
+import { money, num, quarterLabel } from '../format';
 import { CampusMap } from '../map/CampusMap';
 import { campusView, HALL_PLOTS } from '../map/layout';
 import { content, type GameController, type Speed } from '../useGame';
 import { reportTax, TaxBadge } from '../components/TaxBadge';
 
-const HEADLINES = ['Small campus. Big decisions.', 'Growing campus. Bigger bills.', 'Big campus. Big footprint?', 'Mega campus. Worth it?'];
-
-function headline(halls: number) {
-  if (halls <= 2) return HEADLINES[0];
-  if (halls <= 4) return HEADLINES[1];
-  if (halls <= 6) return HEADLINES[2];
-  return HEADLINES[3];
-}
 
 export function TopBar({ status, onHelp, onQuit }: { status?: string; onHelp: () => void; onQuit?: () => void }) {
   return (
@@ -68,52 +61,68 @@ function Trend({ v }: { v: number }) {
   return <span className={`trend ${v > 0 ? 'up' : 'down'}`}>{v > 0 ? `↑ ${Math.round(v)}` : `↓ ${Math.abs(Math.round(v))}`}</span>;
 }
 
+type ScoreKey = keyof typeof copy.scores;
+
+/** A KPI tile; tap it to read what the number means (tooltips from content/copy.json). */
+function Kpi({ k, className, open, onToggle, children }: { k: ScoreKey; className?: string; open: ScoreKey | null; onToggle: (k: ScoreKey | null) => void; children: ReactNode }) {
+  const t = copy.scores[k];
+  const on = open === k;
+  return (
+    <div className={`kpi ${className ?? ''}`} title={t.tooltip}>
+      <button type="button" className="eyebrow kpi-label" aria-expanded={on} onClick={() => onToggle(on ? null : k)}>
+        {t.label} <span aria-hidden="true">ⓘ</span>
+      </button>
+      {children}
+      {on && <p className="kpi-tip">{t.tooltip}</p>}
+    </div>
+  );
+}
+
 function Kpis({ state, s, r }: { state: GameState; s: number; r: number }) {
+  const [open, setOpen] = useState<ScoreKey | null>(null);
   const loc = getLocation(content, state.locationId);
   const last = state.history.at(-1);
   const prev = state.history.at(-2);
-  const debt = DEBT_LABEL[state.envDebt >= 80 ? 3 : state.envDebt >= 40 ? 2 : state.envDebt >= 15 ? 1 : 0];
+  const debt = debtLevel(state.envDebt);
+  const level = copy.debt.indexOf(debt);
   const d = derive(state, content);
   const power = powerBudget(state, content, d);
   const halls = campusView(state, content, loc, 0).halls;
   return (
     <section className="kpis" aria-label="Scores">
-      <div className="kpi">
-        <div className="eyebrow">Cash balance</div>
+      <Kpi k="cash" open={open} onToggle={setOpen}>
         <div className="kpi-value">{money(state.cash)}</div>
         <div className={`kpi-sub ${last && last.net < 0 ? 'neg' : 'pos'}`}>{last ? `${money(last.net, true)} last quarter` : 'Your first quarter starts now'}</div>
-      </div>
-      <div className={`kpi load${power.spareMW < 0 ? ' short' : ''}`}>
-        <div className="eyebrow">Power</div>
+      </Kpi>
+      <Kpi k="power" className={`load${power.spareMW < 0 ? ' short' : ''}`} open={open} onToggle={setOpen}>
         <div className="kpi-value">
           {num(power.supplyMW, 1)} <small>/ {num(power.needMW, 1)} MW needed</small>
         </div>
         <div className="kpi-sub">
           {power.spareMW < 0 ? `Short by ${num(-power.spareMW, 1)} MW: halls go dark` : `${num(power.spareMW, 1)} MW spare`} · {halls} hall{halls === 1 ? '' : 's'} · demand {num(state.demandMW, 1)} MW
         </div>
-      </div>
-      <div className="kpi lime">
-        <div className="eyebrow">Sustainability</div>
+      </Kpi>
+      <Kpi k="sustainability" className="lime" open={open} onToggle={setOpen}>
         <div className="kpi-value">
           {Math.round(s)} <small>/ 100</small> <Trend v={prev ? s - prev.sustainability : 0} />
         </div>
         <Bar value={s} />
         <TaxBadge state={state} score={s} balance={content.balance} />
-      </div>
-      <div className="kpi lavender">
-        <div className="eyebrow">Responsibility</div>
+      </Kpi>
+      <Kpi k="responsibility" className="lavender" open={open} onToggle={setOpen}>
         <div className="kpi-value">
           {Math.round(r)} <small>/ 100</small> <Trend v={prev ? r - prev.responsibility : 0} />
         </div>
         <Bar value={r} />
-      </div>
-      <div className={`kpi amber debt-${debt.label.toLowerCase()}`}>
-        <div className="eyebrow">Environmental debt</div>
+      </Kpi>
+      <Kpi k="envDebt" className={`amber debt-${['low', 'rising', 'high', 'critical'][Math.min(level, 3)]}`} open={open} onToggle={setOpen}>
         <div className="kpi-value pixel">
-          {debt.label} {state.envDebt >= 15 && <Icon.warn />}
+          {debt.label} {level > 0 && <Icon.warn />}
         </div>
-        <div className="kpi-sub">{debt.hint}</div>
-      </div>
+        <div className="kpi-sub" title={debt.hint}>
+          {debtWarning(state.envDebt, state.tick)}
+        </div>
+      </Kpi>
     </section>
   );
 }
@@ -154,7 +163,7 @@ function QuarterReport({ state }: { state: GameState }) {
           <dd className={`total ${h.net < 0 ? 'neg' : 'pos'}`}>{money(h.net, true)}</dd>
         </dl>
       ) : (
-        <p className="muted">Press play. Clients will knock soon.</p>
+        <p className="muted">{copy.game.emptyReport}</p>
       )}
       <div className="eyebrow news-title">Campus news</div>
       <ul className="news">
@@ -168,14 +177,42 @@ function QuarterReport({ state }: { state: GameState }) {
   );
 }
 
+/** GD-4: "it depends" card when a run starts. A question about this valley, the answer on tap. */
+function LocationIntro({ locationId, onStart }: { locationId: string; onStart: () => void }) {
+  const [revealed, setRevealed] = useState(false);
+  const loc = getLocation(content, locationId);
+  const card = copy.locations[locationId];
+  if (!card) return null;
+  return (
+    <div className="tip intro" role="dialog" aria-live="polite" aria-label={`${loc.name}: ${card.question}`}>
+      <span className="eyebrow">
+        {copy.intro.eyebrow} · {loc.name} · {card.difficulty}
+      </span>
+      <strong className="tip-text">{card.question}</strong>
+      {revealed && <p className="intro-answer">{card.answer}</p>}
+      <div className="tip-actions">
+        {!revealed && (
+          <button type="button" className="btn tip-next" onClick={() => setRevealed(true)}>
+            {copy.intro.reveal}
+          </button>
+        )}
+        <button type="button" className="btn primary tip-next" onClick={onStart} autoFocus>
+          {copy.intro.start}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () => void }) {
   const { state, scores, decision, feedback, setHold } = game;
   const tour = useOnboarding();
-  // Time stands still while a first-run hint is up.
+  const [intro, setIntro] = useState(() => Boolean(state && state.tick === 0 && copy.locations[state.locationId]));
+  // Time stands still while the valley card or a first-run hint is up.
   useEffect(() => {
-    setHold(tour.tip >= 0);
+    setHold(intro || tour.tip >= 0);
     return () => setHold(false);
-  }, [tour.tip, setHold]);
+  }, [intro, tour.tip, setHold]);
   if (!state || !scores) return null;
   const loc = getLocation(content, state.locationId);
   const d = derive(state, content);
@@ -190,8 +227,8 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
       <main className="game-main">
         <section className="title-row">
           <div>
-            <h1 className="pixel">{headline(view.halls)}</h1>
-            <p className="muted">Build your empire. Mind your footprint.</p>
+            <h1 className="pixel">{headlineFor(view.halls)}</h1>
+            <p className="muted">{copy.game.subtitle}</p>
           </div>
           <div className="loc-pill" title={loc.name}>
             <Icon.pin /> <span className="loc-pill-name">{loc.name}</span>
@@ -240,7 +277,13 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
                 game.setMenu(plot);
               }}
               ring={game.menu !== null ? ringFor(game, game.menu) : null}
-              overlay={tour.tip >= 0 && game.menu === null && !sheetOpen ? <OnboardingTip tip={tour.tip} onNext={tour.next} onSkip={tour.skip} /> : null}
+              overlay={
+                intro && game.menu === null ? (
+                  <LocationIntro locationId={state.locationId} onStart={() => setIntro(false)} />
+                ) : tour.tip >= 0 && game.menu === null && !sheetOpen ? (
+                  <OnboardingTip tip={tour.tip} onNext={tour.next} onSkip={tour.skip} />
+                ) : null
+              }
             />
             <div className="map-stats">
               <div>
@@ -280,8 +323,8 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
 
       </main>
       <footer className="footer">
-        <span className="mono">BUILD A DATACENTER. TRY NOT TO WRECK THE PLANET.</span>
-        <span className="muted small">Illustrative game values · sourced facts in the quiz</span>
+        <span className="mono">{copy.brand.footer.toUpperCase()}</span>
+        <span className="muted small">{copy.brand.footerNote}</span>
         <span className="mono">THE SMIC DAY · CENTRALESUPÉLEC</span>
       </footer>
     </div>

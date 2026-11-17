@@ -6,4 +6,5 @@ export type { PlantInfo, PowerBudget } from './power';
 export { derive, resolveUpgrade, getLocation, getUpgrade, getBuilding, hallCount } from './derive';
 export { computeScores, summarize, legacyScore, archetypeOf, SUSTAINABILITY_WEIGHTS, ARCHETYPE_THRESHOLDS } from './scoring';
 export { nextRandom, seedFromString } from './rng';
-export { loadContent } from './content';
+export { loadContent, loadBadges } from './content';
+export { earnedBadges, ruleHolds, matchDecision } from './badges';
