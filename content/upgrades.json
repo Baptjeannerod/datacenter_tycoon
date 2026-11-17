@@ -1,0 +1,645 @@
+[
+  {
+    "id": "hot-aisle-containment",
+    "name": "Hot-aisle containment",
+    "pitch": "Stop hot and cold air from mixing. Cheap, boring, effective.",
+    "family": "good",
+    "category": "cooling",
+    "themes": [
+      "efficiency"
+    ],
+    "cost": 120,
+    "effects": {
+      "pue": -0.08
+    },
+    "scoreDelta": {
+      "sustainability": 1
+    },
+    "whyItMatters": "Some green moves simply pay: less fan and chiller energy for the same compute.",
+    "source": "EU Code of Conduct on Data Centre Energy Efficiency, best practices (airflow management)",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "raise-temp-setpoint",
+    "name": "Run the room warmer",
+    "pitch": "Raise server inlet air to 27 °C. Free, but hardware works a bit harder.",
+    "family": "tradeoff",
+    "category": "cooling",
+    "themes": [
+      "efficiency"
+    ],
+    "cost": 0,
+    "effects": {
+      "pue": -0.06,
+      "failureRate": 0.01
+    },
+    "scoreDelta": {
+      "sustainability": 1
+    },
+    "whyItMatters": "ASHRAE's recommended inlet range goes up to 27 °C: less cooling, slightly more stress on the hardware.",
+    "source": "ASHRAE TC 9.9 Thermal Guidelines for Data Processing Environments (recommended range 18-27 °C)",
+    "confidence": "high"
+  },
+  {
+    "id": "free-cooling",
+    "name": "Free cooling",
+    "pitch": "Use outside air instead of chillers whenever it is cold enough.",
+    "family": "good",
+    "category": "cooling",
+    "themes": [
+      "efficiency"
+    ],
+    "cost": 700,
+    "effects": {
+      "pue": -0.25,
+      "wue": -0.1
+    },
+    "scoreDelta": {
+      "sustainability": 3
+    },
+    "exclusiveGroup": "cooling",
+    "setFlags": [
+      "efficiency-gain"
+    ],
+    "contextModifiers": {
+      "nordic-fjord": {
+        "effects": {
+          "pue": -0.12,
+          "wue": -0.1
+        },
+        "note": "You already run cool here: real gain, but smaller."
+      },
+      "sun-belt": {
+        "effects": {
+          "pue": -0.05,
+          "wue": 0
+        },
+        "note": "Outside air is 40 °C half the year. Free cooling barely works here."
+      }
+    },
+    "whyItMatters": "Where you build decides how much energy cooling needs. The same upgrade is great in the north and nearly useless in the desert.",
+    "source": "Free cooling potential depends on climate (EU Code of Conduct on Data Centre Energy Efficiency)",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "evaporative-cooling",
+    "name": "Evaporative cooling",
+    "pitch": "Cool with evaporating water. Cheap and very energy-efficient.",
+    "family": "trap",
+    "category": "cooling",
+    "themes": [
+      "water",
+      "efficiency"
+    ],
+    "cost": 250,
+    "effects": {
+      "pue": -0.22,
+      "wue": 1.0
+    },
+    "scoreDelta": {
+      "sustainability": 0
+    },
+    "exclusiveGroup": "cooling",
+    "setFlags": [
+      "efficiency-gain"
+    ],
+    "contextModifiers": {
+      "sun-belt": {
+        "effects": {
+          "pue": -0.3,
+          "wue": 1.5,
+          "envDebtPerTick": 1.0
+        },
+        "note": "Works wonders in dry heat. You are now competing with farms and towns for water."
+      },
+      "nordic-fjord": {
+        "effects": {
+          "pue": -0.1,
+          "wue": 0.5
+        },
+        "note": "Plenty of water here, but little to gain: it is already cold."
+      }
+    },
+    "whyItMatters": "Saving energy by consuming water is a transfer of impact, not a free win. Where water is scarce, it is a time bomb.",
+    "source": "Water-energy trade-off in datacenter cooling (WUE metric, The Green Grid)",
+    "confidence": "approx"
+  },
+  {
+    "id": "liquid-cooling",
+    "name": "Direct liquid cooling",
+    "pitch": "Pipe coolant straight to the chips in a closed loop.",
+    "family": "good",
+    "category": "cooling",
+    "themes": [
+      "efficiency",
+      "water"
+    ],
+    "cost": 1600,
+    "effects": {
+      "pue": -0.3,
+      "wue": -0.5,
+      "failureRate": 0.01,
+      "cashPerTick": -10
+    },
+    "scoreDelta": {
+      "sustainability": 4,
+      "responsibility": 1
+    },
+    "exclusiveGroup": "cooling",
+    "setFlags": [
+      "efficiency-gain"
+    ],
+    "whyItMatters": "Removing heat where it is made cuts both energy and water, but retrofits are expensive and add a new failure mode.",
+    "source": "Industry literature on direct-to-chip liquid cooling (order of magnitude)",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "renewable-ppa",
+    "name": "Renewable power contract",
+    "pitch": "Pay a premium to fund new wind and solar on your grid.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "cost": 300,
+    "effects": {
+      "renewableShare": 0.6,
+      "cashPerTick": -35
+    },
+    "scoreDelta": {
+      "sustainability": 2,
+      "responsibility": 3
+    },
+    "exclusiveGroup": "power-contract",
+    "contextModifiers": {
+      "coal-valley": {
+        "effects": {
+          "renewableShare": 0.6,
+          "cashPerTick": -60
+        },
+        "note": "On a coal grid this is your single biggest carbon lever."
+      },
+      "sun-belt": {
+        "effects": {
+          "renewableShare": 0.6,
+          "cashPerTick": -15
+        },
+        "note": "Solar is cheap here: the premium is small."
+      },
+      "paris-basin": {
+        "note": "Your grid is already low-carbon. A real but small gain: is it the best use of your money?"
+      }
+    },
+    "whyItMatters": "A green contract only cuts real emissions if it adds new renewable capacity on your grid. Otherwise it is accounting.",
+    "source": "GHG Protocol Scope 2 Guidance (market-based method) and the additionality debate",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "cheap-fossil-contract",
+    "name": "Discount fossil power deal",
+    "pitch": "Lock in 15 % cheaper electricity from a gas and coal supplier.",
+    "family": "trap",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "cost": 0,
+    "effects": {
+      "energyPricePct": -0.15,
+      "carbonIntensity": 300,
+      "envDebtPerTick": 0.3
+    },
+    "scoreDelta": {
+      "sustainability": -3
+    },
+    "exclusiveGroup": "power-contract",
+    "whyItMatters": "Cheap fossil power is cheap because its damage is not on the bill yet. Carbon prices change that.",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "onsite-solar",
+    "name": "Solar roof and batteries",
+    "pitch": "Make some of your own power and sell the surplus.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "cost": 900,
+    "effects": {
+      "renewableShare": 0.12,
+      "cashPerTick": 12
+    },
+    "scoreDelta": {
+      "sustainability": 2
+    },
+    "contextModifiers": {
+      "sun-belt": {
+        "effects": {
+          "renewableShare": 0.25,
+          "cashPerTick": 30
+        },
+        "note": "This is solar country: it pays back fast."
+      },
+      "nordic-fjord": {
+        "effects": {
+          "renewableShare": 0.04,
+          "cashPerTick": 3
+        },
+        "note": "Winter daylight lasts a few hours here."
+      }
+    },
+    "whyItMatters": "On-site solar covers only a slice of a datacenter's hunger, but in sunny places it pays for itself.",
+    "source": "Game design (relative yields by latitude are realistic in direction, not in exact value)",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "heat-reuse",
+    "name": "Heat reuse network",
+    "pitch": "Pipe your waste heat to warm nearby homes and pools.",
+    "family": "good",
+    "category": "energy",
+    "themes": [
+      "efficiency",
+      "lifecycle"
+    ],
+    "cost": 900,
+    "effects": {
+      "cashPerTick": 15
+    },
+    "scoreDelta": {
+      "sustainability": 6,
+      "responsibility": 2
+    },
+    "requires": {
+      "locations": [
+        "paris-basin",
+        "nordic-fjord",
+        "coal-valley"
+      ]
+    },
+    "contextModifiers": {
+      "nordic-fjord": {
+        "effects": {
+          "cashPerTick": 35
+        },
+        "note": "Long winters: everyone wants your heat."
+      }
+    },
+    "whyItMatters": "Almost every kWh a server uses ends up as heat. Selling it to a district heating network turns waste into warm homes.",
+    "source": "EU Energy Efficiency Directive (EU) 2023/1791 (waste heat recovery for datacenters above 1 MW)",
+    "confidence": "approx"
+  },
+  {
+    "id": "energy-monitoring",
+    "name": "Measure everything",
+    "pitch": "Real-time metering of energy, carbon and water per room and per client.",
+    "family": "good",
+    "category": "governance",
+    "themes": [
+      "measure"
+    ],
+    "cost": 150,
+    "effects": {
+      "pue": -0.04,
+      "failureRate": -0.01,
+      "cashPerTick": -5
+    },
+    "scoreDelta": {
+      "responsibility": 5
+    },
+    "setFlags": [
+      "measured"
+    ],
+    "whyItMatters": "You can't reduce what you don't measure, and you can't prove a green claim without data.",
+    "source": "AFNOR Spec 2314, General framework for frugal AI (CGDD/SRI/Ecolab): measurement tools and indicators",
+    "confidence": "high",
+    "slice": true
+  },
+  {
+    "id": "extend-hardware-life",
+    "name": "Keep servers 6 years",
+    "pitch": "Repair and reuse instead of replacing every 4 years.",
+    "family": "tradeoff",
+    "category": "hardware",
+    "themes": [
+      "lifecycle"
+    ],
+    "cost": 200,
+    "effects": {
+      "hardwareLifespan": 8,
+      "failureRate": 0.01,
+      "pue": 0.02
+    },
+    "scoreDelta": {
+      "sustainability": 3,
+      "responsibility": 2
+    },
+    "whyItMatters": "Manufacturing is a big share of hardware's footprint. Using servers longer avoids a whole replacement cycle, at the price of more breakdowns.",
+    "source": "ADEME-Arcep 2022 study on the environmental footprint of digital in France (manufacturing dominates equipment impacts)",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "refurb-circular",
+    "name": "Certified refurb and recycling",
+    "pitch": "Resell, refurbish, and properly recycle every retired server.",
+    "family": "good",
+    "category": "hardware",
+    "themes": [
+      "lifecycle"
+    ],
+    "cost": 250,
+    "effects": {
+      "eWasteFactor": -0.6,
+      "cashPerTick": -12
+    },
+    "scoreDelta": {
+      "sustainability": 4,
+      "responsibility": 3
+    },
+    "whyItMatters": "Only about a fifth of the world's e-waste is documented as properly collected and recycled.",
+    "source": "Global E-waste Monitor 2024 (UNITAR/ITU): 22.3 % formally collected and recycled in 2022",
+    "confidence": "approx"
+  },
+  {
+    "id": "fast-refresh",
+    "name": "Always the newest chips",
+    "pitch": "Replace servers every 2 years to stay on the cutting edge.",
+    "family": "trap",
+    "category": "hardware",
+    "themes": [
+      "lifecycle",
+      "rebound"
+    ],
+    "cost": 800,
+    "effects": {
+      "hardwareLifespan": -8,
+      "itEfficiency": 0.12,
+      "growthRate": 0.01,
+      "pricePct": 0.05
+    },
+    "scoreDelta": {
+      "sustainability": -3
+    },
+    "setFlags": [
+      "efficiency-gain"
+    ],
+    "whyItMatters": "New chips do more per watt, but each early replacement scraps tonnes of hardware whose manufacturing emissions are already spent.",
+    "source": "Game design, grounded in life-cycle assessment logic (embodied vs. operational emissions)",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "overclock-and-cram",
+    "name": "Overclock and cram",
+    "pitch": "Pack more servers per rack and push them harder. More revenue per MW.",
+    "family": "trap",
+    "category": "hardware",
+    "themes": [
+      "lifecycle"
+    ],
+    "cost": 0,
+    "effects": {
+      "pricePct": 0.12,
+      "failureRate": 0.05,
+      "pue": 0.05,
+      "hardwareLifespan": -4
+    },
+    "scoreDelta": {
+      "sustainability": -3,
+      "responsibility": -2
+    },
+    "whyItMatters": "Running hot and dense squeezes more money out of every rack, until hardware starts dying young.",
+    "source": "Game design",
+    "confidence": "illustrative",
+    "slice": true
+  },
+  {
+    "id": "gpu-hype-cluster",
+    "name": "GenAI GPU cluster",
+    "pitch": "Every startup wants GPUs. Build a cluster and ride the AI boom.",
+    "family": "trap",
+    "category": "ai",
+    "themes": [
+      "question-the-need",
+      "rebound"
+    ],
+    "cost": 1500,
+    "effects": {
+      "growthRate": 0.03,
+      "pricePct": 0.1,
+      "pue": 0.06,
+      "envDebtPerTick": 0.8
+    },
+    "scoreDelta": {
+      "responsibility": -6
+    },
+    "setFlags": [
+      "ai-hype"
+    ],
+    "delayed": [
+      {
+        "afterTicks": 14,
+        "chance": 0.7,
+        "triggerEvent": "ai-bubble"
+      }
+    ],
+    "whyItMatters": "AI demand is real, but chasing every hype project locks in power-hungry hardware for uses nobody questioned.",
+    "source": "IEA, Energy and AI (2025): datacenter electricity demand projected to roughly double by 2030",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "gas-turbines",
+    "name": "On-site gas turbines",
+    "pitch": "The grid queue is 5 years long. Bring your own power and grow now.",
+    "family": "trap",
+    "category": "energy",
+    "themes": [
+      "energy-mix"
+    ],
+    "cost": 400,
+    "effects": {
+      "growthRate": 0.02,
+      "energyPricePct": 0.1,
+      "envDebtPerTick": 1.2
+    },
+    "scoreDelta": {
+      "sustainability": -6,
+      "responsibility": -3
+    },
+    "delayed": [
+      {
+        "afterTicks": 10,
+        "triggerEvent": "permit-audit"
+      }
+    ],
+    "whyItMatters": "Some AI datacenters install gas turbines to grow faster than the grid allows. Growth now, emissions and permit fights later.",
+    "source": "Press reports (2024-2025) on gas turbines powering AI datacenters; numbers are game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "carbon-offsets-greenwash",
+    "name": "\"Carbon neutral\" badge",
+    "pitch": "Buy cheap offsets, put a green leaf on the website, charge a premium.",
+    "family": "trap",
+    "category": "communication",
+    "themes": [
+      "honest-communication"
+    ],
+    "cost": 60,
+    "effects": {
+      "cashPerTick": 25,
+      "growthRate": 0.005
+    },
+    "scoreDelta": {
+      "responsibility": 3
+    },
+    "setFlags": [
+      "green-claim"
+    ],
+    "delayed": [
+      {
+        "afterTicks": 8,
+        "if": {
+          "lacksUpgrades": [
+            "energy-monitoring"
+          ]
+        },
+        "triggerEvent": "greenwash-scandal"
+      }
+    ],
+    "whyItMatters": "Offsets don't remove your emissions. EU rules now ban 'carbon neutral' product claims based on offsetting.",
+    "source": "Directive (EU) 2024/825 on empowering consumers for the green transition (bans neutrality claims based on offsetting)",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "frugal-ai-policy",
+    "name": "Frugal AI checklist",
+    "pitch": "Before hosting any AI workload: is AI needed? Is there a lighter option?",
+    "family": "good",
+    "category": "governance",
+    "themes": [
+      "question-the-need",
+      "governance"
+    ],
+    "cost": 100,
+    "effects": {
+      "growthRate": -0.004
+    },
+    "scoreDelta": {
+      "responsibility": 8
+    },
+    "setFlags": [
+      "frugal-policy"
+    ],
+    "whyItMatters": "Step one of the AFNOR frugal-AI method: question the need. Some business walks away; what stays is worth hosting.",
+    "source": "AFNOR Spec 2314, General framework for frugal AI: 'Question the need' and 'Identify all possible solutions'",
+    "confidence": "high",
+    "slice": true
+  },
+  {
+    "id": "model-right-sizing",
+    "name": "Model right-sizing service",
+    "pitch": "Help clients compress, distill and shrink their models.",
+    "family": "good",
+    "category": "ai",
+    "themes": [
+      "efficiency",
+      "rebound"
+    ],
+    "cost": 450,
+    "effects": {
+      "itEfficiency": 0.15,
+      "cashPerTick": -15
+    },
+    "scoreDelta": {
+      "sustainability": 1,
+      "responsibility": 3
+    },
+    "setFlags": [
+      "efficiency-gain"
+    ],
+    "whyItMatters": "Smaller, compressed models often do the job with a fraction of the compute. Watch out: cheaper compute invites more use.",
+    "source": "AFNOR Spec 2314: favour frugal models, use compression, A/B test performance vs. resources",
+    "confidence": "high"
+  },
+  {
+    "id": "staff-training",
+    "name": "Frugal-IT training",
+    "pitch": "Train your team and your clients on responsible digital practices.",
+    "family": "good",
+    "category": "governance",
+    "themes": [
+      "skills"
+    ],
+    "cost": 80,
+    "effects": {
+      "failureRate": -0.005
+    },
+    "scoreDelta": {
+      "responsibility": 5
+    },
+    "whyItMatters": "AFNOR ranks awareness and skills first: the best gain-to-effort ratio of all best practices.",
+    "source": "AFNOR Spec 2314: 'Managing skills and increasing awareness on frugal AI' (highest gain/effort theme)",
+    "confidence": "high"
+  },
+  {
+    "id": "sufficiency-pledge",
+    "name": "Sufficiency pledge",
+    "pitch": "Publicly cap your growth. Big enough is big enough.",
+    "family": "tradeoff",
+    "category": "governance",
+    "themes": [
+      "rebound",
+      "governance"
+    ],
+    "cost": 0,
+    "effects": {
+      "growthCap": 0.015
+    },
+    "scoreDelta": {
+      "sustainability": 4,
+      "responsibility": 10
+    },
+    "whyItMatters": "Efficiency without limits often means more total consumption (rebound effect). Sufficiency means deciding how much is enough.",
+    "source": "AFNOR Spec 2314 (rebound effect, planetary boundaries)",
+    "confidence": "high"
+  },
+  {
+    "id": "water-closed-loop",
+    "name": "Closed-loop water",
+    "pitch": "Recycle cooling water instead of drawing fresh water.",
+    "family": "good",
+    "category": "water",
+    "themes": [
+      "water"
+    ],
+    "cost": 500,
+    "effects": {
+      "wue": -0.8,
+      "pue": 0.04
+    },
+    "scoreDelta": {
+      "sustainability": 2
+    },
+    "contextModifiers": {
+      "sun-belt": {
+        "scoreDelta": {
+          "sustainability": 5,
+          "responsibility": 2
+        },
+        "note": "Here every litre counts."
+      }
+    },
+    "whyItMatters": "Recycling water cuts withdrawals, but pumps and chillers use more energy: a real trade-off between water and carbon.",
+    "source": "Water-energy trade-off in cooling design (WUE vs. PUE, The Green Grid)",
+    "confidence": "approx"
+  }
+]

@@ -1,0 +1,940 @@
+[
+  {
+    "id": "carbon-tax",
+    "title": "Carbon gets a price",
+    "body": "Regulators now charge €100 for every tonne of CO2 you emit. Your cheap electricity just got a second bill.",
+    "kind": "consequence",
+    "themes": [
+      "energy-mix"
+    ],
+    "when": {
+      "statGte": {
+        "envDebt": 30
+      }
+    },
+    "choices": [
+      {
+        "id": "pay",
+        "label": "Pay it",
+        "stance": "neutral",
+        "hint": "Carbon tax starts now.",
+        "setFlags": [
+          "carbon-tax"
+        ],
+        "outcome": "Every tonne now shows up on your P&L."
+      },
+      {
+        "id": "lobby",
+        "label": "Lobby for an exemption",
+        "stance": "greedy",
+        "hint": "−€250k now, no tax for 2 years. People will notice.",
+        "effects": {
+          "cash": -250
+        },
+        "scoreDelta": {
+          "responsibility": -10
+        },
+        "outcome": "Exemption granted for two years. A journalist published your lobbying bill.",
+        "delayed": [
+          {
+            "afterTicks": 8,
+            "setFlags": [
+              "carbon-tax"
+            ],
+            "message": "Your lobbied exemption expired. Carbon tax applies now."
+          }
+        ]
+      },
+      {
+        "id": "clean-contract",
+        "label": "Sign a clean power deal now",
+        "stance": "responsible",
+        "hint": "Cleaner power, small premium every quarter.",
+        "requires": {
+          "lacksUpgrades": [
+            "renewable-ppa",
+            "cheap-fossil-contract"
+          ]
+        },
+        "effects": {
+          "renewableShare": 0.3,
+          "cashPerTick": -25
+        },
+        "scoreDelta": {
+          "responsibility": 3,
+          "sustainability": 2
+        },
+        "setFlags": [
+          "carbon-tax"
+        ],
+        "outcome": "Your emissions, and your tax bill, drop."
+      }
+    ],
+    "quizId": "q-carbon-grid",
+    "source": "EU ETS carbon prices have hovered around €60-100/t in recent years; €100 is a round game value",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "permit-audit",
+    "title": "Environmental permit audit",
+    "body": "Inspectors want your energy, water and waste figures for the last three years.",
+    "kind": "consequence",
+    "themes": [
+      "measure",
+      "governance"
+    ],
+    "when": {
+      "statGte": {
+        "envDebt": 45
+      }
+    },
+    "choices": [
+      {
+        "id": "show-data",
+        "label": "Hand over your measured data",
+        "stance": "responsible",
+        "requires": {
+          "hasUpgrades": [
+            "energy-monitoring"
+          ]
+        },
+        "scoreDelta": {
+          "responsibility": 4
+        },
+        "outcome": "Audit closed in a day. Measuring paid off."
+      },
+      {
+        "id": "fine",
+        "label": "Pay the fine for missing records",
+        "stance": "neutral",
+        "effects": {
+          "cash": -600
+        },
+        "scoreDelta": {
+          "responsibility": -2
+        },
+        "outcome": "€600k fine. Lesson noted."
+      },
+      {
+        "id": "hide",
+        "label": "Send rough estimates and hope",
+        "stance": "greedy",
+        "effects": {
+          "cash": -100
+        },
+        "scoreDelta": {
+          "responsibility": -12
+        },
+        "delayed": [
+          {
+            "afterTicks": 6,
+            "chance": 0.5,
+            "triggerEvent": "public-scandal"
+          }
+        ],
+        "outcome": "They accepted it, for now."
+      }
+    ],
+    "quizId": "q-frugal-first",
+    "source": "Game design",
+    "confidence": "illustrative",
+    "slice": true
+  },
+  {
+    "id": "power-cap",
+    "title": "The grid says no",
+    "body": "The local grid is saturated and neighbours complain about your appetite. No new megawatts for two years.",
+    "kind": "consequence",
+    "themes": [
+      "energy-mix",
+      "rebound"
+    ],
+    "when": {
+      "statGte": {
+        "envDebt": 65
+      }
+    },
+    "choices": [
+      {
+        "id": "accept",
+        "label": "Accept the cap",
+        "stance": "neutral",
+        "temporary": {
+          "durationTicks": 8,
+          "effects": {
+            "growthCap": 0
+          }
+        },
+        "scoreDelta": {
+          "responsibility": 2
+        },
+        "outcome": "Growth frozen for 2 years."
+      },
+      {
+        "id": "turbines",
+        "label": "Install gas turbines and keep growing",
+        "stance": "greedy",
+        "requires": {
+          "lacksUpgrades": [
+            "gas-turbines"
+          ]
+        },
+        "effects": {
+          "cash": -400,
+          "envDebt": 10,
+          "envDebtPerTick": 1.5
+        },
+        "scoreDelta": {
+          "responsibility": -8,
+          "sustainability": -4
+        },
+        "outcome": "Growth continues. So do the fumes."
+      },
+      {
+        "id": "demand-response",
+        "label": "Sign a demand-response deal",
+        "stance": "responsible",
+        "hint": "Pause flexible jobs at peak times; the grid pays you.",
+        "temporary": {
+          "durationTicks": 8,
+          "effects": {
+            "growthCap": 0,
+            "cashPerTick": 30
+          }
+        },
+        "scoreDelta": {
+          "responsibility": 5
+        },
+        "outcome": "You help balance the grid and get paid for flexibility."
+      }
+    ],
+    "source": "Grid connection queues and moratoria on new datacenter connections have occurred in several regions (e.g. around Dublin and Amsterdam); details are game design",
+    "confidence": "approx"
+  },
+  {
+    "id": "local-opposition",
+    "title": "Locals march against you",
+    "body": "Noise, water, land, power bills: the town has had enough of your expansion plans.",
+    "kind": "consequence",
+    "themes": [
+      "governance",
+      "honest-communication"
+    ],
+    "when": {
+      "statGte": {
+        "envDebt": 85
+      }
+    },
+    "choices": [
+      {
+        "id": "community",
+        "label": "Fund local projects and publish your impact",
+        "stance": "responsible",
+        "effects": {
+          "cash": -500,
+          "envDebt": -10
+        },
+        "scoreDelta": {
+          "responsibility": 6
+        },
+        "outcome": "Tensions ease. Transparency costs less than conflict."
+      },
+      {
+        "id": "free-heat",
+        "label": "Offer free heat to the swimming pool and school",
+        "stance": "responsible",
+        "requires": {
+          "hasUpgrades": [
+            "heat-reuse"
+          ]
+        },
+        "effects": {
+          "envDebt": -15
+        },
+        "scoreDelta": {
+          "responsibility": 8
+        },
+        "outcome": "Warm pool, warm feelings."
+      },
+      {
+        "id": "ignore",
+        "label": "Ignore them",
+        "stance": "greedy",
+        "effects": {
+          "demandPct": -0.05
+        },
+        "temporary": {
+          "durationTicks": 6,
+          "effects": {
+            "growthCap": 0
+          }
+        },
+        "scoreDelta": {
+          "responsibility": -10
+        },
+        "outcome": "The council blocks your next building permit."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "public-scandal",
+    "title": "Your footprint goes viral",
+    "body": "An investigation names you the region's dirtiest datacenter. Clients don't want their logo next to yours.",
+    "kind": "consequence",
+    "themes": [
+      "honest-communication"
+    ],
+    "when": {
+      "statGte": {
+        "envDebt": 110
+      }
+    },
+    "choices": [
+      {
+        "id": "own-it",
+        "label": "Apologise and publish a real plan",
+        "stance": "responsible",
+        "effects": {
+          "demandPct": -0.08,
+          "cash": -400
+        },
+        "scoreDelta": {
+          "responsibility": 4
+        },
+        "outcome": "Painful, but clients respect the honesty."
+      },
+      {
+        "id": "deny",
+        "label": "Deny everything",
+        "stance": "greedy",
+        "effects": {
+          "demandPct": -0.08
+        },
+        "scoreDelta": {
+          "responsibility": -15
+        },
+        "outcome": "The story fades, for now.",
+        "delayed": [
+          {
+            "afterTicks": 4,
+            "chance": 0.5,
+            "effects": {
+              "demandPct": -0.12
+            },
+            "scoreDelta": {
+              "responsibility": -5
+            },
+            "message": "Leaked documents revive the scandal. More clients leave."
+          }
+        ]
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "water-restriction",
+    "title": "Drought: water capped",
+    "body": "Reservoirs are low. Authorities cap industrial water withdrawals, and your cooling towers are the biggest straw in town.",
+    "kind": "consequence",
+    "themes": [
+      "water"
+    ],
+    "when": {
+      "locations": [
+        "sun-belt"
+      ],
+      "statGte": {
+        "wue": 1.5
+      },
+      "minTick": 6
+    },
+    "choices": [
+      {
+        "id": "throttle",
+        "label": "Throttle cooling and capacity",
+        "stance": "neutral",
+        "effects": {
+          "demandPct": -0.15
+        },
+        "temporary": {
+          "durationTicks": 6,
+          "effects": {
+            "pue": 0.1
+          }
+        },
+        "outcome": "You shed clients and run hot until the rains come."
+      },
+      {
+        "id": "truck",
+        "label": "Truck in water from elsewhere",
+        "stance": "greedy",
+        "effects": {
+          "cash": -300,
+          "envDebt": 12
+        },
+        "scoreDelta": {
+          "responsibility": -6
+        },
+        "outcome": "The trucks are photographed. It does not look good."
+      },
+      {
+        "id": "closed-loop",
+        "label": "Switch to closed-loop water now",
+        "stance": "responsible",
+        "requires": {
+          "lacksUpgrades": [
+            "water-closed-loop"
+          ]
+        },
+        "effects": {
+          "cash": -700,
+          "wue": -0.8,
+          "pue": 0.04
+        },
+        "scoreDelta": {
+          "responsibility": 4,
+          "sustainability": 3
+        },
+        "outcome": "Expensive in a rush, but you stop competing with farms for water."
+      }
+    ],
+    "quizId": "q-wue",
+    "source": "Water stress and datacenter siting conflicts have been reported in several dry regions; numbers are game design",
+    "confidence": "approx"
+  },
+  {
+    "id": "greenwash-scandal",
+    "title": "Greenwashing exposed",
+    "body": "An NGO shows your 'carbon neutral' badge rests on cheap, unverifiable offsets. You had no data to back it up.",
+    "kind": "consequence",
+    "themes": [
+      "honest-communication",
+      "measure"
+    ],
+    "choices": [
+      {
+        "id": "withdraw",
+        "label": "Drop the badge, publish real numbers",
+        "stance": "responsible",
+        "effects": {
+          "demandPct": -0.08
+        },
+        "removeUpgrades": [
+          "carbon-offsets-greenwash"
+        ],
+        "clearFlags": [
+          "green-claim"
+        ],
+        "scoreDelta": {
+          "responsibility": -5
+        },
+        "outcome": "You lose the green premium and some clients, but keep your credibility."
+      },
+      {
+        "id": "double-down",
+        "label": "Double down: 'our offsets are certified'",
+        "stance": "greedy",
+        "effects": {
+          "demandPct": -0.12
+        },
+        "scoreDelta": {
+          "responsibility": -15
+        },
+        "outcome": "The story runs for a week. Clients leave."
+      }
+    ],
+    "quizId": "q-greenwashing",
+    "source": "Directive (EU) 2024/825 restricts generic environmental claims and offset-based neutrality claims",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "ai-bubble",
+    "title": "The AI hype cools down",
+    "body": "Half the startups renting your GPUs ran out of funding. The cluster sits half empty.",
+    "kind": "consequence",
+    "themes": [
+      "question-the-need"
+    ],
+    "choices": [
+      {
+        "id": "absorb",
+        "label": "Absorb the loss",
+        "stance": "neutral",
+        "effects": {
+          "demandPct": -0.2
+        },
+        "outcome": "A quarter of your load vanished overnight."
+      },
+      {
+        "id": "science",
+        "label": "Rent the GPUs to researchers at cost",
+        "stance": "responsible",
+        "effects": {
+          "demandPct": -0.12,
+          "pricePct": -0.05
+        },
+        "scoreDelta": {
+          "responsibility": 5
+        },
+        "outcome": "Climate and health labs move in. Lower margins, useful work."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "rebound-surge",
+    "title": "Rebound: efficiency made you cheap",
+    "body": "Your efficiency gains let you cut prices. Demand is surging. More clients, more servers, more total energy.",
+    "kind": "milestone",
+    "themes": [
+      "rebound"
+    ],
+    "when": {
+      "flagsSet": [
+        "efficiency-gain"
+      ],
+      "minTick": 4
+    },
+    "choices": [
+      {
+        "id": "ride",
+        "label": "Ride the wave: +40 % clients",
+        "stance": "greedy",
+        "effects": {
+          "demandPct": 0.4
+        },
+        "temporary": {
+          "durationTicks": 8,
+          "effects": {
+            "growthRate": 0.01
+          }
+        },
+        "scoreDelta": {
+          "responsibility": -2
+        },
+        "outcome": "Revenue jumps. So does your total footprint."
+      },
+      {
+        "id": "price-up",
+        "label": "Grow a little, keep prices up",
+        "stance": "neutral",
+        "effects": {
+          "demandPct": 0.15,
+          "pricePct": 0.03
+        },
+        "outcome": "Some growth, better margins, a bit more footprint."
+      },
+      {
+        "id": "cap",
+        "label": "Cap growth, bank the savings",
+        "stance": "responsible",
+        "temporary": {
+          "durationTicks": 8,
+          "effects": {
+            "growthCap": 0.01
+          }
+        },
+        "scoreDelta": {
+          "responsibility": 8,
+          "sustainability": 5
+        },
+        "outcome": "Your efficiency gains actually reduce your impact."
+      }
+    ],
+    "quizId": "q-rebound",
+    "source": "Rebound effect (Jevons paradox), cited in AFNOR Spec 2314",
+    "confidence": "high",
+    "slice": true
+  },
+  {
+    "id": "eu-reporting",
+    "title": "New EU reporting duty",
+    "body": "Datacenters above 500 kW must now report their energy, water and renewable figures every year.",
+    "kind": "milestone",
+    "themes": [
+      "measure",
+      "honest-communication"
+    ],
+    "when": {
+      "minTick": 10
+    },
+    "choices": [
+      {
+        "id": "send-data",
+        "label": "Send your measured data",
+        "stance": "responsible",
+        "requires": {
+          "hasUpgrades": [
+            "energy-monitoring"
+          ]
+        },
+        "scoreDelta": {
+          "responsibility": 5
+        },
+        "outcome": "Done in an afternoon."
+      },
+      {
+        "id": "consultants",
+        "label": "Hire consultants to estimate it",
+        "stance": "neutral",
+        "effects": {
+          "cash": -200
+        },
+        "scoreDelta": {
+          "responsibility": 1
+        },
+        "outcome": "€200k for a spreadsheet. Next year too."
+      },
+      {
+        "id": "fudge",
+        "label": "Fudge the numbers",
+        "stance": "greedy",
+        "effects": {
+          "envDebt": 5
+        },
+        "scoreDelta": {
+          "responsibility": -8
+        },
+        "delayed": [
+          {
+            "afterTicks": 8,
+            "chance": 0.5,
+            "triggerEvent": "permit-audit"
+          }
+        ],
+        "outcome": "Nobody checks. Yet."
+      }
+    ],
+    "quizId": "q-eed",
+    "source": "Energy Efficiency Directive (EU) 2023/1791, Art. 12, and Delegated Regulation (EU) 2024/1364 (reporting for datacenters with ≥500 kW IT power)",
+    "confidence": "approx",
+    "slice": true
+  },
+  {
+    "id": "heatwave",
+    "title": "Heatwave",
+    "body": "42 °C outside. Your chillers are screaming and the grid is stressed.",
+    "kind": "random",
+    "themes": [
+      "efficiency",
+      "water"
+    ],
+    "when": {
+      "minTick": 3
+    },
+    "weight": 2,
+    "repeatable": true,
+    "choices": [
+      {
+        "id": "throttle",
+        "label": "Pause non-urgent jobs",
+        "stance": "responsible",
+        "effects": {
+          "cash": -150
+        },
+        "scoreDelta": {
+          "responsibility": 2
+        },
+        "outcome": "Batch jobs wait a few days. Nobody notices."
+      },
+      {
+        "id": "max-chillers",
+        "label": "Max out the chillers",
+        "stance": "neutral",
+        "temporary": {
+          "durationTicks": 2,
+          "effects": {
+            "pue": 0.15
+          }
+        },
+        "outcome": "Expensive energy, but everything runs."
+      },
+      {
+        "id": "spray",
+        "label": "Spray water on the coolers",
+        "stance": "greedy",
+        "temporary": {
+          "durationTicks": 2,
+          "effects": {
+            "wue": 1.0
+          }
+        },
+        "effects": {
+          "envDebt": 4
+        },
+        "outcome": "Cheap and effective. The town's water tower disagrees."
+      }
+    ],
+    "quizId": "q-pue",
+    "source": "Game design",
+    "confidence": "illustrative",
+    "slice": true
+  },
+  {
+    "id": "cascade-failure",
+    "title": "Cascade failure",
+    "body": "One overheated rack takes down its neighbours. Clients are on the phone.",
+    "kind": "random",
+    "themes": [
+      "lifecycle"
+    ],
+    "when": {
+      "statGte": {
+        "failureRate": 0.07
+      }
+    },
+    "weight": 3,
+    "repeatable": true,
+    "choices": [
+      {
+        "id": "repair",
+        "label": "Emergency repairs",
+        "stance": "neutral",
+        "effects": {
+          "cash": -400
+        },
+        "outcome": "Fixed. Expensive."
+      },
+      {
+        "id": "degrade",
+        "label": "Run degraded for a while",
+        "stance": "greedy",
+        "effects": {
+          "demandPct": -0.1
+        },
+        "scoreDelta": {
+          "responsibility": -3
+        },
+        "outcome": "Some clients leave for a competitor."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "ewaste-broker",
+    "title": "A 'free' recycling offer",
+    "body": "A broker offers to take your old servers for free, and even pay you. They will be 'recycled' abroad.",
+    "kind": "random",
+    "themes": [
+      "lifecycle"
+    ],
+    "when": {
+      "minTick": 8
+    },
+    "choices": [
+      {
+        "id": "take-deal",
+        "label": "Take the money",
+        "stance": "greedy",
+        "effects": {
+          "cash": 150,
+          "envDebt": 10
+        },
+        "scoreDelta": {
+          "responsibility": -8
+        },
+        "delayed": [
+          {
+            "afterTicks": 6,
+            "chance": 0.4,
+            "effects": {
+              "demandPct": -0.05
+            },
+            "scoreDelta": {
+              "responsibility": -10
+            },
+            "message": "Investigators traced your servers to an illegal dump overseas."
+          }
+        ],
+        "outcome": "+€150k. Out of sight, out of mind."
+      },
+      {
+        "id": "certified",
+        "label": "Pay a certified recycler",
+        "stance": "responsible",
+        "effects": {
+          "cash": -120
+        },
+        "scoreDelta": {
+          "responsibility": 3,
+          "sustainability": 2
+        },
+        "outcome": "Metals recovered, toxics handled properly."
+      }
+    ],
+    "quizId": "q-ewaste",
+    "source": "Global E-waste Monitor 2024 (UNITAR/ITU) documents large undocumented and transboundary e-waste flows",
+    "confidence": "approx"
+  },
+  {
+    "id": "investor-pressure",
+    "title": "Investors want 2x growth",
+    "body": "Your board says competitors are doubling every year. They want the same, or they pull funding.",
+    "kind": "random",
+    "themes": [
+      "rebound",
+      "governance"
+    ],
+    "when": {
+      "minTick": 5
+    },
+    "choices": [
+      {
+        "id": "hypergrowth",
+        "label": "Promise hypergrowth",
+        "stance": "greedy",
+        "effects": {
+          "cash": 500
+        },
+        "temporary": {
+          "durationTicks": 8,
+          "effects": {
+            "growthRate": 0.03
+          }
+        },
+        "scoreDelta": {
+          "responsibility": -4
+        },
+        "outcome": "+€500k funding, and a growth target to hit."
+      },
+      {
+        "id": "green-terms",
+        "label": "Grow, with efficiency conditions",
+        "stance": "neutral",
+        "effects": {
+          "cash": 300
+        },
+        "temporary": {
+          "durationTicks": 8,
+          "effects": {
+            "growthRate": 0.01
+          }
+        },
+        "scoreDelta": {
+          "responsibility": 1
+        },
+        "outcome": "+€300k, moderate targets."
+      },
+      {
+        "id": "steady",
+        "label": "Pitch steady, efficient growth",
+        "stance": "responsible",
+        "scoreDelta": {
+          "responsibility": 4
+        },
+        "outcome": "No new money, but no pressure either."
+      }
+    ],
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "chip-shortage",
+    "title": "GPU shortage",
+    "body": "New accelerators are sold out for a year. Prices have tripled on the open market.",
+    "kind": "random",
+    "themes": [
+      "lifecycle"
+    ],
+    "when": {
+      "minTick": 6
+    },
+    "choices": [
+      {
+        "id": "pay-up",
+        "label": "Pay whatever it takes",
+        "stance": "greedy",
+        "effects": {
+          "cash": -400
+        },
+        "outcome": "You got your chips. Your wallet is lighter."
+      },
+      {
+        "id": "extend",
+        "label": "Make the current fleet last",
+        "stance": "responsible",
+        "temporary": {
+          "durationTicks": 6,
+          "effects": {
+            "failureRate": 0.02
+          }
+        },
+        "scoreDelta": {
+          "responsibility": 2,
+          "sustainability": 1
+        },
+        "outcome": "More maintenance, fewer new chips."
+      },
+      {
+        "id": "grey-market",
+        "label": "Buy on the grey market",
+        "stance": "greedy",
+        "effects": {
+          "cash": -150,
+          "envDebt": 4
+        },
+        "scoreDelta": {
+          "responsibility": -5
+        },
+        "outcome": "Cheap chips of unknown origin."
+      }
+    ],
+    "quizId": "q-lifecycle",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "coal-plant-closure",
+    "title": "The coal plant is closing",
+    "body": "The region's biggest coal plant shuts down. Wind farms replace it, but power gets pricier.",
+    "kind": "random",
+    "themes": [
+      "energy-mix"
+    ],
+    "when": {
+      "locations": [
+        "coal-valley"
+      ],
+      "minTick": 12
+    },
+    "weight": 2,
+    "choices": [
+      {
+        "id": "welcome",
+        "label": "Welcome it",
+        "stance": "responsible",
+        "effects": {
+          "carbonIntensity": -200,
+          "energyPricePct": 0.05
+        },
+        "scoreDelta": {
+          "responsibility": 2
+        },
+        "outcome": "Your grid just got a lot cleaner."
+      },
+      {
+        "id": "lobby",
+        "label": "Lobby to keep it open for cheap power",
+        "stance": "greedy",
+        "effects": {
+          "energyPricePct": -0.05,
+          "envDebt": 8
+        },
+        "scoreDelta": {
+          "responsibility": -10
+        },
+        "outcome": "The plant gets 5 more years. You get cheap power and bad press."
+      }
+    ],
+    "quizId": "q-carbon-grid",
+    "source": "Game design",
+    "confidence": "illustrative"
+  }
+]
