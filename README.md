@@ -4,7 +4,7 @@
 
 A mobile-first browser game built in one day for **The SMIC Day** (Social Media Impact Challenge, CentraleSupélec, 17 Nov 2026). It raises awareness about responsible digital practices through a fun, replayable, shareable tycoon game, backed by a dashboard that measures what players learned.
 
-**Live demo:** _not deployed yet (task DEV-10)_ · **Dashboard:** _not built yet (task DEV-7)_ · **New here? Read [AGENTS.md](AGENTS.md).**
+**Play now:** https://datacenter-tycoon-plum.vercel.app · **Dashboard:** _not built yet (task DEV-7)_ · **New here? Read [AGENTS.md](AGENTS.md).**
 
 ---
 
@@ -176,7 +176,7 @@ Several people and several AI agents work in parallel. **Read [AGENTS.md](AGENTS
 - [ ] Rating sent to the backend (DEV-6)
 - [ ] Analytics + dashboard (DEV-5, DEV-7)
 - [ ] Share image card + daily runs (DEV-8, DEV-9); the challenge link already works
-- [ ] Deployed (DEV-10)
+- [x] Deployed on Vercel: https://datacenter-tycoon-plum.vercel.app (manual `vercel deploy --prod` for now; auto-deploy on push not set up yet)
 
 ## 12. Sources
 

@@ -51,3 +51,16 @@
 - The pixel font (Silkscreen) is loaded from Google Fonts: one exception to "no web fonts", headlines only.
 - The map is pure presentation: `campusView(state, location, wue)` in `ui/map/layout.ts` decides what to draw. Keep game rules in `/engine`.
 - Upgrade cards never show `family` or `envDebtPerTick`/`delayed`; the end screen reveals the family.
+
+## 2026-11-17 12:35 · claude-opus (bootstrap agent) · DEV-10
+
+**Done:** Production deploy on Vercel: **https://datacenter-tycoon-plum.vercel.app** (project `datacenter-tycoon` in the Encore team, Vite preset, build `npm run build`, output `dist`). Public (no login wall); challenge links work (`?seed=42&loc=sun-belt`). Played a run on the live site: no runtime errors, pixel font loads. Quiz questions now use the normal bold font (the pixel font was hard to read for long sentences).
+
+**Next:**
+- Auto-deploy is **not** set up: today a new version goes live only with `vercel deploy --prod` from a linked checkout. Connecting the GitHub repo in Vercel (Project → Settings → Git) would deploy every push to `main` and give each PR a preview URL. Needs the Vercel GitHub app to have access to this repo.
+- COM-2: the URL is ready for the QR code and posts.
+- DEV-5/DEV-7: the analytics API will live in the same Vercel project.
+
+**Gotchas:**
+- `vercel link` writes `.vercel/` and `.env.local` (with a short-lived token). Both are git-ignored; never commit them.
+- It is a static site: no serverless functions yet, so there are no runtime logs to scan.
