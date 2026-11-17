@@ -25,7 +25,7 @@ export interface CardData {
 export const CARD_W = 1080;
 export const CARD_H = 1350;
 
-const C = {
+export const C = {
   bg: '#f3f1e8',
   surface: '#fffdf6',
   surface2: '#ebe8dc',
@@ -38,11 +38,11 @@ const C = {
   redSoft: '#f7c9c3',
   orange: '#ef8a3a',
 };
-const PIXEL = 'Silkscreen, ui-monospace, monospace';
-const UI = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+export const PIXEL = 'Silkscreen, ui-monospace, monospace';
+export const UI = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+export const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
 
-function box(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, fill: string, shadow = false) {
+export function box(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, fill: string, shadow = false) {
   if (shadow) {
     ctx.fillStyle = C.ink;
     ctx.fillRect(x + 10, y + 10, w, h);
@@ -55,7 +55,7 @@ function box(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: 
 }
 
 /** Largest font size (down to `min`) at which `text` fits in `maxW`. */
-function fit(ctx: CanvasRenderingContext2D, text: string, family: string, weight: string, start: number, min: number, maxW: number): number {
+export function fit(ctx: CanvasRenderingContext2D, text: string, family: string, weight: string, start: number, min: number, maxW: number): number {
   let size = start;
   ctx.font = `${weight} ${size}px ${family}`;
   while (size > min && ctx.measureText(text).width > maxW) {
@@ -66,7 +66,7 @@ function fit(ctx: CanvasRenderingContext2D, text: string, family: string, weight
 }
 
 /** Word-wrap into at most `maxLines` lines (last one gets an ellipsis if cut). */
-function wrap(ctx: CanvasRenderingContext2D, text: string, maxW: number, maxLines: number): string[] {
+export function wrap(ctx: CanvasRenderingContext2D, text: string, maxW: number, maxLines: number): string[] {
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let line = '';
@@ -87,7 +87,7 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxW: number, maxLine
   return lines;
 }
 
-function mark(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
+export function mark(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
   // The game's logo: two stacked server blocks.
   ctx.fillStyle = C.lime;
   ctx.fillRect(x, y, s, s);
@@ -97,7 +97,7 @@ function mark(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
   ctx.strokeRect(x + s * 0.2, y + s * 0.56, s * 0.6, s * 0.26);
 }
 
-function frontier(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, profitNorm: number, impact: number) {
+export function frontier(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, profitNorm: number, impact: number, label = 'YOU') {
   const px = (p: number) => x + (Math.min(Math.max(p, 0), 1.5) / 1.5) * w;
   const py = (i: number) => y + h - (Math.min(Math.max(i, 0), 100) / 100) * h;
   const quads: [number, number, number, number, string, string][] = [
@@ -127,7 +127,7 @@ function frontier(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
   ctx.stroke();
   ctx.fillStyle = C.ink;
   ctx.font = `700 22px ${PIXEL}`;
-  ctx.fillText('YOU', cx, cy < y + 50 ? cy + 50 : cy - 28);
+  ctx.fillText(label, cx, cy < y + 50 ? cy + 50 : cy - 28);
   ctx.font = `700 20px ${MONO}`;
   ctx.textAlign = 'left';
   ctx.fillText('PROFIT →', x, y + h + 30);

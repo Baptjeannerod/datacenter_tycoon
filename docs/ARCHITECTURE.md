@@ -81,7 +81,7 @@ if (s.status !== 'playing') console.log(summarize(s, content));            // le
 |---|---|
 | `ui/App.tsx` | Screen switch (start → game → end), how-to-play dialog, reads `?seed=&loc=` challenge links, starts the daily run and records its best legacy |
 | `ui/daily.ts` | Daily run: `seedFromString("YYYY-MM-DD")`, valley rotating by day, best legacy per day in localStorage (`dt-daily-best-<date>`). Dates stay in the UI: the engine never reads the clock |
-| `ui/share/` | `card.ts` draws the 1080×1350 result card on a canvas; `share.ts` shares it with the Web Share API (files) or downloads it and copies the challenge link |
+| `ui/share/` | `card.ts` draws the 1080×1350 result card on a canvas; `share.ts` shares it with the Web Share API (files) or downloads it and copies the challenge link; `og.ts` (dev helper) draws the static link preview `public/og.png` |
 | `ui/components/Onboarding.tsx` | Three first-run hints over the map, skippable, remembered in localStorage (`dt-onboarded`); time is held via `useGame().setHold` |
 | `ui/useGame.ts` | Holds `GameState`, auto-advances one quarter every 2.6 s / speed, pauses on cards, rings and hints (`hold`), keeps outcome and quiz feedback; `act()` builds, buys or demolishes |
 | `ui/screens/GameScreen.tsx` | Top bar, title + controls, KPI cards, map card, side panel (decision or quarter report), shop |

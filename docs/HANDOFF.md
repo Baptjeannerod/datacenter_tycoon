@@ -114,7 +114,8 @@
 
 **Next:**
 - Test the native share sheet on a real iPhone and Android (the in-app browser has no Web Share). If iOS refuses because the gesture expired while the card was drawn, pre-render the card when the end screen mounts.
-- ART-3: the card layout is code in `ui/share/card.ts` (one function, colours mirrored from `tokens.css`); restyle freely. The static OG image for link previews (part of DEV-8) is not done.
+- ART-3: the card layout is code in `ui/share/card.ts` (one function, colours mirrored from `tokens.css`); restyle freely.
+- Link previews: static `public/og.png` (1200×630) + `og:image` / `twitter:image` tags in `index.html` (absolute URL on the Vercel domain). It is drawn by `ui/share/og.ts` (not imported by the app); to regenerate, run `npm run dev` and paste `(await import('/ui/share/og.ts')).downloadOgImage()` in the browser console. If the domain changes, update the URLs in `index.html`.
 - The strategies in `engine/strategies.ts` never demolish, so the sim is unchanged (no balance change). A "replace coal by wind at year 5" strategy would be a nice sim tripwire for GD-3.
 - Daily run: the best score is local only. A `daily` flag on `run_end` would allow a daily leaderboard on `/dashboard`.
 - Analytics (owner of DEV-5): demolitions are **not tracked**. `api/_lib/events.ts` rejects unknown `decision` actions, so `useGame.act()` skips them. To track them, add `'demolish'` to the accepted actions and send `{ action: 'demolish', id: buildingId }` from `act()`.

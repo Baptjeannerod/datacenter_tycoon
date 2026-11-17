@@ -54,12 +54,12 @@
 - **Done when:** it reads live data from `/api/stats` on the deployed site and works on a projector and a phone.
 
 ### DEV-8 · P1 · Share card and challenge link
-- **Role:** dev · **Owner:** claude-agent (onboarding-demolish-share) · **Status:** review (branch `agent/onboarding-demolish-share`) · **Depends on:** DEV-4, ART-3
+- **Role:** dev · **Owner:** claude-agent (onboarding-demolish-share) · **Status:** done (PR 41; native share sheet still to try on a real phone) · **Depends on:** DEV-4, ART-3
 - **Goal:** Draw the result card on a `<canvas>` (archetype, legacy, profit, impact, location), share with the Web Share API (files) or download; challenge link `?seed=<seed>&loc=<location>` that starts the same run; static OG image for link previews.
 - **Done when:** sharing from a phone opens the native share sheet with image + link, and the link replays the same seed.
 
 ### DEV-9 · P1 · Daily challenge
-- **Role:** dev · **Owner:** claude-agent (onboarding-demolish-share) · **Status:** review (branch `agent/onboarding-demolish-share`)
+- **Role:** dev · **Owner:** claude-agent (onboarding-demolish-share) · **Status:** done (PR 41)
 - **Goal:** "Daily run" button: seed = `seedFromString(YYYY-MM-DD)`, location rotates by day. Show your best daily legacy (localStorage).
 - **Done when:** two phones get the same run on the same day.
 
@@ -135,7 +135,7 @@
 - **Done when:** DEV-1..DEV-4 owners have agreed on it.
 
 ### UX-2 · P0 · Onboarding in 3 taps
-- **Role:** ux-ui · **Owner:** claude-agent (onboarding-demolish-share) · **Status:** review (branch `agent/onboarding-demolish-share`)
+- **Role:** ux-ui · **Owner:** claude-agent (onboarding-demolish-share) · **Status:** done (PR 41)
 - **Goal:** First decision within 30 s of landing. Max 3 overlay hints, skippable.
 - **Done when:** a first-time tester reaches the first client card without help.
 
