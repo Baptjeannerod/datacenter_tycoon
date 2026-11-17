@@ -44,11 +44,11 @@ The source is the AFNOR Spec "General framework for frugal AI" (CGDD / SRI / Eco
 | Gas | 6 | €1.0M | 70 | 490 | steady, compact, emits |
 | Coal | 10 | €1.4M | 40 | 820 | cheapest MWh, densest, dirtiest, air pollution |
 | Biomass | 5 | €1.5M | 60 | 230 | "green" depends on the wood |
-| Wind | ~3 (×1.3 Nordic) | €1.8M | 8 | 11 | land-hungry, varies ±35 % |
-| Solar | ~1.7 (×1.7 Sun Belt) | €1.2M | 5 | 48 | land-hungry, varies ±20 % |
-| Dam (river spot) | ~6 (×1.5 Nordic) | €3.5M | 5 | 24 | floods the valley (debt), only one |
+| Wind | ~3 (×1.3 Nordic) | €2.6M | 8 | 11 | land-hungry, varies ±35 % |
+| Solar | ~1.7 (×1.7 Sun Belt) | €1.8M | 5 | 48 | land-hungry, varies ±20 % |
+| Dam (river spot) | ~6 (×1.5 Nordic) | €4.5M | 5 | 24 | floods the valley (debt), only one |
 
-The core tension is now **energy density vs. impact**: fossil plants pack lots of MW onto one plot and cost little upfront, so you can fit more halls and serve more clients early; renewables are cheap to run but need several plots and capital. Emission factors are IPCC AR5 life-cycle medians; costs and outputs are game values.
+The core tension is now **energy density vs. impact**: fossil plants pack lots of MW onto one plot and cost little upfront, so you can fit more halls and serve more clients early; renewables are cheap to run but need several plots and capital. Emission factors are IPCC AR5 life-cycle medians and capacity factors match IRENA 2023 (checked in RES-1, see [sources/SOURCES.md](sources/SOURCES.md)); build and running costs are game values. Renewables cost more to build here than their real-world LCOE suggests (IRENA: new wind and solar are now usually cheaper per MWh than new fossil): with no grid, the premium stands for the storage and backup an off-grid campus needs, and it keeps fossil tempting (GD-3).
 
 
 - **1 tick = 1 quarter. A run = 40 ticks = 10 years.** Target 3-6 minutes, so roughly 4-6 s per tick with auto-advance (UI decision, task DEV-1), pausing whenever a card is open.
@@ -157,29 +157,30 @@ The design rules are enforced by `npm run sim` (exit code 1 if broken, also run 
 3. **Virtue is viable**: `virtuous` never goes bankrupt and earns ≥ 20 % of the profit reference.
 4. **The tension is real**: `greedy` out-earns `virtuous` in the first half and overall.
 
-Results below are from the plot-and-power model (1 000 runs per strategy). In this model the balanced player (dam or best renewable + gas backup) out-earns greedy (coal) over a full run everywhere; greedy still out-earns pure virtue, and in Paris, Nordic and Coal Valley greedy leads the first half against balanced too.
+Results below are after the GD-3 balance pass (17 Nov, 14:40): wind, solar and the dam cost more to build (€2.6M, €1.8M, €4.5M instead of €1.8M, €1.2M, €3.5M), and the content now includes the own-power events (drought, coal protest, pellet scandal, wind coop, StreamLeaf). Greedy (coal) now earns the most in the first half in **every** valley and the most over a full run in the **Sun Belt**; balanced still has the best legacy everywhere.
 
 Results of `npm run sim` (1 000 runs per strategy = 250 per location, seeds 1000-1249), 17 Nov 2026 (k€; 1st/2nd half = net-worth gain in each half):
 
 | Location | Strategy | Net worth | Impact | Legacy | Bills | 1st half | 2nd half |
 |---|---|---|---|---|---|---|---|
-| Paris Basin | greedy | 57 056 | 29 | 544 | 7.0 | 24 404 | 31 152 |
-|  | virtuous | 38 551 | 89 | 788 | 0 | 12 177 | 24 873 |
-|  | **balanced** | 79 369 | 75 | **1 018** | 5 | 19 292 | 58 578 |
-| Nordic Fjord | greedy | 30 258 | 25 | 368 | 7.0 | 16 722 | 12 037 |
-|  | virtuous | 19 113 | 87 | 549 | 1.3 | 5 325 | 12 288 |
-|  | **balanced** | 88 201 | 80 | **1 092** | 1.3 | 14 992 | 71 709 |
-| Coal Valley | greedy | 70 817 | 28 | 593 | 7.0 | 30 683 | 38 634 |
-|  | virtuous | 38 999 | 89 | 795 | 0 | 12 176 | 25 323 |
-|  | **balanced** | 92 001 | 75 | **1 056** | 5 | 23 834 | 66 666 |
-| Sun Belt | greedy | 51 350 | 20 | 430 | 8.0 | 16 823 | 33 027 |
-|  | virtuous | 43 860 | 82 | 810 | 0 | 15 212 | 27 148 |
-|  | **balanced** | 103 427 | 68 | **1 009** | 5.8 | 28 963 | 72 964 |
+| Paris Basin | greedy | 57 234 | 29 | 543 | 7.0 | **24 605** | 31 129 |
+|  | virtuous | 24 849 | 85 | 620 | 2.0 | 9 987 | 13 362 |
+|  | **balanced** | 78 560 | 75 | **1 014** | 5.0 | 19 764 | 57 296 |
+| Nordic Fjord | greedy | 30 145 | 25 | 366 | 8.0 | **16 219** | 12 425 |
+|  | virtuous | 19 224 | 87 | 551 | 1.3 | 5 271 | 12 453 |
+|  | **balanced** | 86 732 | 80 | **1 092** | 1.2 | 13 818 | 71 414 |
+| Coal Valley | greedy | 72 062 | 28 | 597 | 7.0 | **31 114** | 39 449 |
+|  | virtuous | 28 538 | 86 | 666 | 2.0 | 11 732 | 15 306 |
+|  | **balanced** | 90 364 | 75 | **1 054** | 5.0 | 24 064 | 64 800 |
+| Sun Belt | greedy | **52 358** | 20 | 430 | 9.0 | **16 647** | 34 211 |
+|  | virtuous | 19 211 | 75 | 510 | 3.9 | 8 048 | 9 663 |
+|  | **balanced** | 44 632 | 65 | **726** | 6.0 | 10 733 | 32 399 |
 
 Reading it:
-- **Paris and Nordic** show the cleanest tension: greed earns the most money (and the most early), but its impact collapses and its growth flattens.
-- **Coal Valley and Sun Belt** invert the long-run money: once carbon is priced and water is capped, the balanced player out-earns the greedy one. Greed still earns the most in the first half. That is the "it depends" lesson: on a dirty grid or in a dry place, the bill comes faster.
-- `virtuous` (buys every green upgrade, refuses everything doubtful) is a Cloud Monk: best impact, half the money.
+- **Greed pays first, everywhere.** Coal is cheap to build and dense, so the greedy player leads the first half in all four valleys. The bills (carbon tax, audits, churn, protests) then flatten its second half.
+- **Sun Belt: greed now wins on money.** Expensive solar plus water caps means the greedy player ends richer than the balanced one, with a third of the impact. Balanced still wins on legacy (726 vs 430). That is the honest lesson: responsible can cost money.
+- **Paris, Nordic, Coal Valley:** the dam (cheap to run, steady) still lets the balanced player out-earn greed over ten years.
+- `virtuous` (renewables only, every green upgrade, refuses everything doubtful) is a Cloud Monk: best impact, a third to half of the money. Pricier renewables hit it hardest.
 
 Strategies are caricatures in `engine/strategies.ts`. They are not the only way to play; they are tripwires.
 
@@ -208,8 +209,9 @@ Marked `"slice": true` in content. 1 location (Paris), 9 upgrades (hot-aisle, fr
 ## 11. Known weaknesses and open questions
 
 - **The impact axis saturates around 85-90** for any sensible play; the gap between "balanced" and "virtuous" impact is small (≈5 points). A stronger reward for sufficiency (cap growth) could widen it.
-- **Balanced out-earns greedy over a full run in every valley** in the plot-and-power model (cheap-to-run renewables and the dam beat coal once carbon is priced). Greedy still beats pure virtue. If playtesters find "green always pays" too obvious, raise renewable build costs or slow demand growth.
-- **The Sun Belt is the easy green valley**: solar is so strong that greed does not even lead the first half there.
+- **Balanced still out-earns greedy over a full run in Paris, Nordic and Coal Valley** (GD-3 addressed it partly): renewables now cost more to build, so greed leads the first half everywhere and wins on money in the Sun Belt. In the other three the dam is the reason; raising its cost (tried up to €7M) barely moves the result. Next lever if playtesters still find "green always pays": a lower carbon price or a slower debt build-up for coal.
+- **Sun Belt fixed (GD-3)**: greed now leads the first half and the full run on money there.
+- **No effect key changes a plant's output** (drought, wind lull): events can only hit money, demand and scores. A `plantOutputPct` effect by plant type would make droughts and protests bite physically (engine change, to open as an issue).
 - **Some green upgrades are no-brainers** (hot-aisle containment, free cooling in Paris) because energy is about half of revenue. Realistic, but they reduce choice. The rebound event is the counterweight.
 - **The idle strategy (buy nothing, accept everything) out-earns greedy in the Nordics**, because traps cost money. Fine ("shortcuts aren't even profitable there") but worth a playtest.
 - Debt thresholds are absolute; a much longer or shorter run needs retuning.

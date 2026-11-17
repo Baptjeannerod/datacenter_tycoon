@@ -24,9 +24,9 @@ Built on map plots (8 land plots + 1 river spot). There is no grid: halls run on
 | `gas-plant` | plant (gas) | land | 1000 | — | 6 | 1 | — | 70 | 490 | 0.6 | — | high |
 | `coal-plant` | plant (coal) | land | 1400 | — | 10 | 1 | — | 40 | 820 | 1.9 | envDebtPerTick +0.6 | high |
 | `biomass-plant` | plant (biomass) | land | 1500 | — | 5 | 1 | — | 60 | 230 | 1.5 | envDebtPerTick +0.3 | high |
-| `wind-farm` | plant (wind) | land | 1800 | — | 9 | 0.33 | wind | 8 | 11 | 0 | — | high |
-| `solar-farm` | plant (solar) | land | 1200 | — | 12 | 0.16 | solar | 5 | 48 | 0 | — | high |
-| `dam` | plant (hydro) | river | 3500 | — | 14 | 0.45 | river | 5 | 24 | 0 | envDebt +6, envDebtPerTick +0.15 | high |
+| `wind-farm` | plant (wind) | land | 2600 | — | 9 | 0.33 | wind | 8 | 11 | 0 | — | high |
+| `solar-farm` | plant (solar) | land | 1800 | — | 12 | 0.16 | solar | 5 | 48 | 0 | — | high |
+| `dam` | plant (hydro) | river | 4500 | — | 14 | 0.45 | river | 5 | 24 | 0 | envDebt +6, envDebtPerTick +0.15 | high |
 
 ## Upgrades
 
