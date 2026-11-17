@@ -815,6 +815,7 @@
         "outcome": "No new money, but no pressure either."
       }
     ],
+    "quizId": "q-governance-rebound",
     "source": "Game design",
     "confidence": "illustrative"
   },
@@ -927,6 +928,281 @@
       }
     ],
     "quizId": "q-carbon-grid",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "drought-cooling",
+    "title": "Drought: the river runs low",
+    "body": "The river is too low and too warm to cool your steam plants. The water authority asks thermal plants to cut back.",
+    "kind": "random",
+    "themes": [
+      "water",
+      "energy-mix"
+    ],
+    "when": {
+      "flagsSet": [
+        "built-thermal"
+      ],
+      "minTick": 6
+    },
+    "weight": 2,
+    "choices": [
+      {
+        "id": "cut-back",
+        "label": "Cut output, slow the halls",
+        "stance": "responsible",
+        "hint": "Less revenue this quarter.",
+        "temporary": {
+          "durationTicks": 1,
+          "effects": {
+            "pricePct": -0.12
+          }
+        },
+        "scoreDelta": {
+          "sustainability": 1,
+          "responsibility": 4
+        },
+        "outcome": "Halls run slower for a few weeks. Farmers downstream keep their water."
+      },
+      {
+        "id": "buy-water",
+        "label": "Buy emergency water rights",
+        "stance": "neutral",
+        "hint": "−€350k, everything runs.",
+        "effects": {
+          "cash": -350,
+          "envDebt": 2
+        },
+        "outcome": "Expensive water, full power. The river is still low."
+      },
+      {
+        "id": "keep-pumping",
+        "label": "Keep pumping, ignore the request",
+        "stance": "greedy",
+        "hint": "Costs nothing now.",
+        "effects": {
+          "envDebt": 8
+        },
+        "scoreDelta": {
+          "responsibility": -6
+        },
+        "delayed": [
+          {
+            "afterTicks": 4,
+            "chance": 0.6,
+            "effects": {
+              "cash": -500
+            },
+            "message": "The water authority fines you €500k for over-pumping during the drought."
+          }
+        ],
+        "outcome": "Full power, warm river, dead fish. The authority is taking notes."
+      }
+    ],
+    "quizId": "q-thermal-water",
+    "source": "Game design; cooling-water figures from Macknick et al. (2012), https://doi.org/10.1088/1748-9326/7/4/045802",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "coal-protest",
+    "title": "Protest at the coal plant",
+    "body": "Parents march to your coal plant: soot on the schoolyard, asthma at the clinic. The mayor wants an answer.",
+    "kind": "consequence",
+    "themes": [
+      "energy-mix",
+      "governance"
+    ],
+    "when": {
+      "flagsSet": [
+        "built-coal"
+      ],
+      "minTick": 6
+    },
+    "choices": [
+      {
+        "id": "filters",
+        "label": "Install filters, fund the clinic",
+        "stance": "responsible",
+        "hint": "−€600k, cleaner air.",
+        "effects": {
+          "cash": -600,
+          "envDebt": -4
+        },
+        "scoreDelta": {
+          "sustainability": 1,
+          "responsibility": 5
+        },
+        "outcome": "The soot stops. The CO2 does not, but the town calms down."
+      },
+      {
+        "id": "pr",
+        "label": "Run a 'clean coal' campaign",
+        "stance": "neutral",
+        "hint": "−€150k.",
+        "effects": {
+          "cash": -150
+        },
+        "scoreDelta": {
+          "responsibility": -2
+        },
+        "outcome": "Nice posters. Nobody believes them."
+      },
+      {
+        "id": "wait",
+        "label": "Wait for it to blow over",
+        "stance": "greedy",
+        "hint": "Free, for now.",
+        "effects": {
+          "envDebt": 5
+        },
+        "scoreDelta": {
+          "responsibility": -6
+        },
+        "delayed": [
+          {
+            "afterTicks": 6,
+            "chance": 0.5,
+            "effects": {
+              "demandPct": -0.06
+            },
+            "message": "Local clients sign a pledge to leave 'the soot campus'."
+          }
+        ],
+        "outcome": "The march ends. The anger does not."
+      }
+    ],
+    "quizId": "q-land-use",
+    "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "pellet-scandal",
+    "title": "Where does your wood come from?",
+    "body": "Journalists trace your biomass pellets to clear-cut forests overseas. Your 'green' plant is on the front page.",
+    "kind": "consequence",
+    "themes": [
+      "energy-mix",
+      "honest-communication",
+      "lifecycle"
+    ],
+    "when": {
+      "flagsSet": [
+        "built-biomass"
+      ],
+      "minTick": 8
+    },
+    "choices": [
+      {
+        "id": "certify",
+        "label": "Switch to certified local wood",
+        "stance": "responsible",
+        "hint": "Higher fuel bill from now on.",
+        "effects": {
+          "cashPerTick": -20
+        },
+        "scoreDelta": {
+          "sustainability": 2,
+          "responsibility": 4
+        },
+        "outcome": "Pricier wood, traceable forests. The story dies down."
+      },
+      {
+        "id": "audit",
+        "label": "Commission an independent audit",
+        "stance": "neutral",
+        "hint": "−€200k.",
+        "effects": {
+          "cash": -200
+        },
+        "scoreDelta": {
+          "responsibility": 1
+        },
+        "outcome": "The audit confirms some of it. You promise to do better."
+      },
+      {
+        "id": "spin",
+        "label": "Call it carbon neutral anyway",
+        "stance": "greedy",
+        "hint": "Free. Cheap pellets stay.",
+        "effects": {
+          "envDebt": 4
+        },
+        "scoreDelta": {
+          "responsibility": -6
+        },
+        "delayed": [
+          {
+            "afterTicks": 6,
+            "chance": 0.5,
+            "triggerEvent": "greenwash-scandal"
+          }
+        ],
+        "outcome": "Your press release says 'carbon neutral'. An NGO bookmarks it."
+      }
+    ],
+    "quizId": "q-lifecycle-emissions",
+    "source": "Game design; biomass life-cycle range 130-420 gCO2e/kWh from IPCC AR5 Annex III, https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "wind-coop",
+    "title": "A citizen wind cooperative",
+    "body": "Villagers want to build a wind farm on the hill next to your campus and invite you to co-own it.",
+    "kind": "random",
+    "themes": [
+      "energy-mix",
+      "governance"
+    ],
+    "when": {
+      "minTick": 6
+    },
+    "weight": 2,
+    "choices": [
+      {
+        "id": "co-own",
+        "label": "Co-invest with the village",
+        "stance": "responsible",
+        "hint": "−€500k now, small dividends.",
+        "effects": {
+          "cash": -500,
+          "cashPerTick": 15
+        },
+        "scoreDelta": {
+          "sustainability": 1,
+          "responsibility": 6
+        },
+        "outcome": "Turbines on the hill, your logo on the coop board, and a village that likes you."
+      },
+      {
+        "id": "lease",
+        "label": "Just rent them the hill",
+        "stance": "neutral",
+        "hint": "Small rent.",
+        "effects": {
+          "cashPerTick": 8
+        },
+        "scoreDelta": {
+          "responsibility": 1
+        },
+        "outcome": "They build it. You cash a cheque every quarter."
+      },
+      {
+        "id": "sell-hill",
+        "label": "Sell the hill to a crypto miner",
+        "stance": "greedy",
+        "hint": "+€400k now.",
+        "effects": {
+          "cash": 400,
+          "envDebtPerTick": 0.2
+        },
+        "scoreDelta": {
+          "responsibility": -5
+        },
+        "outcome": "The miner moves in with diesel generators. The village remembers."
+      }
+    ],
+    "quizId": "q-capacity-factor",
     "source": "Game design",
     "confidence": "illustrative"
   }

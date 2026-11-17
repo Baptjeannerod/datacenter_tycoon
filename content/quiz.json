@@ -133,5 +133,111 @@
     "themes": ["question-the-need", "governance"],
     "source": "AFNOR Spec 2314: 'Defining criteria justifying retraining model'",
     "confidence": "high"
+  },
+  {
+    "id": "q-land-use",
+    "question": "A wind farm and a coal plant make the same electricity. Which needs more land?",
+    "answers": [
+      "The wind farm: about 12× the area, but fields between turbines stay farmed",
+      "The coal plant, once you count its mines",
+      "About the same",
+      "Neither: both fit on a rooftop"
+    ],
+    "correctIndex": 0,
+    "explanation": "Per TWh a year: a wind farm spans ~12 000 ha but its turbines cover ~130; coal with its mines ~1 000. Density is coal's one advantage.",
+    "themes": [
+      "energy-mix"
+    ],
+    "source": "Lovering et al. (2022), Land-use intensity of electricity production, PLOS ONE 17(7): e0270155, medians in ha per TWh/yr: onshore wind 12 000 with spacing, 130 footprint only; coal 1 000 incl. mining; ground PV 2 000; dedicated biomass 58 000. https://doi.org/10.1371/journal.pone.0270155",
+    "confidence": "high"
+  },
+  {
+    "id": "q-capacity-factor",
+    "question": "A solar farm is rated 10 MW. How much does it deliver on average over a year?",
+    "answers": [
+      "About 10 MW",
+      "About 6 MW",
+      "About 1.6 MW",
+      "About 0.1 MW"
+    ],
+    "correctIndex": 2,
+    "explanation": "Nights, clouds and winter: new solar farms averaged a 16 % capacity factor in 2023, onshore wind 36 %. You need far more MW than you use.",
+    "themes": [
+      "energy-mix",
+      "measure"
+    ],
+    "source": "IRENA, Renewable Power Generation Costs in 2023, Table S1: global weighted-average capacity factor of new utility PV 16 %, onshore wind 36 %. https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2024/Sep/IRENA_Renewable_power_generation_costs_in_2023.pdf",
+    "confidence": "high"
+  },
+  {
+    "id": "q-lifecycle-emissions",
+    "question": "Counting construction, fuel and dismantling, how much CO2 does onshore wind emit per kWh? Coal emits about 820 g.",
+    "answers": [
+      "0 g: it is renewable",
+      "About 11 g",
+      "About 230 g",
+      "About 490 g"
+    ],
+    "correctIndex": 1,
+    "explanation": "IPCC medians: wind 11, solar 48, biomass 230, gas 490, coal 820 g CO2e/kWh. Nothing is zero, but the gap is huge.",
+    "themes": [
+      "lifecycle",
+      "energy-mix"
+    ],
+    "source": "IPCC AR5 WGIII (2014) Annex III, Table A.III.2, life-cycle medians (gCO2e/kWh): wind onshore 11, utility PV 48, biomass dedicated 230, gas CC 490, coal 820. https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf",
+    "confidence": "high"
+  },
+  {
+    "id": "q-devices-footprint",
+    "question": "In France, which part of digital tech had the biggest carbon footprint in the 2022 ADEME-Arcep study?",
+    "answers": [
+      "User devices (phones, TVs, laptops)",
+      "Datacenters",
+      "Networks",
+      "All about equal"
+    ],
+    "correctIndex": 0,
+    "explanation": "Devices 79 %, datacenters 16 %, networks 5 % (2020 data), mostly from manufacturing. Lighter services let old devices last longer.",
+    "themes": [
+      "lifecycle"
+    ],
+    "source": "ADEME-Arcep (Jan 2022), environmental footprint of digital in France (2020 data): devices 79 %, datacenters 16 %, networks 5 % of the carbon footprint; manufacturing 78 %. https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf",
+    "confidence": "high"
+  },
+  {
+    "id": "q-thermal-water",
+    "question": "Which power plants consume the most cooling water per MWh?",
+    "answers": [
+      "Coal and other steam plants",
+      "Wind farms",
+      "Solar panels",
+      "They all need about the same"
+    ],
+    "correctIndex": 0,
+    "explanation": "With cooling towers, coal consumes ~2.6 m³ per MWh and gas ~0.8; wind needs none, solar almost none. Droughts hit steam plants first.",
+    "themes": [
+      "water",
+      "energy-mix"
+    ],
+    "source": "Macknick et al. (2012), Operational water consumption factors for electricity generating technologies, Environ. Res. Lett. 7 045802, medians with cooling towers: coal 687, biopower 553, gas CC 205, PV 1, wind 0 gal/MWh (coal ~2.6 m3/MWh, gas ~0.8). https://doi.org/10.1088/1748-9326/7/4/045802",
+    "confidence": "high"
+  },
+  {
+    "id": "q-governance-rebound",
+    "question": "Your AI service got twice as efficient per request, and usage tripled. What should your governance track?",
+    "answers": [
+      "Total energy and emissions, not just efficiency per request",
+      "Only the efficiency gain: it is a win",
+      "Nothing: usage is the clients' business",
+      "The number of requests served"
+    ],
+    "correctIndex": 0,
+    "explanation": "Half the energy per request × 3 times the requests = 1.5× the total. The AFNOR frugal-AI framework calls this the rebound effect.",
+    "themes": [
+      "rebound",
+      "governance"
+    ],
+    "source": "AFNOR Spec 2314, General framework for frugal AI (CGDD/Ecolab, June 2024): rebound effect, absolute indicators. https://www.ecologie.gouv.fr/presse/publication-du-referentiel-general-lia-frugale-sattaquer-limpact-environnemental-lia",
+    "confidence": "high"
   }
 ]

@@ -30,6 +30,7 @@
     "scoreDelta": {
       "sustainability": -2
     },
+    "setFlags": ["built-thermal"],
     "whyItMatters": "Gas is reliable and compact, but every MWh emits around half a tonne of CO2 over its life cycle.",
     "source": "IPCC AR5 WGIII (2014) Annex III, Table A.III.2: life-cycle median for gas combined cycle 490 gCO2e/kWh (range 410-650). https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf",
     "confidence": "high"
@@ -56,6 +57,7 @@
       "sustainability": -5,
       "responsibility": -3
     },
+    "setFlags": ["built-coal", "built-thermal"],
     "whyItMatters": "Coal packs a lot of power on little land, at the highest carbon and air-pollution cost of any source.",
     "source": "IPCC AR5 WGIII (2014) Annex III, Table A.III.2: life-cycle median for coal (pulverised) 820 gCO2e/kWh (range 740-910). https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf",
     "confidence": "high"
@@ -81,6 +83,7 @@
     "scoreDelta": {
       "sustainability": 1
     },
+    "setFlags": ["built-biomass", "built-thermal"],
     "whyItMatters": "Burning wood emits CO2 now; regrowing forests take decades to absorb it. Whether it is green depends on where the wood comes from.",
     "source": "IPCC AR5 WGIII (2014) Annex III, Table A.III.2: life-cycle median for dedicated biomass 230 gCO2e/kWh, range 130-420 (excludes land-use change, hence debated). https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf",
     "confidence": "high"
@@ -105,6 +108,7 @@
       "sustainability": 3,
       "responsibility": 1
     },
+    "setFlags": ["built-wind", "built-renewable"],
     "whyItMatters": "Wind is clean and cheap to run, but it needs a lot of land per MW and it does not blow on demand.",
     "source": "IPCC AR5 WGIII (2014) Annex III, Table A.III.2: life-cycle median for onshore wind 11 gCO2e/kWh. Capacity factor: IRENA Renewable Power Generation Costs in 2023, global weighted average for new onshore wind 36 % (IPCC full-load hours 1800-3500 h/yr = 21-40 %). https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf ; https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2024/Sep/IRENA_Renewable_power_generation_costs_in_2023.pdf",
     "confidence": "high"
@@ -128,6 +132,7 @@
     "scoreDelta": {
       "sustainability": 3
     },
+    "setFlags": ["built-solar", "built-renewable"],
     "whyItMatters": "Solar is clean and cheap to run, but only works by day: a sunny site produces twice as much as a northern one.",
     "source": "IPCC AR5 WGIII (2014) Annex III, Table A.III.2: life-cycle median for utility-scale PV 48 gCO2e/kWh. Capacity factor: IRENA Renewable Power Generation Costs in 2023, global weighted average for new utility PV 16 %; IPCC full-load hours 1200-2400 h/yr (a 2x spread between poor and good sites). https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf ; https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2024/Sep/IRENA_Renewable_power_generation_costs_in_2023.pdf",
     "confidence": "high"
@@ -156,6 +161,7 @@
       "sustainability": 1,
       "responsibility": -2
     },
+    "setFlags": ["built-dam", "built-renewable"],
     "whyItMatters": "Hydro is low-carbon and dependable, but a dam floods land, blocks fish and changes the river for everyone downstream.",
     "source": "IPCC AR5 WGIII (2014) Annex III, Table A.III.2: life-cycle median for hydropower 24 gCO2e/kWh (range 1-2200: reservoirs can emit methane). Capacity factor: IRENA 2023, new hydropower 53 %; game uses 45 %. https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf ; https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2024/Sep/IRENA_Renewable_power_generation_costs_in_2023.pdf",
     "confidence": "high"

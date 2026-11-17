@@ -3,7 +3,7 @@
 > **Generated** by `npm run docs:catalog` from `/content`. Do not edit by hand: edit the JSON, then regenerate.
 > Units: money in k€, 1 tick = 1 quarter. S = sustainability, R = responsibility. Field meanings: `engine/types.ts`.
 
-**4 locations · 29 upgrades · 16 events · 9 clients · 12 quiz questions**
+**4 locations · 29 upgrades · 20 events · 10 clients · 18 quiz questions**
 
 ## Locations
 
@@ -81,9 +81,13 @@ Family is **hidden from players** until the end screen. Slice = part of the firs
 | `heatwave` | random | {"minTick":3} | `throttle` (responsible): cash -150 · S 0 / R 2<br>`max-chillers` (neutral): for 2 ticks: pue +0.15<br>`spray` (greedy): envDebt +4 · for 2 ticks: wue +1 | q-pue | ✓ |
 | `cascade-failure` | random | {"statGte":{"failureRate":0.07}} | `repair` (neutral): cash -400<br>`degrade` (greedy): demandPct -0.1 · S 0 / R -3 | — |  |
 | `ewaste-broker` | random | {"minTick":8} | `take-deal` (greedy): cash +150, envDebt +10 · S 0 / R -8 · later: 40% +6t demandPct -0.05<br>`certified` (responsible): cash -120 · S 2 / R 3 | q-ewaste |  |
-| `investor-pressure` | random | {"minTick":5} | `hypergrowth` (greedy): cash +500 · for 8 ticks: growthRate +0.03 · S 0 / R -4<br>`green-terms` (neutral): cash +300 · for 8 ticks: growthRate +0.01 · S 0 / R 1<br>`steady` (responsible): S 0 / R 4 | — |  |
+| `investor-pressure` | random | {"minTick":5} | `hypergrowth` (greedy): cash +500 · for 8 ticks: growthRate +0.03 · S 0 / R -4<br>`green-terms` (neutral): cash +300 · for 8 ticks: growthRate +0.01 · S 0 / R 1<br>`steady` (responsible): S 0 / R 4 | q-governance-rebound |  |
 | `chip-shortage` | random | {"minTick":6} | `pay-up` (greedy): cash -400<br>`extend` (responsible): for 6 ticks: failureRate +0.02 · S 1 / R 2<br>`grey-market` (greedy): cash -150, envDebt +4 · S 0 / R -5 | q-lifecycle |  |
 | `fuel-price-spike` | random | {"minTick":8} | `pay` (neutral): for 8 ticks: energyPricePct +0.4<br>`dirtier` (greedy): envDebt +8 · for 8 ticks: energyPricePct +0.1 · S 0 / R -5<br>`hedge` (responsible): cash -400 | q-carbon-grid |  |
+| `drought-cooling` | random | {"flagsSet":["built-thermal"],"minTick":6} | `cut-back` (responsible): for 1 ticks: pricePct -0.12 · S 1 / R 4<br>`buy-water` (neutral): cash -350, envDebt +2<br>`keep-pumping` (greedy): envDebt +8 · S 0 / R -6 · later: 60% +4t cash -500 | q-thermal-water |  |
+| `coal-protest` | consequence | {"flagsSet":["built-coal"],"minTick":6} | `filters` (responsible): cash -600, envDebt -4 · S 1 / R 5<br>`pr` (neutral): cash -150 · S 0 / R -2<br>`wait` (greedy): envDebt +5 · S 0 / R -6 · later: 50% +6t demandPct -0.06 | q-land-use |  |
+| `pellet-scandal` | consequence | {"flagsSet":["built-biomass"],"minTick":8} | `certify` (responsible): cashPerTick -20 · S 2 / R 4<br>`audit` (neutral): cash -200 · S 0 / R 1<br>`spin` (greedy): envDebt +4 · S 0 / R -6 · later: 50% +6t greenwash-scandal | q-lifecycle-emissions |  |
+| `wind-coop` | random | {"minTick":6} | `co-own` (responsible): cash -500, cashPerTick +15 · S 1 / R 6<br>`lease` (neutral): cashPerTick +8 · S 0 / R 1<br>`sell-hill` (greedy): cash +400, envDebtPerTick +0.2 · S 0 / R -5 | q-capacity-factor |  |
 
 ## Clients (workload intake)
 
@@ -98,6 +102,7 @@ Family is **hidden from players** until the end screen. Slice = part of the firs
 | `deepfake-ads` | not-needed | `accept` (greedy): demandPct +0.3, pricePct +0.04, envDebtPerTick +0.8 · S 0 / R -8<br>`refuse` (responsible): S 0 / R 4<br>`alternative` (responsible): demandPct +0.06 · S 0 / R 5 | q-dc-electricity |  |
 | `daily-retrain` | partly | `accept` (greedy): demandPct +0.2, envDebtPerTick +0.4 · S 0 / R -4<br>`refuse` (neutral): S 0 / R 2<br>`alternative` (responsible): demandPct +0.05 · S 0 / R 6 | q-retrain |  |
 | `smart-grid` | needed | `accept` (responsible): demandPct +0.06, envDebt -3 · S 0 / R 5<br>`refuse` (neutral): S 0 / R -3 | — |  |
+| `streamleaf` | not-ai | `accept` (greedy): demandPct +0.15, cashPerTick +20 · S 0 / R -4 · later: 60% +8t greenwash-scandal<br>`honest` (neutral): demandPct +0.08 · S 0 / R 2<br>`alternative` (responsible): demandPct +0.04 · S 1 / R 6 | q-devices-footprint |  |
 
 ## Quiz
 
@@ -115,3 +120,9 @@ Family is **hidden from players** until the end screen. Slice = part of the firs
 | `q-eed` | In the EU, which datacenters must report their energy and water figures? | Those with at least 500 kW of IT power | high | Energy Efficiency Directive (EU) 2023/1791, Art. 12(1) (≥ 500 kW installed IT power, yearly); Delegated Regulation (EU) 2024/1364. https://eur-lex.europa.eu/eli/dir/2023/1791/oj ; https://eur-lex.europa.eu/eli/reg_del/2024/1364/oj |
 | `q-ai-alternative` | A bank wants an AI chatbot to answer its 20 most common questions. What's the most frugal option? | A searchable FAQ or decision tree | high | AFNOR Spec 2314: consider alternatives to AI |
 | `q-retrain` | When should a model be retrained, according to frugal-AI best practice? | When defined criteria, like data drift, justify it | high | AFNOR Spec 2314: 'Defining criteria justifying retraining model' |
+| `q-land-use` | A wind farm and a coal plant make the same electricity. Which needs more land? | The wind farm: about 12× the area, but fields between turbines stay farmed | high | Lovering et al. (2022), Land-use intensity of electricity production, PLOS ONE 17(7): e0270155, medians in ha per TWh/yr: onshore wind 12 000 with spacing, 130 footprint only; coal 1 000 incl. mining; ground PV 2 000; dedicated biomass 58 000. https://doi.org/10.1371/journal.pone.0270155 |
+| `q-capacity-factor` | A solar farm is rated 10 MW. How much does it deliver on average over a year? | About 1.6 MW | high | IRENA, Renewable Power Generation Costs in 2023, Table S1: global weighted-average capacity factor of new utility PV 16 %, onshore wind 36 %. https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2024/Sep/IRENA_Renewable_power_generation_costs_in_2023.pdf |
+| `q-lifecycle-emissions` | Counting construction, fuel and dismantling, how much CO2 does onshore wind emit per kWh? Coal emits about 820 g. | About 11 g | high | IPCC AR5 WGIII (2014) Annex III, Table A.III.2, life-cycle medians (gCO2e/kWh): wind onshore 11, utility PV 48, biomass dedicated 230, gas CC 490, coal 820. https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf |
+| `q-devices-footprint` | In France, which part of digital tech had the biggest carbon footprint in the 2022 ADEME-Arcep study? | User devices (phones, TVs, laptops) | high | ADEME-Arcep (Jan 2022), environmental footprint of digital in France (2020 data): devices 79 %, datacenters 16 %, networks 5 % of the carbon footprint; manufacturing 78 %. https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf |
+| `q-thermal-water` | Which power plants consume the most cooling water per MWh? | Coal and other steam plants | high | Macknick et al. (2012), Operational water consumption factors for electricity generating technologies, Environ. Res. Lett. 7 045802, medians with cooling towers: coal 687, biopower 553, gas CC 205, PV 1, wind 0 gal/MWh (coal ~2.6 m3/MWh, gas ~0.8). https://doi.org/10.1088/1748-9326/7/4/045802 |
+| `q-governance-rebound` | Your AI service got twice as efficient per request, and usage tripled. What should your governance track? | Total energy and emissions, not just efficiency per request | high | AFNOR Spec 2314, General framework for frugal AI (CGDD/Ecolab, June 2024): rebound effect, absolute indicators. https://www.ecologie.gouv.fr/presse/publication-du-referentiel-general-lia-frugale-sattaquer-limpact-environnemental-lia |
