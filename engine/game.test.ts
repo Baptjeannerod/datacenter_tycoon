@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loadContent } from './content';
 import { derive, resolveUpgrade } from './derive';
-import { applyAction, buildOptions, canBuy, createGame, currentDecision, demolishOption, policyOptions, riverPlot, saturate, step, upgradeOptions } from './game';
+import { applyAction, buildOptions, canBuy, createGame, currentDecision, demolishOption, policyOptions, riverPlot, saturate, step, sustainabilityTaxFor, upgradeOptions } from './game';
 import { dispatch, plantInfos, powerBudget } from './power';
 import { nextRandom, seedFromString } from './rng';
 import { archetypeOf, computeScores, legacyScore, summarize } from './scoring';
@@ -37,9 +37,11 @@ describe('rng', () => {
 });
 
 describe('createGame', () => {
-  it('starts with one hall and one gas plant on 9 plots', () => {
+  it('starts with one hall and one gas plant on 16 land plots + the river spot', () => {
     const s = newGame();
-    expect(s.plots).toHaveLength(9);
+    expect(content.balance.landPlots).toBe(16);
+    expect(s.plots).toHaveLength(17);
+    expect(riverPlot(content)).toBe(16);
     expect(s.plots[0]?.building).toBe('datacenter-hall');
     expect(s.plots[1]?.building).toBe('gas-plant');
     expect(s.capacityMW).toBe(2);
@@ -213,6 +215,56 @@ describe('step', () => {
     const s = advance(newGame(), 100);
     expect(['ended', 'bankrupt']).toContain(s.status);
   });
+  it('a run lasts 20 quarters', () => {
+    expect(content.balance.maxTicks).toBe(20);
+    const s = playRun(balanced, 3, 'paris-basin', content);
+    expect(s.status).toBe('ended');
+    expect(s.tick).toBe(20);
+    expect(s.history).toHaveLength(20);
+  });
+});
+
+describe('sustainability tax', () => {
+  const { sustainabilityTaxThreshold: threshold } = content.balance;
+  /** One quarter from a state whose last recorded Sustainability is `score`. */
+  const quarterAfter = (score: number) => {
+    const s0 = step(newGame(), content);
+    const s = { ...s0, history: s0.history.map((h) => ({ ...h, sustainability: score })) };
+    return step(s, content);
+  };
+  it('applies below the threshold, based on last quarter\'s Sustainability', () => {
+    const s = quarterAfter(20);
+    const h = s.history.at(-1)!;
+    expect(h.sustainabilityTax).toBeCloseTo(sustainabilityTaxFor(h.revenue, 20, content));
+    expect(h.sustainabilityTax).toBeGreaterThan(0);
+    expect(s.totals.sustainabilityTax).toBeCloseTo(h.sustainabilityTax);
+    expect(s.log.some((l) => l.text.startsWith('Sustainability tax'))).toBe(true);
+  });
+  it('does not apply at or above the threshold', () => {
+    expect(quarterAfter(threshold).history.at(-1)!.sustainabilityTax).toBe(0);
+    expect(quarterAfter(90).history.at(-1)!.sustainabilityTax).toBe(0);
+    expect(sustainabilityTaxFor(1000, threshold + 1, content)).toBe(0);
+  });
+  it('costs about a quarter of revenue at Sustainability 20', () => {
+    const share = sustainabilityTaxFor(1000, 20, content) / 1000;
+    expect(share).toBeGreaterThan(0.22);
+    expect(share).toBeLessThan(0.28);
+  });
+  it('lowers net cash by exactly the tax (same quarter, same luck)', () => {
+    const taxed = quarterAfter(20).history.at(-1)!;
+    const untaxed = quarterAfter(90).history.at(-1)!;
+    expect(untaxed.net - taxed.net).toBeCloseTo(taxed.sustainabilityTax);
+  });
+  it('shows up in the end-of-run summary', () => {
+    const s = playRun(greedy, 1, 'sun-belt', content);
+    expect(s.totals.sustainabilityTax).toBeGreaterThan(0);
+    expect(summarize(s, content).gaveUp.some((g) => g.includes('sustainability tax'))).toBe(true);
+  });
+  it('the Eco-tax law card fires once, the first time Sustainability drops below the threshold', () => {
+    const s = playRun(greedy, 1, 'sun-belt', content);
+    expect(s.firedEvents.filter((e) => e === 'eco-tax-law')).toHaveLength(1);
+    expect(playRun(virtuous, 1, 'nordic-fjord', content).firedEvents).not.toContain('eco-tax-law');
+  });
 });
 
 describe('upgrades', () => {
@@ -322,7 +374,7 @@ describe('scoring', () => {
     expect(archetypeOf(0.3, 20)).toBe('lost-in-the-fog');
   });
   it('summarize explains what was gained and given up', () => {
-    const sum = summarize(advance(newGame(), 40), content);
+    const sum = summarize(advance(newGame(), content.balance.maxTicks), content);
     expect(sum.gained.length).toBeGreaterThan(0);
     expect(sum.gaveUp.length).toBeGreaterThan(0);
   });

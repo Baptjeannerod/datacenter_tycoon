@@ -1,5 +1,5 @@
 export * from './types';
-export { createGame, step, applyAction, currentDecision, buildOptions, upgradeOptions, policyOptions, canBuy, demolishOption, readStat, plotCount, riverPlot, plotPlacement, saturate } from './game';
+export { createGame, step, applyAction, currentDecision, buildOptions, upgradeOptions, policyOptions, canBuy, demolishOption, sustainabilityTaxFor, readStat, plotCount, riverPlot, plotPlacement, saturate } from './game';
 export type { PendingDecision, NewGameOptions, Option, DemolishOption } from './game';
 export { plantInfos, powerBudget, expectedIntensity, mwPerLoad, upgradeDrawMW } from './power';
 export type { PlantInfo, PowerBudget } from './power';

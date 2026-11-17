@@ -84,7 +84,7 @@ export function createGame(opts: NewGameOptions, content: Content): GameState {
     quizAnswers: [],
     decisions: [],
     baselineEnergyMWh: loc.startDemandMW * b.hoursPerTick * loc.basePue,
-    totals: { revenue: 0, energyMWh: 0, co2T: 0, waterM3: 0, eWasteT: 0, outages: 0, carbonTax: 0 },
+    totals: { revenue: 0, energyMWh: 0, co2T: 0, waterM3: 0, eWasteT: 0, outages: 0, carbonTax: 0, sustainabilityTax: 0 },
     history: [],
     log: [],
   };
@@ -405,6 +405,16 @@ function applyChoice(s: GameState, content: Content, choice: Choice, source: str
   log(s, stanceKind, choice.outcome);
 }
 
+/**
+ * Sustainability tax for one quarter: below the threshold, a share of revenue that grows
+ * linearly as the score falls. revenue × maxPct × (threshold − score) / threshold.
+ */
+export function sustainabilityTaxFor(revenue: number, sustainability: number, content: Content): number {
+  const { sustainabilityTaxThreshold: t, sustainabilityTaxMaxPct: pct } = content.balance;
+  if (t <= 0 || sustainability >= t || revenue <= 0) return 0;
+  return (revenue * pct * (t - Math.max(0, sustainability))) / t;
+}
+
 // ---------------------------------------------------------------------------
 // Public transitions
 // ---------------------------------------------------------------------------
@@ -487,7 +497,12 @@ export function step(state: GameState, content: Content): GameState {
   const waterM3 = itEnergyMWh * d.wue + production.reduce((a, mw, i) => a + mw * H * plants[i].waterPerMWh, 0);
   const opex = b.fixedOpexPerTick + s.capacityMW * b.maintenancePerMW;
   const carbonTax = (co2T * d.carbonPrice) / 1000;
-  const net = revenue - energyCost - opex - carbonTax + d.cashPerTick - refreshCost;
+  // Sustainability tax: based on last quarter's score (no circular dependency on this quarter's numbers).
+  const prevSustainability = s.history.at(-1)?.sustainability ?? computeScores(state, content).sustainability;
+  const sustainabilityTax = sustainabilityTaxFor(revenue, prevSustainability, content);
+  if (sustainabilityTax > 0)
+    log(s, 'bad', `Sustainability tax: ${fmtK(sustainabilityTax)} (${Math.round((100 * sustainabilityTax) / revenue)}% of revenue) because your Sustainability was ${Math.round(prevSustainability)} < ${b.sustainabilityTaxThreshold}.`);
+  const net = revenue - energyCost - opex - carbonTax - sustainabilityTax + d.cashPerTick - refreshCost;
   s.cash += net;
 
   // Environmental debt: the hidden bill.
@@ -503,6 +518,7 @@ export function step(state: GameState, content: Content): GameState {
   s.totals.waterM3 += waterM3;
   s.totals.eWasteT += eWasteT;
   s.totals.carbonTax += carbonTax;
+  s.totals.sustainabilityTax += sustainabilityTax;
 
   // Trust fades unless maintained: responsibility drifts back toward 50.
   s.responsibility += (50 - s.responsibility) * b.responsibilityDrift;
@@ -518,6 +534,7 @@ export function step(state: GameState, content: Content): GameState {
     energyCost,
     opex,
     carbonTax,
+    sustainabilityTax,
     capex: refreshCost,
     net,
     cash: s.cash,
@@ -548,7 +565,7 @@ export function step(state: GameState, content: Content): GameState {
   if (s.tick >= b.maxTicks) {
     s.status = 'ended';
     s.queue = [];
-    log(s, 'info', 'Ten years have passed. Time to look back.');
+    log(s, 'info', `${b.maxTicks / 4} years have passed. Time to look back.`);
     return s;
   }
 
