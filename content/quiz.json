@@ -21,7 +21,7 @@
     "correctIndex": 1,
     "explanation": "Around 415 TWh, about 1.5 %. Small today, but the IEA expects it to more than double, to about 945 TWh, by 2030, driven by AI.",
     "themes": ["energy-mix"],
-    "source": "IEA, Energy and AI (2025), executive summary: ~415 TWh, ~1.5 % of world electricity in 2024; ~945 TWh by 2030. https://www.iea.org/reports/energy-and-ai/executive-summary",
+    "source": "IEA, Energy and AI (2025). https://www.iea.org/reports/energy-and-ai/executive-summary",
     "confidence": "high"
   },
   {
@@ -61,7 +61,7 @@
     "correctIndex": 0,
     "explanation": "Offsets don't remove your own emissions. The EU now bans product neutrality claims based on offsetting.",
     "themes": ["honest-communication"],
-    "source": "Directive (EU) 2024/825, Annex I point 4c (offset-based neutrality claims banned); AFNOR Spec 2314 (how to communicate). https://eur-lex.europa.eu/eli/dir/2024/825/oj",
+    "source": "Directive (EU) 2024/825, Annex I 4c; AFNOR Spec 2314. https://eur-lex.europa.eu/eli/dir/2024/825/oj",
     "confidence": "high"
   },
   {
@@ -81,7 +81,7 @@
     "correctIndex": 1,
     "explanation": "About 22 % of 62 million tonnes. The rest was not documented as properly handled.",
     "themes": ["lifecycle"],
-    "source": "Global E-waste Monitor 2024 (UNITAR/ITU): 62 Mt in 2022, 22.3 % documented as formally collected and recycled. https://ewastemonitor.info/the-global-e-waste-monitor-2024/",
+    "source": "Global E-waste Monitor 2024 (UNITAR/ITU). https://ewastemonitor.info/the-global-e-waste-monitor-2024/",
     "confidence": "high"
   },
   {
@@ -91,7 +91,7 @@
     "correctIndex": 0,
     "explanation": "Making devices dominates their footprint. Keeping them longer is one of the most effective actions.",
     "themes": ["lifecycle"],
-    "source": "ADEME-Arcep (Jan 2022): devices are 65-90 % of the digital footprint depending on the indicator; manufacturing is 78 % of the carbon footprint. https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf",
+    "source": "ADEME-Arcep (2022). https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf",
     "confidence": "high"
   },
   {
@@ -111,7 +111,7 @@
     "correctIndex": 1,
     "explanation": "The Energy Efficiency Directive requires datacenters of 500 kW IT power or more to report key indicators each year.",
     "themes": ["measure", "governance"],
-    "source": "Energy Efficiency Directive (EU) 2023/1791, Art. 12(1) (≥ 500 kW installed IT power, yearly); Delegated Regulation (EU) 2024/1364. https://eur-lex.europa.eu/eli/dir/2023/1791/oj ; https://eur-lex.europa.eu/eli/reg_del/2024/1364/oj",
+    "source": "Directive (EU) 2023/1791, Art. 12. https://eur-lex.europa.eu/eli/dir/2023/1791/oj",
     "confidence": "high"
   },
   {
@@ -148,7 +148,7 @@
     "themes": [
       "energy-mix"
     ],
-    "source": "Lovering et al. (2022), Land-use intensity of electricity production, PLOS ONE 17(7): e0270155, medians in ha per TWh/yr: onshore wind 12 000 with spacing, 130 footprint only; coal 1 000 incl. mining; ground PV 2 000; dedicated biomass 58 000. https://doi.org/10.1371/journal.pone.0270155",
+    "source": "Lovering et al. (2022), PLOS ONE. https://doi.org/10.1371/journal.pone.0270155",
     "confidence": "high"
   },
   {
@@ -166,7 +166,7 @@
       "energy-mix",
       "measure"
     ],
-    "source": "IRENA, Renewable Power Generation Costs in 2023, Table S1: global weighted-average capacity factor of new utility PV 16 %, onshore wind 36 %. https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2024/Sep/IRENA_Renewable_power_generation_costs_in_2023.pdf",
+    "source": "IRENA, Renewable Power Generation Costs in 2023. https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2024/Sep/IRENA_Renewable_power_generation_costs_in_2023.pdf",
     "confidence": "high"
   },
   {
@@ -184,7 +184,7 @@
       "lifecycle",
       "energy-mix"
     ],
-    "source": "IPCC AR5 WGIII (2014) Annex III, Table A.III.2, life-cycle medians (gCO2e/kWh): wind onshore 11, utility PV 48, biomass dedicated 230, gas CC 490, coal 820. https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf",
+    "source": "IPCC AR5 WGIII Annex III (2014). https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf",
     "confidence": "high"
   },
   {
@@ -201,7 +201,7 @@
     "themes": [
       "lifecycle"
     ],
-    "source": "ADEME-Arcep (Jan 2022), environmental footprint of digital in France (2020 data): devices 79 %, datacenters 16 %, networks 5 % of the carbon footprint; manufacturing 78 %. https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf",
+    "source": "ADEME-Arcep (2022). https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf",
     "confidence": "high"
   },
   {
@@ -219,7 +219,7 @@
       "water",
       "energy-mix"
     ],
-    "source": "Macknick et al. (2012), Operational water consumption factors for electricity generating technologies, Environ. Res. Lett. 7 045802, medians with cooling towers: coal 687, biopower 553, gas CC 205, PV 1, wind 0 gal/MWh (coal ~2.6 m3/MWh, gas ~0.8). https://doi.org/10.1088/1748-9326/7/4/045802",
+    "source": "Macknick et al. (2012), Environ. Res. Lett. https://doi.org/10.1088/1748-9326/7/4/045802",
     "confidence": "high"
   },
   {
@@ -237,7 +237,7 @@
       "rebound",
       "governance"
     ],
-    "source": "AFNOR Spec 2314, General framework for frugal AI (CGDD/Ecolab, June 2024): rebound effect, absolute indicators. https://www.ecologie.gouv.fr/presse/publication-du-referentiel-general-lia-frugale-sattaquer-limpact-environnemental-lia",
+    "source": "AFNOR Spec 2314, frugal AI (2024). https://www.ecologie.gouv.fr/presse/publication-du-referentiel-general-lia-frugale-sattaquer-limpact-environnemental-lia",
     "confidence": "high"
   }
 ]

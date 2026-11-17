@@ -32,7 +32,12 @@ Rule used for `confidence`: **high** means every factual claim in the player-fac
 | Carbon price | EU ETS averages ~€80 (2022), ~€84 (2023), ~€65 (2024), ~€73/t (2025) | ICAP EU ETS factsheet: https://icapcarbonaction.com/en/ets/eu-emissions-trading-system-eu-ets | high |
 | Grid saturation | EirGrid: no new Dublin-region datacenter connections until 2028 (2022 decision) | https://www.datacenterdynamics.com/en/news/eirgrid-says-no-new-applications-for-data-centers-in-dublin-till-2028 | high |
 | Water conflicts | Chile court partly reversed Google's Cerrillos permit over water during a drought (2024); Google moved to air cooling | https://www.datacenterdynamics.com/en/news/chile-partially-reverses-google-data-center-permit-over-water-use-concerns | high |
+| Land use | per TWh a year (medians): onshore wind 12 000 ha with spacing, 130 ha footprint only; coal 1 000 ha incl. mining; ground PV 2 000; dedicated biomass 58 000; nuclear 7.1 | Lovering et al. (2022), PLOS ONE 17(7): e0270155, https://doi.org/10.1371/journal.pone.0270155 | high |
+| Cooling water | consumption with cooling towers (medians): coal 687, biopower 553, gas CC 205, PV 1, wind 0 gal/MWh (coal ~2.6 m³/MWh, gas ~0.8) | Macknick et al. (2012), Environ. Res. Lett. 7 045802, https://doi.org/10.1088/1748-9326/7/4/045802 | high |
+| Frugal AI framework | AFNOR Spec 2314 (June 2024): question the need, rebound effect, absolute indicators, 31 best practices | https://www.ecologie.gouv.fr/presse/publication-du-referentiel-general-lia-frugale-sattaquer-limpact-environnemental-lia ; summary https://greentechinnovation.fr/storage/2024/06/Referentiel-general-pour-lIA-frugale.pdf | high |
 | Rebound effect | efficiency gains can raise total consumption | AFNOR Spec; Jevons paradox literature | high |
+
+Quiz `source` strings are kept short (citation + URL) because the quiz card shows them to players; the detail is in this table.
 
 Corrections made during RES-1: the IEA projection is "more than double (~945 TWh) by 2030", not "roughly double"; the recycled share of e-waste is "less than a quarter (22.3 %)", not "about a fifth"; the EED threshold is "500 kW of IT power or more", not "above 500 kW".
 
