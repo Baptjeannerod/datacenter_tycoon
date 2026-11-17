@@ -37,7 +37,7 @@
         "outcome": "Exemption granted for two years. A journalist published your lobbying bill.",
         "delayed": [
           {
-            "afterTicks": 8,
+            "afterTicks": 4,
             "setFlags": [
               "carbon-tax"
             ],
@@ -118,7 +118,7 @@
         },
         "delayed": [
           {
-            "afterTicks": 6,
+            "afterTicks": 3,
             "chance": 0.5,
             "triggerEvent": "public-scandal"
           }
@@ -151,7 +151,7 @@
         "label": "Accept the cap",
         "stance": "neutral",
         "temporary": {
-          "durationTicks": 8,
+          "durationTicks": 4,
           "effects": {
             "growthCap": 0
           }
@@ -180,7 +180,7 @@
         "stance": "responsible",
         "hint": "Share heat, jobs and data; growth paused.",
         "temporary": {
-          "durationTicks": 8,
+          "durationTicks": 4,
           "effects": {
             "growthCap": 0,
             "cashPerTick": 30
@@ -248,7 +248,7 @@
           "demandPct": -0.05
         },
         "temporary": {
-          "durationTicks": 6,
+          "durationTicks": 3,
           "effects": {
             "growthCap": 0
           }
@@ -302,7 +302,7 @@
         "outcome": "The story fades, for now.",
         "delayed": [
           {
-            "afterTicks": 4,
+            "afterTicks": 2,
             "chance": 0.5,
             "effects": {
               "demandPct": -0.12
@@ -333,7 +333,7 @@
       "statGte": {
         "wue": 1.5
       },
-      "minTick": 6
+      "minTick": 3
     },
     "choices": [
       {
@@ -344,7 +344,7 @@
           "demandPct": -0.15
         },
         "temporary": {
-          "durationTicks": 6,
+          "durationTicks": 3,
           "effects": {
             "pue": 0.1
           }
@@ -482,7 +482,7 @@
       "flagsSet": [
         "efficiency-gain"
       ],
-      "minTick": 4
+      "minTick": 2
     },
     "choices": [
       {
@@ -493,9 +493,9 @@
           "demandPct": 0.4
         },
         "temporary": {
-          "durationTicks": 8,
+          "durationTicks": 4,
           "effects": {
-            "growthRate": 0.01
+            "growthRate": 0.02
           }
         },
         "scoreDelta": {
@@ -518,9 +518,9 @@
         "label": "Cap growth, bank the savings",
         "stance": "responsible",
         "temporary": {
-          "durationTicks": 8,
+          "durationTicks": 4,
           "effects": {
-            "growthCap": 0.01
+            "growthCap": 0.02
           }
         },
         "scoreDelta": {
@@ -545,7 +545,7 @@
       "honest-communication"
     ],
     "when": {
-      "minTick": 10
+      "minTick": 5
     },
     "choices": [
       {
@@ -586,7 +586,7 @@
         },
         "delayed": [
           {
-            "afterTicks": 8,
+            "afterTicks": 4,
             "chance": 0.5,
             "triggerEvent": "permit-audit"
           }
@@ -609,7 +609,7 @@
       "water"
     ],
     "when": {
-      "minTick": 3
+      "minTick": 2
     },
     "weight": 2,
     "repeatable": true,
@@ -631,7 +631,7 @@
         "label": "Max out the chillers",
         "stance": "neutral",
         "temporary": {
-          "durationTicks": 2,
+          "durationTicks": 1,
           "effects": {
             "pue": 0.15
           }
@@ -643,7 +643,7 @@
         "label": "Spray water on the coolers",
         "stance": "greedy",
         "temporary": {
-          "durationTicks": 2,
+          "durationTicks": 1,
           "effects": {
             "wue": 1.0
           }
@@ -709,7 +709,7 @@
       "lifecycle"
     ],
     "when": {
-      "minTick": 8
+      "minTick": 4
     },
     "choices": [
       {
@@ -725,7 +725,7 @@
         },
         "delayed": [
           {
-            "afterTicks": 6,
+            "afterTicks": 3,
             "chance": 0.4,
             "effects": {
               "demandPct": -0.05
@@ -766,7 +766,7 @@
       "governance"
     ],
     "when": {
-      "minTick": 5
+      "minTick": 3
     },
     "choices": [
       {
@@ -777,9 +777,9 @@
           "cash": 500
         },
         "temporary": {
-          "durationTicks": 8,
+          "durationTicks": 4,
           "effects": {
-            "growthRate": 0.03
+            "growthRate": 0.06
           }
         },
         "scoreDelta": {
@@ -795,9 +795,9 @@
           "cash": 300
         },
         "temporary": {
-          "durationTicks": 8,
+          "durationTicks": 4,
           "effects": {
-            "growthRate": 0.01
+            "growthRate": 0.02
           }
         },
         "scoreDelta": {
@@ -827,7 +827,7 @@
       "lifecycle"
     ],
     "when": {
-      "minTick": 6
+      "minTick": 3
     },
     "choices": [
       {
@@ -844,7 +844,7 @@
         "label": "Make the current fleet last",
         "stance": "responsible",
         "temporary": {
-          "durationTicks": 6,
+          "durationTicks": 3,
           "effects": {
             "failureRate": 0.02
           }
@@ -882,7 +882,7 @@
       "energy-mix"
     ],
     "when": {
-      "minTick": 8
+      "minTick": 4
     },
     "weight": 1.5,
     "choices": [
@@ -891,7 +891,7 @@
         "label": "Pay the higher price",
         "stance": "neutral",
         "temporary": {
-          "durationTicks": 8,
+          "durationTicks": 4,
           "effects": {
             "energyPricePct": 0.4
           }
@@ -903,7 +903,7 @@
         "label": "Switch to cheaper, dirtier fuel",
         "stance": "greedy",
         "temporary": {
-          "durationTicks": 8,
+          "durationTicks": 4,
           "effects": {
             "energyPricePct": 0.1
           }
@@ -928,6 +928,40 @@
     ],
     "quizId": "q-carbon-grid",
     "source": "Game design",
+    "confidence": "illustrative"
+  },
+  {
+    "id": "eco-tax-law",
+    "title": "Eco-tax law",
+    "body": "Parliament passes an eco-tax: every quarter your Sustainability stays below 50, a share of your revenue goes to the state, and the lower the score, the bigger the share.",
+    "kind": "milestone",
+    "themes": [
+      "measure"
+    ],
+    "when": {
+      "minTick": 1,
+      "statLte": {
+        "sustainability": 49.9
+      }
+    },
+    "choices": [
+      {
+        "id": "clean-up",
+        "label": "Plan a clean-up",
+        "stance": "responsible",
+        "scoreDelta": {
+          "responsibility": 2
+        },
+        "outcome": "Cleaner power and cooling will lift the score and cut the tax."
+      },
+      {
+        "id": "pay",
+        "label": "Pay it, it's a cost of doing business",
+        "stance": "greedy",
+        "outcome": "The tax comes out of revenue every quarter you stay below 50."
+      }
+    ],
+    "source": "Game rule (illustrative), inspired by carbon pricing and the EU Energy Efficiency Directive",
     "confidence": "illustrative"
   }
 ]

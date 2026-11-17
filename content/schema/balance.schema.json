@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "balance.schema.json",
-  "title": "Global tuning knobs (content/balance.json). See docs/GAME_DESIGN.md §5.",
+  "title": "Global tuning knobs (content/balance.json). See docs/GAME_DESIGN.md \u00a75.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -35,7 +35,9 @@
     "minPue",
     "landPlots",
     "startBuildings",
-    "demolishCostPct"
+    "demolishCostPct",
+    "sustainabilityTaxThreshold",
+    "sustainabilityTaxMaxPct"
   ],
   "properties": {
     "maxTicks": {
@@ -189,6 +191,18 @@
           }
         }
       }
+    },
+    "sustainabilityTaxThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Sustainability tax applies while last quarter's Sustainability is below this score."
+    },
+    "sustainabilityTaxMaxPct": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Share of revenue taxed when Sustainability is 0. Tax = revenue x maxPct x (threshold - score) / threshold."
     }
   }
 }
