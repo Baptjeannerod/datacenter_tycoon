@@ -176,3 +176,24 @@
 - `HALL_PLOTS` is kept but **deprecated**: it is the slots for the bundled content's `landPlots`, only so GameScreen's "N of M plots free" keeps compiling. Owner of GameScreen (S4/S5): switch it to `view.plots.length` and drop the import.
 - On a ~520 px tall map panel the ring around front-row and back-row plots is clamped inside the panel (existing rule in `CampusMap`, offset up to ~55 px from the plot). A taller map panel (S4) or zooming in removes it.
 - To move a plot or add decor, edit `PLOT_SLOTS` / `AREAS` / `HOUSES` in `layout.ts`; the test tells you if it lands on the river, a road or another plot.
+## 2026-11-17 14:30 · claude-opus (content-knowledge agent) · RES-1, RES-2, GD-3, COM-3
+
+**Done (branch `agent/content-knowledge`):**
+- **RES-1:** all 26 `approx` items in `/content` now cite a primary URL and are `high`: IPCC AR5 Annex III Table A.III.2 (plant emissions), IRENA *Renewable Power Generation Costs in 2023* (capacity factors), IEA *Energy and AI*, EED 2023/1791 Art. 12(1) and 26(6), Delegated Reg. 2024/1364, Directive 2024/825 Annex I 4c, Global E-waste Monitor 2024, ADEME-Arcep 2022, ICAP (ETS prices), DCD (EirGrid moratorium, Google Cerrillos). Fixed three claims: IEA 2030 = "more than double, ~945 TWh" (was "roughly double"); e-waste recycled = "less than a quarter (22.3 %)" (was "about a fifth"); EED threshold = "500 kW of IT power or more" (was "above 500 kW"). `docs/sources/SOURCES.md` rewritten with the URLs and the rule used for `high`.
+- **RES-2:** 6 new quiz questions, all sourced and `high`: `q-land-use` (Lovering 2022), `q-capacity-factor` (IRENA), `q-lifecycle-emissions` (IPCC), `q-devices-footprint` (ADEME-Arcep), `q-thermal-water` (Macknick 2012), `q-governance-rebound` (AFNOR Spec 2314). 18 questions in total.
+- **Own-power events:** `drought-cooling` (random, needs `built-thermal`), `coal-protest` (consequence, `built-coal`), `pellet-scandal` (consequence, `built-biomass`, its greedy choice can trigger `greenwash-scandal`), `wind-coop` (random), client `streamleaf` (100 % renewable claim; the greedy promise triggers `greenwash-scandal` unless you meter). Plants now `setFlags`: `built-thermal` (gas, coal, biomass), `built-coal`, `built-biomass`, `built-wind`/`built-solar`/`built-dam` + `built-renewable`. The starting gas plant sets no flag (engine `startBuildings` skips `setFlags`), so the drought only targets players who chose to build a steam plant.
+- **Reachability** (scratch script over `playRun`, 400 runs per strategy): every new event and question shows up. E.g. `coal-protest` in 50 % of greedy runs, `wind-coop` 66-93 %, `streamleaf` ~45-52 %, `q-capacity-factor` 41-50 % for virtuous/balanced, `q-land-use` 24 % greedy; `pellet-scandal` only for players who build biomass (61 % of random runs). The 5-question budget per run is the main limiter.
+- **GD-3:** wind €1.8M → €2.6M, solar €1.2M → €1.8M, dam €3.5M → €4.5M. Greedy now leads the first half in **all four** valleys and wins on money over the full run in the Sun Belt (€52.4M vs €44.6M); balanced keeps the best legacy everywhere. All sim rules green, none relaxed. Table in `GAME_DESIGN.md` §7, §11 updated, §3 notes that real-world renewables are cheaper (IRENA) and the premium stands for off-grid firming.
+- **COM-3:** `docs/PITCH.md`: 5 slides with lines to say, demo script, AFNOR mapping, sim numbers, dashboard slots, 3 jury Q&As.
+
+**Next:**
+- **Engine issue to open (dev engine):** no effect key can change a plant's output, so droughts and protests can only hit money/demand/scores. Proposed: `plantOutputPct` (persistent / temporary) scoped by `PlantType`. I could not open it on GitHub (no credentials on this machine).
+- Engine nicety: `startBuildings` could apply `setFlags` too if the team wants the drought to hit the starting gas plant.
+- `renewableShare` effect is no longer read by the plot-and-power engine (only `derive.ts` clamps it): any content using it does nothing.
+- COM-3: fill the dashboard slots in PITCH slide 4 once DEV-7 is live; rehearse once.
+- Balance: in Paris, Nordic and Coal Valley balanced still out-earns greedy over 10 years (the dam). Next lever: carbon price or coal debt rate.
+
+**Gotchas:**
+- Virtuous money dropped (Sun Belt €44M → €19M) with pricier renewables; still well above the 20 % rule (€11M) and never bankrupt.
+- New events' effect sizes are game values (`illustrative`); the facts their quiz questions teach are `high`.
+- `built-*` flags are set on build and never cleared, so after the new **Demolish** a player who tore down their coal plant can still get `coal-protest` (and `drought-cooling` after removing all steam plants). Fix needs the engine to clear a building's `setFlags` on demolish, or a "has building of type" condition (dev engine).

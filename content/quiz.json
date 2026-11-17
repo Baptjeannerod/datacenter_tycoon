@@ -19,10 +19,10 @@
     "question": "Roughly what share of the world's electricity did datacenters use in 2024?",
     "answers": ["About 0.1 %", "About 1.5 %", "About 10 %", "About 25 %"],
     "correctIndex": 1,
-    "explanation": "Around 415 TWh, about 1.5 %. Small today, but the IEA expects it to roughly double by 2030, driven by AI.",
+    "explanation": "Around 415 TWh, about 1.5 %. Small today, but the IEA expects it to more than double, to about 945 TWh, by 2030, driven by AI.",
     "themes": ["energy-mix"],
-    "source": "IEA, Energy and AI (2025)",
-    "confidence": "approx"
+    "source": "IEA, Energy and AI (2025). https://www.iea.org/reports/energy-and-ai/executive-summary",
+    "confidence": "high"
   },
   {
     "id": "q-rebound",
@@ -61,8 +61,8 @@
     "correctIndex": 0,
     "explanation": "Offsets don't remove your own emissions. The EU now bans product neutrality claims based on offsetting.",
     "themes": ["honest-communication"],
-    "source": "Directive (EU) 2024/825; AFNOR Spec 2314 (how to communicate)",
-    "confidence": "approx"
+    "source": "Directive (EU) 2024/825, Annex I 4c; AFNOR Spec 2314. https://eur-lex.europa.eu/eli/dir/2024/825/oj",
+    "confidence": "high"
   },
   {
     "id": "q-wue",
@@ -81,8 +81,8 @@
     "correctIndex": 1,
     "explanation": "About 22 % of 62 million tonnes. The rest was not documented as properly handled.",
     "themes": ["lifecycle"],
-    "source": "Global E-waste Monitor 2024 (UNITAR/ITU)",
-    "confidence": "approx"
+    "source": "Global E-waste Monitor 2024 (UNITAR/ITU). https://ewastemonitor.info/the-global-e-waste-monitor-2024/",
+    "confidence": "high"
   },
   {
     "id": "q-lifecycle",
@@ -91,8 +91,8 @@
     "correctIndex": 0,
     "explanation": "Making devices dominates their footprint. Keeping them longer is one of the most effective actions.",
     "themes": ["lifecycle"],
-    "source": "ADEME-Arcep 2022, environmental footprint of digital in France",
-    "confidence": "approx"
+    "source": "ADEME-Arcep (2022). https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf",
+    "confidence": "high"
   },
   {
     "id": "q-carbon-grid",
@@ -111,8 +111,8 @@
     "correctIndex": 1,
     "explanation": "The Energy Efficiency Directive requires datacenters of 500 kW IT power or more to report key indicators each year.",
     "themes": ["measure", "governance"],
-    "source": "Energy Efficiency Directive (EU) 2023/1791, Art. 12; Delegated Regulation (EU) 2024/1364",
-    "confidence": "approx"
+    "source": "Directive (EU) 2023/1791, Art. 12. https://eur-lex.europa.eu/eli/dir/2023/1791/oj",
+    "confidence": "high"
   },
   {
     "id": "q-ai-alternative",
@@ -132,6 +132,112 @@
     "explanation": "Define criteria that justify retraining instead of retraining by default.",
     "themes": ["question-the-need", "governance"],
     "source": "AFNOR Spec 2314: 'Defining criteria justifying retraining model'",
+    "confidence": "high"
+  },
+  {
+    "id": "q-land-use",
+    "question": "A wind farm and a coal plant make the same electricity. Which needs more land?",
+    "answers": [
+      "The wind farm: about 12× the area, but fields between turbines stay farmed",
+      "The coal plant, once you count its mines",
+      "About the same",
+      "Neither: both fit on a rooftop"
+    ],
+    "correctIndex": 0,
+    "explanation": "Per TWh a year: a wind farm spans ~12 000 ha but its turbines cover ~130; coal with its mines ~1 000. Density is coal's one advantage.",
+    "themes": [
+      "energy-mix"
+    ],
+    "source": "Lovering et al. (2022), PLOS ONE. https://doi.org/10.1371/journal.pone.0270155",
+    "confidence": "high"
+  },
+  {
+    "id": "q-capacity-factor",
+    "question": "A solar farm is rated 10 MW. How much does it deliver on average over a year?",
+    "answers": [
+      "About 10 MW",
+      "About 6 MW",
+      "About 1.6 MW",
+      "About 0.1 MW"
+    ],
+    "correctIndex": 2,
+    "explanation": "Nights, clouds and winter: new solar farms averaged a 16 % capacity factor in 2023, onshore wind 36 %. You need far more MW than you use.",
+    "themes": [
+      "energy-mix",
+      "measure"
+    ],
+    "source": "IRENA, Renewable Power Generation Costs in 2023. https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2024/Sep/IRENA_Renewable_power_generation_costs_in_2023.pdf",
+    "confidence": "high"
+  },
+  {
+    "id": "q-lifecycle-emissions",
+    "question": "Counting construction, fuel and dismantling, how much CO2 does onshore wind emit per kWh? Coal emits about 820 g.",
+    "answers": [
+      "0 g: it is renewable",
+      "About 11 g",
+      "About 230 g",
+      "About 490 g"
+    ],
+    "correctIndex": 1,
+    "explanation": "IPCC medians: wind 11, solar 48, biomass 230, gas 490, coal 820 g CO2e/kWh. Nothing is zero, but the gap is huge.",
+    "themes": [
+      "lifecycle",
+      "energy-mix"
+    ],
+    "source": "IPCC AR5 WGIII Annex III (2014). https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf",
+    "confidence": "high"
+  },
+  {
+    "id": "q-devices-footprint",
+    "question": "In France, which part of digital tech had the biggest carbon footprint in the 2022 ADEME-Arcep study?",
+    "answers": [
+      "User devices (phones, TVs, laptops)",
+      "Datacenters",
+      "Networks",
+      "All about equal"
+    ],
+    "correctIndex": 0,
+    "explanation": "Devices 79 %, datacenters 16 %, networks 5 % (2020 data), mostly from manufacturing. Lighter services let old devices last longer.",
+    "themes": [
+      "lifecycle"
+    ],
+    "source": "ADEME-Arcep (2022). https://www.arcep.fr/uploads/tx_gspublication/etude-numerique-environnement-ademe-arcep-note-synthese_janv2022.pdf",
+    "confidence": "high"
+  },
+  {
+    "id": "q-thermal-water",
+    "question": "Which power plants consume the most cooling water per MWh?",
+    "answers": [
+      "Coal and other steam plants",
+      "Wind farms",
+      "Solar panels",
+      "They all need about the same"
+    ],
+    "correctIndex": 0,
+    "explanation": "With cooling towers, coal consumes ~2.6 m³ per MWh and gas ~0.8; wind needs none, solar almost none. Droughts hit steam plants first.",
+    "themes": [
+      "water",
+      "energy-mix"
+    ],
+    "source": "Macknick et al. (2012), Environ. Res. Lett. https://doi.org/10.1088/1748-9326/7/4/045802",
+    "confidence": "high"
+  },
+  {
+    "id": "q-governance-rebound",
+    "question": "Your AI service got twice as efficient per request, and usage tripled. What should your governance track?",
+    "answers": [
+      "Total energy and emissions, not just efficiency per request",
+      "Only the efficiency gain: it is a win",
+      "Nothing: usage is the clients' business",
+      "The number of requests served"
+    ],
+    "correctIndex": 0,
+    "explanation": "Half the energy per request × 3 times the requests = 1.5× the total. The AFNOR frugal-AI framework calls this the rebound effect.",
+    "themes": [
+      "rebound",
+      "governance"
+    ],
+    "source": "AFNOR Spec 2314, frugal AI (2024). https://www.ecologie.gouv.fr/presse/publication-du-referentiel-general-lia-frugale-sattaquer-limpact-environnemental-lia",
     "confidence": "high"
   }
 ]

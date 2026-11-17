@@ -44,11 +44,11 @@ The source is the AFNOR Spec "General framework for frugal AI" (CGDD / SRI / Eco
 | Gas | 6 | €1.0M | 70 | 490 | steady, compact, emits |
 | Coal | 10 | €1.4M | 40 | 820 | cheapest MWh, densest, dirtiest, air pollution |
 | Biomass | 5 | €1.5M | 60 | 230 | "green" depends on the wood |
-| Wind | ~3 (×1.3 Nordic) | €1.8M | 8 | 11 | land-hungry, varies ±35 % |
-| Solar | ~1.7 (×1.7 Sun Belt) | €1.2M | 5 | 48 | land-hungry, varies ±20 % |
-| Dam (river spot) | ~6 (×1.5 Nordic) | €3.5M | 5 | 24 | floods the valley (debt), only one |
+| Wind | ~3 (×1.3 Nordic) | €2.6M | 8 | 11 | land-hungry, varies ±35 % |
+| Solar | ~1.7 (×1.7 Sun Belt) | €1.8M | 5 | 48 | land-hungry, varies ±20 % |
+| Dam (river spot) | ~6 (×1.5 Nordic) | €4.5M | 5 | 24 | floods the valley (debt), only one |
 
-The core tension is now **energy density vs. impact**: fossil plants pack lots of MW onto one plot and cost little upfront, so you can fit more halls and serve more clients early; renewables are cheap to run but need several plots and capital. Emission factors are IPCC AR5 life-cycle medians; costs and outputs are game values.
+The core tension is now **energy density vs. impact**: fossil plants pack lots of MW onto one plot and cost little upfront, so you can fit more halls and serve more clients early; renewables are cheap to run but need several plots and capital. Emission factors are IPCC AR5 life-cycle medians and capacity factors match IRENA 2023 (checked in RES-1, see [sources/SOURCES.md](sources/SOURCES.md)); build and running costs are game values. Renewables cost more to build here than their real-world LCOE suggests (IRENA: new wind and solar are now usually cheaper per MWh than new fossil): with no grid, the premium stands for the storage and backup an off-grid campus needs, and it keeps fossil tempting (GD-3).
 
 
 - **1 tick = 1 quarter. A run = 20 ticks = 5 years.** Target 3-6 minutes, so roughly 4-6 s per tick with auto-advance (UI decision, task DEV-1), pausing whenever a card is open.
@@ -212,8 +212,9 @@ Marked `"slice": true` in content. 1 location (Paris), 9 upgrades (hot-aisle, fr
 ## 11. Known weaknesses and open questions
 
 - **The impact axis saturates around 85-90** for any sensible play; the gap between "balanced" and "virtuous" impact is small (≈5 points). A stronger reward for sufficiency (cap growth) could widen it.
-- **Balanced out-earns greedy over a full run in every valley** in the plot-and-power model (cheap-to-run renewables and the dam beat coal once carbon is priced). Greedy still beats pure virtue. If playtesters find "green always pays" too obvious, raise renewable build costs or slow demand growth.
-- **The Sun Belt is the easy green valley**: solar is so strong that greed does not even lead the first half there.
+- **Balanced still out-earns greedy over a full run in Paris, Nordic and Coal Valley** (GD-3 addressed it partly): renewables now cost more to build, so greed leads the first half everywhere and wins on money in the Sun Belt. In the other three the dam is the reason; raising its cost (tried up to €7M) barely moves the result. Next lever if playtesters still find "green always pays": a lower carbon price or a slower debt build-up for coal.
+- **Sun Belt fixed (GD-3)**: greed now leads the first half and the full run on money there.
+- **No effect key changes a plant's output** (drought, wind lull): events can only hit money, demand and scores. A `plantOutputPct` effect by plant type would make droughts and protests bite physically (engine change, to open as an issue).
 - **Some green upgrades are no-brainers** (hot-aisle containment, free cooling in Paris) because energy is about half of revenue. Realistic, but they reduce choice. The rebound event is the counterweight.
 - **The idle strategy (buy nothing, accept everything) out-earns greedy in the Nordics**, because traps cost money. Fine ("shortcuts aren't even profitable there") but worth a playtest.
 - Debt thresholds are absolute; a much longer or shorter run needs retuning.
