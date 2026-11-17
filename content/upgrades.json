@@ -239,7 +239,7 @@
     "scope": "hall",
     "cost": 200,
     "effects": {
-      "hardwareLifespan": 8,
+      "hardwareLifespan": 4,
       "failureRate": 0.01,
       "pue": 0.02
     },
@@ -288,9 +288,9 @@
     "scope": "policy",
     "cost": 800,
     "effects": {
-      "hardwareLifespan": -8,
+      "hardwareLifespan": -4,
       "itEfficiency": 0.12,
-      "growthRate": 0.01,
+      "growthRate": 0.02,
       "pricePct": 0.05
     },
     "scoreDelta": {
@@ -319,7 +319,7 @@
       "pricePct": 0.12,
       "failureRate": 0.05,
       "pue": 0.05,
-      "hardwareLifespan": -4
+      "hardwareLifespan": -2
     },
     "scoreDelta": {
       "sustainability": -3,
@@ -344,7 +344,7 @@
     "cost": 1500,
     "powerMW": 0.5,
     "effects": {
-      "growthRate": 0.03,
+      "growthRate": 0.06,
       "pricePct": 0.1,
       "pue": 0.06,
       "envDebtPerTick": 0.8
@@ -357,7 +357,7 @@
     ],
     "delayed": [
       {
-        "afterTicks": 14,
+        "afterTicks": 7,
         "chance": 0.7,
         "triggerEvent": "ai-bubble"
       }
@@ -380,7 +380,7 @@
     "cost": 60,
     "effects": {
       "cashPerTick": 25,
-      "growthRate": 0.005
+      "growthRate": 0.01
     },
     "scoreDelta": {
       "responsibility": 3
@@ -390,7 +390,7 @@
     ],
     "delayed": [
       {
-        "afterTicks": 8,
+        "afterTicks": 4,
         "if": {
           "lacksUpgrades": [
             "energy-monitoring"
@@ -417,7 +417,7 @@
     "scope": "policy",
     "cost": 100,
     "effects": {
-      "growthRate": -0.004
+      "growthRate": -0.008
     },
     "scoreDelta": {
       "responsibility": 8
@@ -491,7 +491,7 @@
     "scope": "policy",
     "cost": 0,
     "effects": {
-      "growthCap": 0.015
+      "growthCap": 0.03
     },
     "scoreDelta": {
       "sustainability": 4,

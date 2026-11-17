@@ -30,9 +30,10 @@ export function computeScores(state: GameState, content: Content, d: DerivedStat
     carbon: clamp(1 - intensity / 900, 0, 1) * 100,
     // Water (IT cooling + plant cooling) weighted by local stress: 2.5 L/kWh x stress -> 0
     water: clamp(1 - (effWue * loc.waterStress) / 2.5, 0, 1) * 100,
-    // Lifespan 2 years -> 0, 8 years -> 60 pts; e-waste cut by 70 % -> +40 pts
+    // Lifespan relative to the default (balance.baseHardwareLifespan): half of it -> 0, twice it -> 60 pts;
+    // e-waste cut by 70 % -> +40 pts
     lifecycle:
-      clamp((d.hardwareLifespan - 8) / 24, 0, 1) * 60 + clamp((1 - d.eWasteMultiplier) / 0.7, 0, 1) * 40,
+      clamp((d.hardwareLifespan / content.balance.baseHardwareLifespan - 0.5) / 1.5, 0, 1) * 60 + clamp((1 - d.eWasteMultiplier) / 0.7, 0, 1) * 40,
     // Planetary boundaries: absolute energy vs. day one. 4x the energy -> 0
     footprint: clamp(1 - (lastEnergy / state.baselineEnergyMWh - 1) / 3, 0, 1) * 100,
   };
@@ -103,6 +104,7 @@ export function summarize(state: GameState, content: Content): RunSummary {
   if (greenSpend > 0) gaveUp.push(`${fmtMoney(greenSpend)} invested in clean power and green upgrades`);
   if (declined > 0) gaveUp.push(`${declined} client deal${declined > 1 ? 's' : ''} refused or downsized`);
   if (state.totals.carbonTax > 0) gaveUp.push(`${fmtMoney(state.totals.carbonTax)} paid in carbon tax`);
+  if (state.totals.sustainabilityTax > 0) gaveUp.push(`${fmtMoney(state.totals.sustainabilityTax)} paid in sustainability tax`);
   if (consequences > 0) gaveUp.push(`${consequences} environmental bill${consequences > 1 ? 's' : ''} came due`);
   gaveUp.push(`${Math.round(state.totals.co2T).toLocaleString('en')} t CO2e emitted`);
   gaveUp.push(`${Math.round(state.totals.waterM3).toLocaleString('en')} m³ of water used`);

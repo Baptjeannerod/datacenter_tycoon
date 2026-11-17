@@ -140,6 +140,25 @@
 - Phones that had the game open before a deploy keep the old bundle until reloaded: their events are not sent. Reload before testing.
 - Preview deployments are behind Vercel Authentication; use `vercel curl <url>/api/stats` to read them. Preview and Production share the same Redis database.
 
+## 2026-11-17 15:30 · claude-agent S1 (economy) · 20 quarters, sustainability tax, 16 plots
+
+**Done:**
+- **20 quarters** (`balance.maxTicks` 20, 5 years). Retimed: location `baseGrowth` and every `growthRate` / `growthCap` effect doubled (compounded), every `minTick` / `afterTicks` / `durationTicks` halved, `baseHardwareLifespan` 16 → 8 and lifespan effects halved, `clientEvery` 5 → 3, `maxQuizPerRun` 5 → 4, `responsibilityDrift` 0.02 → 0.04, `agingFailurePerTick` 0.01 → 0.02. The lifecycle score is now relative to `baseHardwareLifespan`. End log says "5 years have passed".
+- **Sustainability tax** (contract): `Balance.sustainabilityTaxThreshold` 50, `Balance.sustainabilityTaxMaxPct` 0.42 (≈ 25 % of revenue at Sustainability 20), `TickReport.sustainabilityTax`, `GameState.totals.sustainabilityTax`. Uses the Sustainability recorded at the end of last quarter (quarter 1 uses the starting score). Logged every quarter it applies; `summarize()` adds "€X paid in sustainability tax"; exported helper `sustainabilityTaxFor(revenue, score, content)`. New milestone card **Eco-tax law** (`eco-tax-law`) the first time Sustainability ≤ 49.9.
+- **Rebalance** so `npm run sim` stays green with the tax (no rule relaxed): `pricePerMW` ×1.7 (Sun Belt ×2.04), wind and solar cost ×1.4, `profitReference` 55 000 → 120 000, `sustainabilityBonusCap` 15 → 10.
+- **16 land plots** (separate commit): `landPlots` 16 (river = plot 16), `marketMW` ×1.6. Start buildings stay on plots 0 and 1. Balanced fills ~14 of 16 plots.
+- Tests: 20-quarter run, tax below / not above the threshold, ≈ 25 % at 20, net lowered by exactly the tax, summary line, Eco-tax card fires once. GAME_DESIGN §4-§7 updated (formulas, new results table).
+
+**Next:**
+- Merge order: the 16-plot commit needs the 16-plot map (S2). On the old 8-plot map the river spot (index 8 in the UI) no longer matches the engine's river (index 16).
+- S5: `TickReport.sustainabilityTax` and `totals.sustainabilityTax` are ready for the TaxBadge and the end screen line.
+- Balance is tuned against scripted players only: playtest the 5-minute run. In Sun Belt a do-nothing player starts at Sustainability 43, so the eco-tax (≈ 6 %) and its card hit in quarter 2: intended ("it depends"), but watch if it feels unfair.
+
+**Gotchas:**
+- CONTRACT CHANGE: `Balance` gained `sustainabilityTaxThreshold`, `sustainabilityTaxMaxPct` (required in `balance.schema.json`); `TickReport` gained `sustainabilityTax`; `GameState.totals` gained `sustainabilityTax`; `engine/index.ts` exports `sustainabilityTaxFor`. Saved games from before lack `totals.sustainabilityTax` (none are persisted today).
+- Money numbers are about 2× bigger than before (prices ×1.7, 20 quarters): balanced ends around €130-145M, greedy €50-85M.
+- Environmental debt per quarter is unchanged on purpose: doubling it (to match the shorter run) plus the tax sent greedy bankrupt in most runs.
+
 ## 2026-11-17 15:40 · claude-agent (S5) · pacing, eco-tax UI, onboarding, QA
 
 **Done (branch `agent/s5-pacing-tax-ui`):**
@@ -152,6 +171,8 @@
 **Next:**
 - S4 / whoever owns the end-screen copy: `EndScreen.tsx` still says **"Ten years later"**; with 20 quarters it is five years. I did not touch it (only the tax line is mine there).
 - If S1 changes `clientEvery` / `randomEventChance`, re-measure: cards are ~2/3 of a run's time.
+- **Integration bug, live on `main` since S1's merge (263a477), needs S2's map:** the river spot on the 8-plot map opens a land "Empty plot" ring (Hall, Gas, Coal…, no Dam), because the map still sends index 8 and the engine's river is index 16. Checked in the browser. Screenshot: `s5/merged-s1-river-spot-opens-land-ring.png` on branch `agent/s5-qa-screens`.
+- QA 15:45 (Playwright, Chromium, full runs at 1440×900, S4 also at 1280×800, no console errors): S3 PR 48 passes, including demolish then build on the freed plot. S4 PR 46 fits one screen in game and on the end screen. Its start screen still scrolls 68 px at 1280×800, and the copy says "10 years" / "Ten years later". `main` + S3 + S4 + S5 merge with HANDOFF-only conflicts, and `npm run check` is green on the result.
 
 **Gotchas:**
 - The badge uses last quarter's recorded score, not the live one: after a dirty build the KPI number drops at once, but the badge turns red only after the next quarter is recorded (that is when the engine starts taxing).
