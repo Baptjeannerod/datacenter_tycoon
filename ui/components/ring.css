@@ -1,0 +1,53 @@
+/* Ring menu (RingMenu.tsx). Sizes of .ring-item must match ITEM_W / ITEM_H there (80 × 72). */
+
+/* Anchor set by CampusMap at the tapped plot; everything below is positioned from it. */
+.ring-anchor { position: absolute; width: 0; height: 0; z-index: 5; }
+.ring { position: absolute; left: 0; top: 0; }
+.ring.measuring { visibility: hidden; }
+
+/* The wheel: a box centred on the anchor, slid / scaled by the layout pass. */
+.ring-wheel { position: absolute; left: 0; top: 0; margin-left: calc(-0.5 * (2 * var(--r) + 88px)); margin-top: calc(-0.5 * (2 * var(--r) + 80px)); transform-origin: 50% 50%; }
+.ring-disc { position: absolute; left: 50%; top: 50%; width: calc(2 * var(--r) + 92px); height: calc(2 * var(--r) + 92px); transform: translate(-50%, -50%); border-radius: 50%; background: rgba(255, 253, 246, 0.72); border: 2px dashed var(--c-ink); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+
+/* Centre: the plot's name only. */
+.ring-center { position: absolute; left: 50%; top: 50%; width: calc(2 * var(--inner)); height: calc(2 * var(--inner)); transform: translate(-50%, -50%); border-radius: 50%; background: var(--c-surface); border: 2px solid var(--c-ink); display: grid; place-items: center; padding: 8px; text-align: center; overflow: hidden; }
+.ring-title { font-size: 0.95rem; line-height: 1.2; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.ring-title.long { font-size: 0.8rem; -webkit-line-clamp: 4; line-clamp: 4; }
+
+/* Options: 80 × 72 box = 42 px icon + 4 px gap + label (2 lines max). */
+.ring-item { position: absolute; width: 80px; height: 72px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; background: none; border: 0; padding: 0; font: inherit; color: var(--c-ink); cursor: pointer; animation: ring-pop var(--dur) var(--ease) both; }
+.ring-item:focus-visible { outline: none; }
+.ring-item:focus-visible .ring-icon { box-shadow: 0 0 0 3px var(--c-amber-strong); }
+.ring-icon { position: relative; flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--c-lime); border: 2px solid var(--c-ink); font-weight: 800; transition: transform var(--dur-fast) var(--ease); }
+.ring-item:hover .ring-icon, .ring-item.picked .ring-icon { transform: scale(1.1); }
+.ring-item.picked .ring-icon { background: var(--c-amber); box-shadow: 0 0 0 3px var(--c-ink); }
+.ring-item.off .ring-icon { background: var(--c-surface-2); color: var(--c-text-muted); }
+.ring-item.installed .ring-icon { background: var(--c-lavender); }
+.ring-item.danger .ring-icon { background: var(--c-red-soft); }
+.ring-item.danger.off .ring-icon { background: var(--c-surface-2); }
+/* Price: a badge on the icon's lower right, so it adds no height. */
+.ring-cost { position: absolute; left: 26px; bottom: -5px; font-family: var(--font-mono); font-size: 9px; font-weight: 400; line-height: 13px; white-space: nowrap; background: var(--c-ink); color: var(--c-on-ink); padding: 0 3px; }
+.ring-label { max-width: 80px; font-size: 10px; font-weight: 700; line-height: 12px; text-align: center; background: var(--c-surface); padding: 1px 4px; border: 1px solid var(--c-ink); overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.ring-item.picked .ring-label { background: var(--c-amber); }
+
+/* Close: at the wheel's top-right corner, outside the circle of options. */
+.ring-close { position: absolute; right: 2px; top: 2px; width: 32px; height: 32px; z-index: 2; border-radius: 50%; border: 2px solid var(--c-ink); background: var(--c-surface); font-size: 18px; font-weight: 800; line-height: 1; cursor: pointer; display: grid; place-items: center; padding: 0; color: var(--c-ink); }
+.ring-close:hover { background: var(--c-amber); }
+
+/* Detail card beside the ring (or along the bottom on a phone). */
+.ring-card { position: absolute; left: 0; top: 0; z-index: 3; display: grid; gap: 8px; padding: 12px 14px; background: var(--c-surface); border: var(--border); box-shadow: 4px 4px 0 var(--c-ink); text-align: left; animation: ring-card-in var(--dur) var(--ease) both; }
+.ring-card.danger { border-color: var(--c-red); box-shadow: 4px 4px 0 var(--c-red); }
+.ring-card.side-below { overflow-y: auto; }
+.ring-card-name { font-size: var(--fs-md); line-height: 1.2; }
+.ring-card-pitch, .ring-card-hint, .ring-card-note, .ring-card-reason { margin: 0; font-size: var(--fs-sm); line-height: 1.35; }
+.ring-card-hint { color: var(--c-text-muted); }
+.ring-card-note { font-size: var(--fs-xs); }
+.ring-card-reason { font-weight: 700; color: #a3332a; }
+.ring-card-chips { gap: 4px; }
+.ring-go { width: 100%; min-height: 40px; padding: 6px 10px; font-size: var(--fs-sm); line-height: 1.2; white-space: normal; }
+
+@keyframes ring-pop { from { opacity: 0; transform: scale(0.6); } }
+@keyframes ring-card-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ring-item, .ring-card { animation: none !important; }
+}

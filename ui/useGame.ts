@@ -141,7 +141,7 @@ export function useGame() {
     [state, decision],
   );
 
-  /** Build on a plot, install an upgrade or demolish, close the ring, and explain what it does. */
+  /** Build on a plot, install an upgrade or demolish, and explain what it does. Closes the ring, except after a demolish: it stays open on the freed plot to pick a replacement. */
   const act = useCallback(
     (action: { type: 'build'; plot: number; buildingId: string } | { type: 'buy'; upgradeId: string; plot?: number } | { type: 'demolish'; plot: number }) => {
       if (!state) return;
@@ -153,7 +153,7 @@ export function useGame() {
       const item = action.type === 'build' ? getBuilding(content, action.buildingId) : action.type === 'buy' ? getUpgrade(content, action.upgradeId) : getBuilding(content, demolished!.building);
       const dirty = action.type === 'build' && (getBuilding(content, action.buildingId).carbonPerMWh ?? 0) > 300;
       setState(next);
-      setMenu(null);
+      setMenu(action.type === 'demolish' ? action.plot : null);
       if (action.type === 'build') track('decision', { action: 'build', id: action.buildingId });
       else if (action.type === 'buy') track('decision', { action: 'buy', id: action.upgradeId, family: getUpgrade(content, action.upgradeId).family });
       // Demolish is not tracked yet: /api/event accepts choose/answer/build/buy only (see HANDOFF).
