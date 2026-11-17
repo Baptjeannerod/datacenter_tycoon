@@ -5,6 +5,7 @@
  */
 import {
   buildOptions,
+  demolishOption,
   derive,
   getBuilding,
   getLocation,
@@ -18,7 +19,9 @@ import {
   type Option,
   type Upgrade,
 } from '../../engine';
+import { useEffect } from 'react';
 import { DecisionPanel } from '../components/DecisionPanel';
+import { OnboardingTip, useOnboarding } from '../components/Onboarding';
 import { CategoryIcon, Icon } from '../components/Icons';
 import { BuildingIcon, RingMenu, type RingItem } from '../components/RingMenu';
 import { DEBT_LABEL, effectChips, money, num, quarterLabel } from '../format';
@@ -216,6 +219,9 @@ function upgradeItem(state: GameState, o: Option<Upgrade>): RingItem {
   return { id: u.id, label: u.name, name: u.name, pitch: u.pitch, cost: u.cost, icon: <CategoryIcon category={u.category} />, ok: o.ok, reason: o.reason, installed: o.installed, chips, note: r.note };
 }
 
+/** Ring item id for "tear this building down" (never a real upgrade id). */
+const DEMOLISH = '__demolish';
+
 function ringFor(game: GameController, plot: number) {
   const state = game.state!;
   if (plot < 0) {
@@ -239,6 +245,14 @@ function ringFor(game: GameController, plot: number) {
   }
   const b = getBuilding(content, p.building);
   const items = upgradeOptions(state, content, plot).map((o) => upgradeItem(state, o));
+  const demo = demolishOption(state, content, plot);
+  if (demo) {
+    const chips: RingItem['chips'] = [{ text: 'No refund', tone: 'down' }];
+    if (b.kind === 'datacenter') chips.push({ text: `−${b.itMW} MW of servers`, tone: 'down' });
+    else chips.push({ text: 'Its power is lost', tone: 'down' });
+    if (p.upgrades.length) chips.push({ text: `${p.upgrades.length} upgrade${p.upgrades.length > 1 ? 's' : ''} removed`, tone: 'info' });
+    items.push({ id: DEMOLISH, label: 'Demolish', name: `Demolish ${b.kind === 'datacenter' ? 'this hall' : b.name}`, pitch: 'Free the plot. Nothing is refunded.', cost: demo.cost, icon: <BuildingIcon kind="demolish" />, ok: demo.ok, reason: demo.reason, chips, verb: 'Demolish', danger: true });
+  }
   const hallNo = state.plots.slice(0, plot + 1).filter((x) => x && getBuilding(content, x.building).kind === 'datacenter').length;
   return (
     <RingMenu
@@ -246,14 +260,20 @@ function ringFor(game: GameController, plot: number) {
       subtitle={`${p.upgrades.length} upgrade${p.upgrades.length === 1 ? '' : 's'} installed${b.kind === 'datacenter' ? ' · applies to this hall' : ''}`}
       items={items}
       verb="Install"
-      onConfirm={(id) => game.act({ type: 'buy', upgradeId: id, plot })}
+      onConfirm={(id) => game.act(id === DEMOLISH ? { type: 'demolish', plot } : { type: 'buy', upgradeId: id, plot })}
       onClose={() => game.setMenu(null)}
     />
   );
 }
 
 export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () => void }) {
-  const { state, scores, decision, feedback } = game;
+  const { state, scores, decision, feedback, setHold } = game;
+  const tour = useOnboarding();
+  // Time stands still while a first-run hint is up.
+  useEffect(() => {
+    setHold(tour.tip >= 0);
+    return () => setHold(false);
+  }, [tour.tip, setHold]);
   if (!state || !scores) return null;
   const loc = getLocation(content, state.locationId);
   const d = derive(state, content);
@@ -299,7 +319,7 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
         <Kpis state={state} s={scores.sustainability} r={scores.responsibility} />
 
         <section className="board">
-          <div className="map-card">
+          <div className={`map-card${tour.tip === 0 ? ' tour-plots' : ''}`}>
             <div className="map-head">
               <span className="mono">YOUR CAMPUS</span>
               <span className={`status ${view.outage ? 'bad' : ''}`}>
@@ -309,7 +329,17 @@ export function GameScreen({ game, onHelp }: { game: GameController; onHelp: () 
                 {view.plots.filter((p) => p.kind === 'empty').length} of {HALL_PLOTS.length} plots free · tap a plot to build or upgrade
               </span>
             </div>
-            <CampusMap view={view} seed={state.seed} selected={game.menu} onSelect={game.setMenu} ring={game.menu !== null ? ringFor(game, game.menu) : null} />
+            <CampusMap
+              view={view}
+              seed={state.seed}
+              selected={game.menu}
+              onSelect={(plot) => {
+                if (plot !== null) tour.tapped();
+                game.setMenu(plot);
+              }}
+              ring={game.menu !== null ? ringFor(game, game.menu) : null}
+              overlay={tour.tip >= 0 && game.menu === null && !sheetOpen ? <OnboardingTip tip={tour.tip} onNext={tour.next} onSkip={tour.skip} /> : null}
+            />
             <div className="map-stats">
               <div>
                 <Icon.energy />

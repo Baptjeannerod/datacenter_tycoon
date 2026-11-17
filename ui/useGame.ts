@@ -54,6 +54,8 @@ export function useGame() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   /** Plot whose ring menu is open (-1 = policies), or null. Time pauses while it is open. */
   const [menu, setMenu] = useState<number | null>(null);
+  /** Time held by the UI (onboarding hints), without showing the game as paused. */
+  const [hold, setHold] = useState(false);
   /** Last run whose run_end was sent, so a finished run is reported once. */
   const reported = useRef<GameState | null>(null);
 
@@ -63,10 +65,10 @@ export function useGame() {
 
   // Auto-advance: one quarter every TICK_MS / speed, unless paused or a card is open.
   useEffect(() => {
-    if (!state || !playing || paused || hasDecision || feedback || menu !== null) return;
+    if (!state || !playing || paused || hold || hasDecision || feedback || menu !== null) return;
     const id = window.setTimeout(() => setState((s) => (s ? step(s, content) : s)), TICK_MS / speed);
     return () => window.clearTimeout(id);
-  }, [state, playing, paused, speed, hasDecision, feedback, menu]);
+  }, [state, playing, paused, hold, speed, hasDecision, feedback, menu]);
 
   // Outcome banners clear themselves; quiz explanations wait for "Continue".
   useEffect(() => {
@@ -139,25 +141,27 @@ export function useGame() {
     [state, decision],
   );
 
-  /** Build on a plot or install an upgrade, close the ring, and explain what it does. */
+  /** Build on a plot, install an upgrade or demolish, close the ring, and explain what it does. */
   const act = useCallback(
-    (action: { type: 'build'; plot: number; buildingId: string } | { type: 'buy'; upgradeId: string; plot?: number }) => {
+    (action: { type: 'build'; plot: number; buildingId: string } | { type: 'buy'; upgradeId: string; plot?: number } | { type: 'demolish'; plot: number }) => {
       if (!state) return;
       const next = applyAction(state, action, content);
       if (next === state) return;
       const before = computeScores(state, content);
       const after = computeScores(next, content);
-      const item = action.type === 'build' ? getBuilding(content, action.buildingId) : getUpgrade(content, action.upgradeId);
+      const demolished = action.type === 'demolish' ? state.plots[action.plot] : null;
+      const item = action.type === 'build' ? getBuilding(content, action.buildingId) : action.type === 'buy' ? getUpgrade(content, action.upgradeId) : getBuilding(content, demolished!.building);
       const dirty = action.type === 'build' && (getBuilding(content, action.buildingId).carbonPerMWh ?? 0) > 300;
       setState(next);
       setMenu(null);
       if (action.type === 'build') track('decision', { action: 'build', id: action.buildingId });
-      else track('decision', { action: 'buy', id: action.upgradeId, family: getUpgrade(content, action.upgradeId).family });
+      else if (action.type === 'buy') track('decision', { action: 'buy', id: action.upgradeId, family: getUpgrade(content, action.upgradeId).family });
+      // Demolish is not tracked yet: /api/event accepts choose/answer/build/buy only (see HANDOFF).
       setFeedback({
         kind: 'outcome',
-        title: action.type === 'build' ? 'Built' : 'Installed',
+        title: action.type === 'build' ? 'Built' : action.type === 'buy' ? 'Installed' : 'Demolished',
         label: item.name,
-        text: item.whyItMatters,
+        text: demolished ? `The plot is free again${demolished.upgrades.length ? `, and its ${demolished.upgrades.length} upgrade${demolished.upgrades.length > 1 ? 's are' : ' is'} gone` : ''}. Nothing is refunded, and bills already on their way still arrive.` : item.whyItMatters,
         stance: dirty ? 'greedy' : 'neutral',
         delta: { cash: next.cash - state.cash, s: after.sustainability - before.sustainability, r: after.responsibility - before.responsibility },
       });
@@ -173,7 +177,7 @@ export function useGame() {
 
   const scores = useMemo(() => (state ? computeScores(state, content) : null), [state]);
 
-  return { state, decision, scores, paused, setPaused, speed, setSpeed, feedback, setFeedback, menu, setMenu, start, choose, answer, act, nextQuarter, quit };
+  return { state, decision, scores, paused, setPaused, speed, setSpeed, feedback, setFeedback, menu, setMenu, hold, setHold, start, choose, answer, act, nextQuarter, quit };
 }
 
 export type GameController = ReturnType<typeof useGame>;

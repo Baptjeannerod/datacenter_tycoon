@@ -64,6 +64,7 @@ const card = currentDecision(s, content);               // { kind: 'event' | 'cl
 if (card?.kind === 'client') s = applyAction(s, { type: 'choose', choiceId: card.choices[0].id }, content);
 if (card?.kind === 'quiz') s = applyAction(s, { type: 'answer', answerIndex: 1 }, content);
 s = applyAction(s, { type: 'buy', upgradeId: 'free-cooling' }, content);   // no-op if not allowed
+s = applyAction(s, { type: 'demolish', plot: 2 }, content);                // fee = demolishCostPct × price, no refund
 const { sustainability, responsibility } = computeScores(s, content);
 if (s.status !== 'playing') console.log(summarize(s, content));            // legacy, archetype, gained/gaveUp
 ```
@@ -78,8 +79,11 @@ if (s.status !== 'playing') console.log(summarize(s, content));            // le
 
 | File | Role |
 |---|---|
-| `ui/App.tsx` | Screen switch (start → game → end), how-to-play dialog, reads `?seed=&loc=` challenge links |
-| `ui/useGame.ts` | Holds `GameState`, auto-advances one quarter every 2.6 s / speed, pauses on cards, keeps outcome and quiz feedback |
+| `ui/App.tsx` | Screen switch (start → game → end), how-to-play dialog, reads `?seed=&loc=` challenge links, starts the daily run and records its best legacy |
+| `ui/daily.ts` | Daily run: `seedFromString("YYYY-MM-DD")`, valley rotating by day, best legacy per day in localStorage (`dt-daily-best-<date>`). Dates stay in the UI: the engine never reads the clock |
+| `ui/share/` | `card.ts` draws the 1080×1350 result card on a canvas; `share.ts` shares it with the Web Share API (files) or downloads it and copies the challenge link; `og.ts` (dev helper) draws the static link preview `public/og.png` |
+| `ui/components/Onboarding.tsx` | Three first-run hints over the map, skippable, remembered in localStorage (`dt-onboarded`); time is held via `useGame().setHold` |
+| `ui/useGame.ts` | Holds `GameState`, auto-advances one quarter every 2.6 s / speed, pauses on cards, rings and hints (`hold`), keeps outcome and quiz feedback; `act()` builds, buys or demolishes |
 | `ui/screens/GameScreen.tsx` | Top bar, title + controls, KPI cards, map card, side panel (decision or quarter report), shop |
 | `ui/screens/StartScreen.tsx`, `EndScreen.tsx` | Location picker; archetype, legacy, profit-vs-impact frontier (with scripted players as reference dots), gained/gave up, trap reveal, 1-10 rating, challenge link |
 | `ui/components/DecisionPanel.tsx` | Cards (bottom sheet on phones) |

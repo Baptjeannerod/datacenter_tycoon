@@ -20,6 +20,10 @@ export interface RingItem {
   installed?: boolean;
   chips: { text: string; tone: 'up' | 'down' | 'info' }[];
   note?: string;
+  /** Overrides the menu's verb on the confirm button (e.g. "Demolish"). */
+  verb?: string;
+  /** Destructive option: drawn in red. */
+  danger?: boolean;
 }
 
 interface Props {
@@ -45,7 +49,7 @@ export function RingMenu({ title, subtitle, items, verb, onConfirm, onClose }: P
           <button
             key={it.id}
             type="button"
-            className={`ring-item${it.ok ? '' : ' off'}${it.installed ? ' installed' : ''}${picked === it.id ? ' picked' : ''}`}
+            className={`ring-item${it.ok ? '' : ' off'}${it.installed ? ' installed' : ''}${it.danger ? ' danger' : ''}${picked === it.id ? ' picked' : ''}`}
             style={{ transform: `translate(calc(${Math.cos(angle).toFixed(3)} * var(--ring-r)), calc(${Math.sin(angle).toFixed(3)} * var(--ring-r)))` }}
             onClick={() => setPicked(it.id)}
             aria-label={`${it.name}, ${it.installed ? 'installed' : it.cost === 0 ? 'free' : money(it.cost)}${it.reason && !it.installed ? `, ${it.reason}` : ''}`}
@@ -74,8 +78,8 @@ export function RingMenu({ title, subtitle, items, verb, onConfirm, onClose }: P
             )}
             {item.note && <span className="ring-note">📍 {item.note}</span>}
             {item.ok ? (
-              <button type="button" className="btn primary ring-go" onClick={() => onConfirm(item.id)}>
-                {verb} · {item.cost === 0 ? 'free' : money(item.cost)}
+              <button type="button" className={`btn ring-go ${item.danger ? 'danger' : 'primary'}`} onClick={() => onConfirm(item.id)}>
+                {item.verb ?? verb} · {item.cost === 0 ? 'free' : money(item.cost)}
               </button>
             ) : (
               <span className="ring-reason">{item.installed ? 'Already installed here' : item.reason}</span>
@@ -106,6 +110,7 @@ export function BuildingIcon({ kind }: { kind: string }) {
     wind: <path d="M12 21V11M12 11l-6-5M12 11l7-2M12 11l-1 7" {...P} />,
     solar: <path d="M3 18l3-9h12l3 9zM7.5 13.5h9M12 9v9" {...P} />,
     hydro: <path d="M3 8h18v4H3zM6 12v8M18 12v8M3 16c3-2 6 2 9 0s6 2 9 0" {...P} />,
+    demolish: <path d="M4 20h16M6 20v-6h8v6M15 4l5 5M13 6l5 5M14 10l-4 4" {...P} />,
   };
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">

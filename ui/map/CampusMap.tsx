@@ -465,9 +465,11 @@ interface MapProps {
   onSelect?: (plot: number | null) => void;
   /** The ring menu, positioned around the selected plot (or the centre for -1). */
   ring?: ReactNode;
+  /** Anything to float over the map (onboarding hints). */
+  overlay?: ReactNode;
 }
 
-export function CampusMap({ view, seed, selected = null, onSelect, ring }: MapProps) {
+export function CampusMap({ view, seed, selected = null, onSelect, ring, overlay }: MapProps) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [size, setSize] = useState({ w: BASE_VB.w, h: BASE_VB.h });
@@ -650,7 +652,8 @@ export function CampusMap({ view, seed, selected = null, onSelect, ring }: MapPr
           {ring}
         </div>
       )}
-      {limX > 40 && zoom === 1 && !ring && <span className="drag-hint">Drag to explore · tap a plot to build</span>}
+      {limX > 40 && zoom === 1 && !ring && !overlay && <span className="drag-hint">Drag to explore · tap a plot to build</span>}
+      {overlay}
       <div className="zoom">
         <button type="button" aria-label="Zoom in" onClick={() => setZ(Math.min(2.2, +(zoom + 0.4).toFixed(1)))}>
           +

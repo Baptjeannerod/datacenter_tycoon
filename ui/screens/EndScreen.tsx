@@ -7,6 +7,7 @@ import { getLocation, summarize, type GameState } from '../../engine';
 import { balanced, greedy, playRun, virtuous } from '../../engine/strategies';
 import { track } from '../analytics';
 import { ARCHETYPES, money } from '../format';
+import { shareResultCard } from '../share/share';
 import { content } from '../useGame';
 import { TopBar } from './GameScreen';
 
@@ -81,17 +82,13 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
   const link = `${window.location.origin}${window.location.pathname}?seed=${state.seed}&loc=${state.locationId}`;
   const shareText = `I scored ${sum.legacy} as a ${arch.title} in Datacenter Tycoon (${loc.name}). Same campus, same luck: can you beat me?`;
 
+  /** Share card image + challenge link (DEV-8): native share sheet, else download + copy. */
   const share = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: 'Datacenter Tycoon', text: shareText, url: link });
-        return;
-      }
-      await navigator.clipboard.writeText(`${shareText} ${link}`);
-      setCopied(true);
-    } catch {
-      /* user cancelled or clipboard blocked */
-    }
+    const result = await shareResultCard(
+      { archetypeTitle: arch.title, archetypeLine: arch.line, legacy: sum.legacy, netWorth: sum.netWorth, profitNorm: sum.profitNorm, impact: sum.impact, locationName: loc.name, bankrupt: state.status === 'bankrupt', link },
+      shareText,
+    );
+    if (result === 'downloaded' || result === 'copied') setCopied(true);
   };
 
   const rate = (v: number) => {
@@ -121,7 +118,7 @@ export function EndScreen({ state, onReplay, onHome, onHelp }: { state: GameStat
             </div>
             <div className="end-actions">
               <button className="btn primary" onClick={share}>
-                {copied ? 'Link copied!' : 'Challenge a friend'}
+                {copied ? 'Image saved · link copied!' : 'Share my result'}
               </button>
               <button className="btn" onClick={onReplay}>
                 Play again

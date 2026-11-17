@@ -37,5 +37,6 @@
   "randomEventChance": 0.25,
   "maxQuizPerRun": 5,
   "profitReference": 55000,
-  "minPue": 1.05
+  "minPue": 1.05,
+  "demolishCostPct": 0.1
 }

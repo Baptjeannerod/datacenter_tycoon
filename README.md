@@ -18,14 +18,14 @@ A mobile-first browser game built in one day for **The SMIC Day** (Social Media 
 
 ## 2. The game in 30 seconds
 
-You run a datacenter campus for 10 years (40 quarters, about 4 minutes). Tap a plot on the map to build a datacenter hall or a power plant (gas, coal, biomass, wind, solar, or a dam on the river). **There is no grid**: your halls only run on the power you build, and a hall without power shows a red "!". Tap a built plot to upgrade it; campus-wide rules live behind **Policies**. Clients knock with requests ("an LLM to write 10 million horoscopes a day?"): **accept, refuse, or propose a lighter alternative**. Events hit you: heatwaves, carbon taxes, audits, scandals. Every decision moves two scores:
+You run a datacenter campus for 10 years (40 quarters, about 4 minutes). Tap a plot on the map to build a datacenter hall or a power plant (gas, coal, biomass, wind, solar, or a dam on the river). **There is no grid**: your halls only run on the power you build, and a hall without power shows a red "!". Tap a built plot to upgrade it or **demolish** it (a 10 % fee, no refund); campus-wide rules live behind **Policies**. First-time players get three skippable hints (time waits while they read). Clients knock with requests ("an LLM to write 10 million horoscopes a day?"): **accept, refuse, or propose a lighter alternative**. Events hit you: heatwaves, carbon taxes, audits, scandals. Every decision moves two scores:
 
 | Score | What it measures |
 |---|---|
 | **Sustainability (0-100)** | Measured performance: energy efficiency (PUE), carbon, water (WUE), hardware lifecycle and e-waste, absolute footprint |
 | **Responsibility (0-100)** | Quality of decisions: questioning the need for AI, honest communication, compliance, long-term thinking |
 
-At the end you land on a **profit vs impact map** with an archetype (Frugal Tycoon, Planet Burner, Cloud Monk, Lost in the Fog) and a **Legacy score** to share: "beat my score" links replay the same seeded run.
+At the end you land on a **profit vs impact map** with an archetype (Frugal Tycoon, Planet Burner, Cloud Monk, Lost in the Fog) and a **Legacy score** to share: "Share my result" sends an image card plus a "beat my score" link that replays the same seeded run. The **Daily run** button gives everyone the same campus and luck for the day (best score kept on the device).
 
 ## 3. The core tension (do not break this)
 
@@ -85,7 +85,9 @@ npm run sim -- --runs 200    # faster
 npm run check                # everything CI runs except the build
 ```
 
-Add `?seed=123&loc=paris-basin` to the URL to open a challenge: same campus, same luck (this is what "Challenge a friend" shares).
+Add `?seed=123&loc=paris-basin` to the URL to open a challenge: same campus, same luck (this is the link "Share my result" sends with the image card).
+
+To see the first-run hints again, clear the `dt-onboarded` key in localStorage (DevTools → Application → Local Storage). Daily bests live under `dt-daily-best-YYYY-MM-DD`.
 
 ## 6. Repository map
 
@@ -94,7 +96,7 @@ engine/      Pure game simulation (no DOM, no Math.random, no clock). Unit-teste
   types.ts   Shared contracts: content shapes, game state, actions.
 content/     ALL game data as JSON: balance, locations, buildings (halls and plants), upgrades, events, clients, quiz.
   schema/    JSON Schemas mirroring engine/types.ts.
-ui/          React app: screens/ (start, game, end), components/ (cards, ring menu, icons), map/ (isometric campus, clickable plots), tokens.css.
+ui/          React app: screens/ (start, game, end), components/ (cards, ring menu, hints, icons), map/ (isometric campus, clickable plots), share/ (canvas share card), daily.ts, tokens.css.
 scripts/     validate-content.ts, sim.ts (balance), catalog.ts (docs generator).
 dashboard/   /dashboard page: live stats (DEV-7).
 api/         Analytics endpoints: POST /api/event, GET /api/stats (DEV-5).
@@ -172,13 +174,13 @@ Several people and several AI agents work in parallel. **Read [AGENTS.md](AGENTS
 
 - [x] Game design doc and scoring formulas (`docs/GAME_DESIGN.md`)
 - [x] Content: 4 locations, 22 upgrades, 16 events, 9 clients, 12 quiz questions, validated
-- [x] Engine (pure, seeded, 26 tests)
+- [x] Engine (pure, seeded, unit-tested)
 - [x] Balance simulation passing (`npm run sim`)
 - [x] Playable vertical slice: start screen, living isometric campus map (river, 8 hall plots), HUD, decision cards, quiz, shop, end screen with frontier, 1-10 rating (stored locally), challenge link
 - [x] CI, templates, agent docs
 - [ ] Rating sent to the backend (DEV-6): code in PR, live once Upstash Redis is connected on Vercel
 - [ ] Analytics + dashboard (DEV-5, DEV-7): code in PR (`/api`, `/dashboard/`), live once Upstash Redis is connected on Vercel
-- [ ] Share image card + daily runs (DEV-8, DEV-9); the challenge link already works
+- [x] First-run hints (UX-2), demolish action, share image card (DEV-8), daily run (DEV-9)
 - [x] Deployed on Vercel: https://datacenter-tycoon-plum.vercel.app (manual `vercel deploy --prod` for now; auto-deploy on push not set up yet)
 
 ## 12. Sources

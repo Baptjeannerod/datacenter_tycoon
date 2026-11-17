@@ -7,6 +7,7 @@
  *   s = applyAction(s, { type: 'build', plot: 2, buildingId: 'wind-farm' }, content);
  *   s = applyAction(s, { type: 'buy', upgradeId: 'free-cooling', plot: 0 }, content);   // on the hall on plot 0
  *   s = applyAction(s, { type: 'buy', upgradeId: 'staff-training' }, content);          // a policy
+ *   s = applyAction(s, { type: 'demolish', plot: 2 }, content);                         // tear the wind farm down again
  *   const d = currentDecision(s, content);                                // pending card, if any
  *
  * Power: there is no grid. Halls only run on power from plants you built (engine/power.ts).
@@ -205,6 +206,24 @@ export function policyOptions(state: GameState, content: Content): Option<Upgrad
                 : undefined));
       return { item: u, ok: !reason, reason, installed, needMW };
     });
+}
+
+export interface DemolishOption {
+  ok: boolean;
+  /** Demolition fee, k€ (a share of the building's price; nothing is refunded). */
+  cost: number;
+  reason?: string;
+}
+
+/** Can the building on this plot be torn down right now, and what does it cost? */
+export function demolishOption(state: GameState, content: Content, plot: number): DemolishOption | null {
+  const p = state.plots[plot];
+  if (!p) return null;
+  const bld = getBuilding(content, p.building);
+  const cost = Math.round(bld.cost * content.balance.demolishCostPct);
+  const lastHall = bld.kind === 'datacenter' && state.plots.filter((x) => x && getBuilding(content, x.building).kind === 'datacenter').length <= 1;
+  const reason = blocked(state) ?? (lastHall ? 'Your only hall: build another first' : state.cash < cost ? `Needs ${fmtK(cost)}` : undefined);
+  return { ok: !reason, cost, reason };
 }
 
 export type PendingDecision =
@@ -576,12 +595,35 @@ function buy(s: GameState, content: Content, upgradeId: string, plot?: number): 
   return true;
 }
 
+/**
+ * Tear down a building. Its upgrades go with it, and so do their persistent effects
+ * (modifiers sourced "plot:<n>:building" and "plot:<n>:<upgradeId>"). Score deltas
+ * already earned stay, and bills already scheduled (delayed effects) still arrive:
+ * demolishing the coal plant does not erase the smoke it made.
+ */
+function demolish(s: GameState, content: Content, plot: number): boolean {
+  const opt = demolishOption(s, content, plot);
+  const p = s.plots[plot];
+  if (!opt?.ok || !p) return false;
+  const bld = getBuilding(content, p.building);
+  const sources = new Set([`plot:${plot}:building`, ...p.upgrades.map((id) => `plot:${plot}:${id}`)]);
+  s.cash -= opt.cost;
+  s.modifiers = s.modifiers.filter((m) => !sources.has(m.source));
+  s.plots[plot] = null;
+  s.capacityMW = hallMW(content, s);
+  refreshOwned(s);
+  s.decisions.push(`demolish:${bld.id}`);
+  log(s, 'info', `Demolished ${bld.name}${p.upgrades.length ? ` and its ${p.upgrades.length} upgrade${p.upgrades.length > 1 ? 's' : ''}` : ''} for ${fmtK(opt.cost)}. The plot is free again.`);
+  return true;
+}
+
 export function applyAction(state: GameState, action: Action, content: Content): GameState {
   if (state.status !== 'playing') return state;
   const s = structuredClone(state);
 
   if (action.type === 'build') return build(s, content, action.plot, action.buildingId) ? s : state;
   if (action.type === 'buy') return buy(s, content, action.upgradeId, action.plot) ? s : state;
+  if (action.type === 'demolish') return demolish(s, content, action.plot) ? s : state;
 
   const pending = currentDecision(s, content);
   if (!pending) return state;

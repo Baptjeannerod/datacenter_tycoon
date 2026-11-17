@@ -428,6 +428,8 @@ export interface Balance {
   /** Net worth that counts as "full marks" for the profit axis. */
   profitReference: number;
   minPue: number;
+  /** Demolition fee as a share of the building's price. No refund of the price or its upgrades. */
+  demolishCostPct: number;
 }
 
 export interface Content {
@@ -619,5 +621,7 @@ export interface RunSummary {
 export type Action =
   | { type: 'build'; plot: number; buildingId: string }
   | { type: 'buy'; upgradeId: string; plot?: number }
+  /** Tear down the building on a plot: its upgrades and their persistent effects go with it. Costs a fee, no refund. */
+  | { type: 'demolish'; plot: number }
   | { type: 'choose'; choiceId: string }
   | { type: 'answer'; answerIndex: number };

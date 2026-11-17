@@ -101,3 +101,26 @@
 - CONTRACT CHANGE (new API shape): analytics events (`api/_lib/events.ts`) and the `Stats` JSON (`api/_lib/aggregate.ts`). Content ids must stay `[a-z0-9_-]` (all current ids do) or their events are rejected.
 - API files import siblings with `.js` extensions (`./_lib/store.js`): required by Node ESM on Vercel, resolved to `.ts` by TypeScript/Vite. Keep it that way.
 - Ratings: one per (session, seed); re-rating overwrites. A challenge link with a non-integer seed sends events that get rejected (harmless).
+
+## 2026-11-17 14:20 · claude-agent (onboarding-demolish-share) · UX-2, DEV-8, DEV-9 + demolish
+
+**Done (branch `agent/onboarding-demolish-share`):**
+- **UX-2 first-run hints** (`ui/components/Onboarding.tsx`): three bubbles at the bottom of the map: "Tap a plot to build" (empty plots blink), "Halls need power: build a plant first", "A red ! means a hall has no power". Next / Skip, shown once (`localStorage['dt-onboarded']`). Time is held while a hint is up through a new `hold` flag in `useGame` (the pause button is not touched). Tapping a plot during hint 1 counts as doing it; hint 2 shows when the ring closes. Hints hide while a ring or a card is open.
+- **Demolish**: engine action `{ type: 'demolish', plot }` and `demolishOption(state, content, plot)` (ok, cost, reason). Removes the building, its upgrades and their persistent modifiers (`plot:<n>:building`, `plot:<n>:<upgradeId>`), recomputes capacity, refreshes `owned`. Fee = `balance.demolishCostPct` (0.1) × building price, no refund. Already scheduled delayed effects and earned score deltas stay (you can't demolish your way out of a bill). The only hall can't be demolished. "Demolish" is the last item of a built plot's ring (red), confirmed in the ring centre like other options. 8 new tests in `engine/game.test.ts`; the brownout test now uses a real demolish.
+- **DEV-8 share card** (`ui/share/`): 1080×1350 canvas card (paper + dot grid, ink borders, Silkscreen, amber legacy panel, mini frontier with YOU dot, profit and impact tiles, challenge link band). `shareResultCard()` uses `navigator.share({ files })` when `canShare` allows it, else downloads the PNG and copies text + link. In `EndScreen.tsx` only `share` and its button changed (label "Share my result" → "Image saved · link copied!").
+- **DEV-9 daily run** (`ui/daily.ts`, StartScreen, App): seed = `seedFromString("YYYY-MM-DD")` (local date), valley = enabled locations rotated by day number, best legacy per day in `localStorage['dt-daily-best-<date>']`, shown on the start screen. 3 tests in `ui/daily.test.ts`.
+- Docs: README, ARCHITECTURE, GAME_DESIGN §3, TASKS (UX-2, DEV-8, DEV-9 → review).
+- Tested in the browser at 375×812 and 1440×900: hints (next, skip, tap-to-advance, time held), demolish on a plant (power drops, feedback) and blocked on the only hall, full daily run to the end screen, best saved and shown, share fallback (download + copy). No console errors after a clean reload.
+
+**Next:**
+- Test the native share sheet on a real iPhone and Android (the in-app browser has no Web Share). If iOS refuses because the gesture expired while the card was drawn, pre-render the card when the end screen mounts.
+- ART-3: the card layout is code in `ui/share/card.ts` (one function, colours mirrored from `tokens.css`); restyle freely.
+- Link previews: static `public/og.png` (1200×630) + `og:image` / `twitter:image` tags in `index.html` (absolute URL on the Vercel domain). It is drawn by `ui/share/og.ts` (not imported by the app); to regenerate, run `npm run dev` and paste `(await import('/ui/share/og.ts')).downloadOgImage()` in the browser console. If the domain changes, update the URLs in `index.html`.
+- The strategies in `engine/strategies.ts` never demolish, so the sim is unchanged (no balance change). A "replace coal by wind at year 5" strategy would be a nice sim tripwire for GD-3.
+- Daily run: the best score is local only. A `daily` flag on `run_end` would allow a daily leaderboard on `/dashboard`.
+- Analytics (owner of DEV-5): demolitions are **not tracked**. `api/_lib/events.ts` rejects unknown `decision` actions, so `useGame.act()` skips them. To track them, add `'demolish'` to the accepted actions and send `{ action: 'demolish', id: buildingId }` from `act()`.
+
+**Gotchas:**
+- CONTRACT CHANGE: `Action` gained `{ type: 'demolish'; plot: number }`; `Balance` gained `demolishCostPct` (required in `content/schema/balance.schema.json`, set to 0.1 in `content/balance.json`); `engine/index.ts` exports `demolishOption` and `DemolishOption`. `useGame` returns `hold` / `setHold`, and `act()` accepts the demolish action.
+- `CampusMap` gained an `overlay` prop (anything floating over the map); the "Drag to explore" hint hides while an overlay is shown.
+- Dev only: editing `App.tsx` while a run is open makes React log a hooks-order error from hot reload. Reload the page; it is not a bug in the build.
