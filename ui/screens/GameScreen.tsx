@@ -22,13 +22,13 @@ import {
 import { useEffect } from 'react';
 import { DecisionPanel } from '../components/DecisionPanel';
 import { OnboardingTip, useOnboarding } from '../components/Onboarding';
-import { reportTax, TaxBadge } from '../components/TaxBadge';
 import { CategoryIcon, Icon } from '../components/Icons';
 import { BuildingIcon, RingMenu, type RingItem } from '../components/RingMenu';
 import { DEBT_LABEL, effectChips, money, num, quarterLabel } from '../format';
 import { CampusMap } from '../map/CampusMap';
 import { campusView, HALL_PLOTS } from '../map/layout';
 import { content, type GameController, type Speed } from '../useGame';
+import { reportTax, TaxBadge } from '../components/TaxBadge';
 
 const HEADLINES = ['Small campus. Big decisions.', 'Growing campus. Bigger bills.', 'Big campus. Big footprint?', 'Mega campus. Worth it?'];
 
